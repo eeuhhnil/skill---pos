@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xác nhận thanh toán — EasyPOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --blue-900:#00314F; --blue-700:#005C96; --blue-500:#0074BD;
+      --blue-100:#E6F1F8; --blue-50:#F0F7FB;
+      --ink:#151B33; --text-primary:#151B33; --text-secondary:#455064;
+      --text-placeholder:#B0B0B0;
+      --surface:#FFFFFF; --surface-page:#F4F6F8; --surface-subtle:#F7F7F7;
+      --border:#E6E6E6; --border-strong:#DEE0E2;
+      --error-500:#EB5146; --error-50:#FEF3F2;
+      --success-500:#2BA45C; --success-50:#E0FFEB;
+      --shadow-lg:0 12px 40px rgba(16,24,40,.22);
+      --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-xl:16px; --radius-full:999px;
+      --font-sans:'Noto Sans',sans-serif;
+      --font-display:'Be Vietnam Pro',sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      background: #e9edf2;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: rgba(21,27,51,.4);
+      backdrop-filter: blur(2px);
+      z-index: 0;
+    }
+
+    /* ── Modal ── */
+    .modal {
+      position: relative;
+      z-index: 10;
+      background: var(--surface);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 640px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header (blue) ── */
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: var(--blue-500);
+    }
+    .modal-title {
+      font: 600 16px/1.4 var(--font-display);
+      color: #fff;
+    }
+    .close-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px;
+      border: none;
+      background: rgba(255,255,255,.15);
+      border-radius: var(--radius-md);
+      color: #fff;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .close-btn:hover { background: rgba(255,255,255,.28); }
+
+    /* ── Body ── */
+    .modal-body {
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - 160px);
+      overflow-y: auto;
+    }
+
+    /* Total */
+    .total-section {
+      text-align: center;
+      padding: 20px 0 18px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+    .total-label {
+      font: 400 13px/1.4 var(--font-sans);
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    .total-amount {
+      font: 700 34px/1.2 var(--font-display);
+      color: var(--blue-500);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.5px;
+    }
+
+    /* Field group */
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .field-label {
+      font: 600 13px/1.4 var(--font-sans);
+      color: var(--text-primary);
+    }
+
+    /* ── Radio row ── */
+    .radio-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px 20px;
+    }
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      font: 400 14px/1.4 var(--font-sans);
+      color: var(--text-primary);
+      user-select: none;
+    }
+    .radio-option input[type=radio] { display: none; }
+    .radio-custom {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 2px solid #ccc;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color .15s;
+      background: #fff;
+    }
+    .radio-option input:checked ~ .radio-custom {
+      border-color: var(--blue-500);
+      border-width: 5px;
+    }
+    .radio-option:hover .radio-custom { border-color: var(--blue-400, #3392CB); }
+    .radio-label { line-height: 1; }
+    .radio-option input:checked ~ .radio-label { font-weight: 600; color: var(--blue-700); }
+
+    .btn-more-pttt {
+      display: flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px;
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      background: var(--surface);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background .15s;
+      flex-shrink: 0;
+    }
+    .btn-more-pttt:hover { background: var(--surface-subtle); }
+
+    /* ── QR + dropdown card ── */
+    @keyframes slideDown {
+      from { opacity:0; transform:translateY(-5px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .qr-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      animation: slideDown .18s ease;
+    }
+    .qr-card-inner {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 16px;
+    }
+    .qr-canvas {
+      flex-shrink: 0;
+      border-radius: 6px;
+      border: 2px solid var(--border);
+    }
+    .qr-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .btn-hien-qr {
+      display: inline-flex; align-items: center;
+      padding: 7px 14px;
+      border: none;
+      border-radius: var(--radius-md);
+      background: var(--blue-500);
+      color: #fff;
+      font: 500 13px/1 var(--font-sans);
+      cursor: pointer;
+      width: fit-content;
+      transition: background .15s;
+    }
+    .btn-hien-qr:hover { background: var(--blue-700); }
+
+    /* ── Select / Input ── */
+    .ep-select, .ep-input {
+      width: 100%;
+      height: 40px;
+      padding: 0 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      font: 400 14px/1.4 var(--font-sans);
+      color: var(--text-primary);
+      appearance: none; -webkit-appearance: none;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .ep-select:focus, .ep-input:focus { border-color: var(--blue-500); }
+    .select-wrapper { position: relative; }
+    .select-wrapper::after {
+      content: '';
+      position: absolute; right: 12px; top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      width: 0; height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid var(--text-secondary);
+    }
+    .ep-input {
+      text-align: right;
+      font: 500 15px/1 var(--font-sans);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Tiền thừa */
+    .tien-thua-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0 0;
+    }
+    .tien-thua-label { font: 400 13px var(--font-sans); color: var(--text-secondary); }
+    .tien-thua-val { font: 600 13px var(--font-sans); color: var(--success-500); font-variant-numeric: tabular-nums; }
+
+    /* ── Chi tiết thanh toán ── */
+    .chi-tiet {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: 22px;
+    }
+    .chi-tiet-toggle {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; padding: 11px 14px;
+      background: var(--surface-subtle);
+      border: none; cursor: pointer;
+      font: 500 13px/1.4 var(--font-sans); color: var(--text-primary);
+      transition: background .15s;
+    }
+    .chi-tiet-toggle:hover { background: #EBEBEB; }
+    .chi-tiet-toggle svg { width: 15px; height: 15px; color: var(--text-secondary); transition: transform .2s; }
+    .chi-tiet-toggle.collapsed svg { transform: rotate(180deg); }
+    .chi-tiet-body {
+      padding: 12px 14px;
+      display: flex; flex-direction: column; gap: 7px;
+      border-top: 1px solid var(--border);
+    }
+    .chi-tiet-body.hidden { display: none; }
+    .ct-row { display: flex; justify-content: space-between; align-items: center; }
+    .ct-label { font: 400 13px/1.4 var(--font-sans); color: var(--text-secondary); display: flex; align-items: center; gap: 5px; }
+    .ct-val { font: 400 13px/1.4 var(--font-sans); color: var(--text-primary); font-variant-numeric: tabular-nums; }
+    .ct-divider { height: 1px; background: var(--border); margin: 3px 0; }
+    .ct-total .ct-label { font-weight: 600; color: var(--text-primary); }
+    .ct-total .ct-val { font-weight: 700; font-size: 14px; }
+    .badge { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: var(--radius-full); font: 600 11px/1 var(--font-sans); }
+    .badge-green { background:#E0FFEB; color:#1E7D45; }
+    .badge-orange { background:#FCF2EB; color:#A15926; }
+
+    /* ── Combobox ── */
+    .combo-wrapper { position: relative; }
+    .combo-trigger {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; height: 40px; padding: 0 12px;
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      background: var(--surface); cursor: pointer;
+      font: 400 14px/1 var(--font-sans); color: var(--text-primary);
+      text-align: left; gap: 8px;
+      transition: border-color .15s;
+    }
+    .combo-trigger:hover { border-color: #aaa; }
+    .combo-trigger.open { border-color: var(--blue-500); box-shadow: 0 0 0 3px rgba(0,116,189,.12); }
+    .combo-trigger svg { flex-shrink:0; width:14px; height:14px; color:var(--text-secondary); transition:transform .2s; }
+    .combo-trigger.open svg { transform:rotate(180deg); }
+    .combo-label { flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:13px; }
+
+    .combo-dropdown {
+      position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      box-shadow: 0 4px 16px rgba(16,24,40,.14);
+      z-index: 100;
+      overflow: hidden;
+      animation: slideDown .15s ease;
+    }
+    .account-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      transition: background .1s;
+    }
+    .account-item:last-child { border-bottom: none; }
+    .account-item:hover { background: var(--surface-subtle); }
+    .account-item.selected { background: var(--blue-50); }
+    .account-item-info { flex:1; min-width:0; }
+    .account-item-name {
+      font: 500 13px/1.4 var(--font-sans); color: var(--text-primary);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .account-item-owner { font: 400 11px/1.3 var(--font-sans); color: var(--text-secondary); }
+    .account-item-icon {
+      flex-shrink:0; width:18px; height:18px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .account-item.selected .account-item-icon { color: var(--blue-500); }
+    .account-item:not(.selected) .account-item-icon { color: #ccc; }
+    .account-add {
+      display:flex; align-items:center; gap:6px;
+      padding:10px 14px; cursor:pointer;
+      color: var(--blue-500); font: 500 13px/1.4 var(--font-sans);
+      border-top: 1px solid var(--border);
+      transition: background .1s;
+    }
+    .account-add:hover { background: var(--blue-50); }
+
+    /* Thông thường card (no QR, full width) */
+    .plain-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: visible;
+      animation: slideDown .18s ease;
+      padding: 14px 16px;
+    }
+
+    /* Remove overflow:hidden from qr-card so dropdown can overflow */
+    .qr-card { overflow: visible !important; }
+
+    /* ── Footer ── */
+    .modal-footer {
+      display: flex; align-items: center; justify-content: flex-end;
+      gap: 10px; padding: 14px 24px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      height: 40px; padding: 0 22px;
+      border-radius: var(--radius-md);
+      font: 500 14px/1 var(--font-sans);
+      cursor: pointer; border: none;
+      transition: background .15s;
+    }
+    .btn-secondary { background: var(--surface); border: 1.5px solid var(--blue-500); color: var(--blue-500); }
+    .btn-secondary:hover { background: var(--blue-50); }
+    .btn-primary { background: var(--blue-500); color: #fff; }
+    .btn-primary:hover { background: var(--blue-700); }
+
+    .modal-body::-webkit-scrollbar { width: 4px; }
+    .modal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── Thêm PTTT modal ── */
+    #add-pttt-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(21,27,51,.55);
+      backdrop-filter: blur(2px);
+      z-index: 400;
+      align-items: center;
+      justify-content: center;
+    }
+    #add-pttt-overlay.visible { display: flex; }
+    .add-pttt-modal {
+      background: #fff;
+      border-radius: var(--radius-xl);
+      width: 480px;
+      max-width: calc(100vw - 32px);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      animation: popIn .2s cubic-bezier(.34,1.56,.64,1);
+    }
+    .add-pttt-body {
+      padding: 20px 24px;
+      display: flex; flex-direction: column; gap: 16px;
+      max-height: 70vh; overflow-y: auto;
+    }
+    .add-pttt-body::-webkit-scrollbar { width: 4px; }
+    .add-pttt-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .form-field { display: flex; flex-direction: column; gap: 6px; }
+    .form-label { font: 600 13px/1.4 var(--font-sans); color: var(--text-primary); }
+    .form-label .req { color: var(--error-500); margin-left: 2px; }
+    .ep-input-text {
+      width: 100%; height: 40px; padding: 0 12px;
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      background: var(--surface); font: 400 14px/1.4 var(--font-sans);
+      color: var(--text-primary); outline: none; transition: border-color .15s;
+    }
+    .ep-input-text::placeholder { color: var(--text-placeholder); }
+    .ep-input-text:focus { border-color: var(--blue-500); }
+    .checkbox-row {
+      display: flex; align-items: center; gap: 8px;
+      cursor: pointer; font: 400 14px/1.4 var(--font-sans);
+      color: var(--text-primary); user-select: none;
+    }
+    .checkbox-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--blue-500); cursor: pointer; }
+    .vietqr-fields { display: none; flex-direction: column; gap: 16px; }
+    .vietqr-fields.visible { display: flex; }
+    .hint-text {
+      display: none;
+      font: 400 12px/1.5 var(--font-sans);
+      color: var(--text-secondary);
+      margin-top: -4px;
+    }
+    .hint-text.visible { display: block; }
+
+    /* ── QR Fullscreen overlay ── */
+    #qr-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(21,27,51,.6);
+      backdrop-filter: blur(3px);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+    }
+    #qr-overlay.visible { display: flex; }
+
+    .qr-sheet {
+      background: #fff;
+      border-radius: 20px;
+      width: 340px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+      overflow: hidden;
+      animation: popIn .2s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes popIn {
+      from { opacity:0; transform:scale(.88); }
+      to   { opacity:1; transform:scale(1); }
+    }
+
+    .qr-sheet-body {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 28px 24px 20px;
+      gap: 16px;
+    }
+
+    /* VietQR logo */
+    .vietqr-logo {
+      display: flex; align-items: center; gap: 2px;
+    }
+    .vietqr-v {
+      width: 36px; height: 36px;
+    }
+    .vietqr-text {
+      font: 700 22px/1 var(--font-display);
+      color: #151B33;
+      letter-spacing: -0.5px;
+    }
+
+    .qr-big-canvas {
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      display: block;
+    }
+
+    /* Bank logos row */
+    .bank-logos {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .bank-logo-napas {
+      display: flex; align-items: center; gap: 4px;
+      font: 700 12px/1 var(--font-sans);
+    }
+    .napas-badge {
+      background: linear-gradient(135deg,#0066CC,#0099FF);
+      color: #fff; padding: 2px 7px; border-radius: 4px;
+      font: 700 11px/1.4 var(--font-sans);
+    }
+    .napas-247 { color: #0066CC; font: 700 13px/1 var(--font-sans); }
+    .bank-divider { width: 1px; height: 24px; background: var(--border); }
+    .bidv-logo {
+      display: flex; align-items: center; gap: 3px;
+    }
+    .bidv-icon {
+      width: 22px; height: 22px; border-radius: 4px;
+      background: linear-gradient(135deg,#005BAA,#0084C8);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .bidv-icon span { color:#fff; font: 700 9px/1 var(--font-sans); }
+    .bidv-text { font: 700 14px/1 var(--font-sans); color: #005BAA; }
+    .bidv-star { color: #F0A92A; font-size: 14px; line-height: 1; }
+
+    /* Payment info */
+    .qr-info-block {
+      text-align: center;
+      display: flex; flex-direction: column; gap: 5px;
+      width: 100%;
+    }
+    .qr-info-row {
+      font: 400 13px/1.5 var(--font-sans);
+      color: var(--text-secondary);
+    }
+    .qr-info-row strong {
+      color: var(--text-primary); font-weight: 600;
+    }
+    .qr-stk {
+      font: 700 15px/1.4 var(--font-sans);
+      color: var(--text-primary);
+      letter-spacing: 0.5px;
+    }
+
+    /* Footer */
+    .qr-sheet-footer {
+      display: flex; justify-content: flex-end; gap: 10px;
+      padding: 12px 20px 16px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Thêm phương thức thanh toán modal -->
+<div id="add-pttt-overlay">
+  <div class="add-pttt-modal">
+    <div class="modal-header">
+      <span class="modal-title">Thêm phương thức thanh toán</span>
+      <button class="close-btn" onclick="closeAddPTTT()">
+        <i data-lucide="x" style="width:16px;height:16px"></i>
+      </button>
+    </div>
+    <div class="add-pttt-body">
+      <div class="form-field">
+        <label class="form-label">Loại phương thức TT <span class="req">*</span></label>
+        <div class="select-wrapper">
+          <select class="ep-select" id="loai-pttt" onchange="onLoaiChange(this)">
+            <option value="co-ban">Cơ bản</option>
+            <option value="chuyen-khoan">Chuyển khoản</option>
+          </select>
+        </div>
+        <div class="hint-text" id="hint-co-ban">
+          Phương thức cơ bản không cần cấu hình thêm — chỉ cần đặt tên, ví dụ: Ví Momo, Thẻ tích điểm
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Tên phương thức <span class="req">*</span></label>
+        <input type="text" class="ep-input-text" placeholder="Nhập...">
+      </div>
+      <div class="vietqr-fields" id="vietqr-fields">
+        <div class="form-field">
+          <label class="form-label">Ngân hàng <span class="req">*</span></label>
+          <div class="select-wrapper">
+            <select class="ep-select">
+              <option value="">Chọn ngân hàng</option>
+              <option>Vietcombank</option>
+              <option>BIDV</option>
+              <option>Techcombank</option>
+              <option>TPBank</option>
+              <option>MB Bank</option>
+              <option>VPBank</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Tên ngân hàng hiển thị <span class="req">*</span></label>
+          <input type="text" class="ep-input-text" placeholder="Nhập...">
+        </div>
+        <div class="form-field">
+          <label class="form-label">Số tài khoản <span class="req">*</span></label>
+          <input type="text" class="ep-input-text" placeholder="Nhập...">
+        </div>
+        <div class="form-field">
+          <label class="form-label">Tên người thụ hưởng <span class="req">*</span></label>
+          <input type="text" class="ep-input-text" placeholder="Nhập...">
+        </div>
+      </div>
+      <label class="checkbox-row">
+        <input type="checkbox" checked>
+        Kích hoạt phương thức
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeAddPTTT()">Hủy bỏ</button>
+      <button class="btn btn-primary">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR Fullscreen overlay -->
+<div id="qr-overlay" onclick="handleOverlayClick(event)">
+  <div class="qr-sheet">
+    <div class="qr-sheet-body">
+
+      <!-- VietQR logo -->
+      <div class="vietqr-logo">
+        <svg class="vietqr-v" viewBox="0 0 36 36" fill="none">
+          <path d="M18 4L6 28h5.5l6.5-15 6.5 15H30L18 4z" fill="#CC0000"/>
+          <path d="M18 18l-3 7h6l-3-7z" fill="#fff" opacity=".6"/>
+        </svg>
+        <span class="vietqr-text">IETQR</span>
+      </div>
+
+      <!-- QR code -->
+      <canvas class="qr-big-canvas" id="qr-big-canvas" width="220" height="220"></canvas>
+
+      <!-- Bank logos -->
+      <div class="bank-logos">
+        <div class="bank-logo-napas">
+          <span class="napas-badge">napas</span>
+          <span class="napas-247">247</span>
+        </div>
+        <div class="bank-divider"></div>
+        <div class="bidv-logo">
+          <div class="bidv-icon"><span>B</span></div>
+          <span class="bidv-text">BIDV</span>
+          <span class="bidv-star">✦</span>
+        </div>
+      </div>
+
+      <!-- Payment info -->
+      <div class="qr-info-block">
+        <div class="qr-info-row">Số tiền: <strong id="qr-amount">22 VND</strong></div>
+        <div class="qr-info-row">Nội dung CK: <strong>Thanh toán đơn hàng</strong></div>
+        <div class="qr-info-row">Tên chủ TK: <strong id="qr-owner">VAN HUY LUAN</strong></div>
+        <div class="qr-stk">Số TK: <span id="qr-stk">0968326920</span></div>
+      </div>
+    </div>
+
+    <div class="qr-sheet-footer">
+      <button class="btn btn-secondary" style="height:36px;padding:0 18px;font-size:13px" onclick="closeQROverlay()">Hủy bỏ</button>
+      <button class="btn btn-primary"   style="height:36px;padding:0 18px;font-size:13px" onclick="closeQROverlay()">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal">
+
+  <!-- Header — blue -->
+  <div class="modal-header">
+    <span class="modal-title">Xác nhận thanh toán</span>
+    <button class="close-btn">
+      <i data-lucide="x" style="width:16px;height:16px"></i>
+    </button>
+  </div>
+
+  <!-- Body -->
+  <div class="modal-body">
+
+    <!-- Total -->
+    <div class="total-section">
+      <div class="total-label">Tổng tiền cần thanh toán</div>
+      <div class="total-amount">22.000 đ</div>
+    </div>
+
+    <!-- PTTT — radio button thật xếp hàng ngang -->
+    <div class="field-group">
+      <div class="field-label">Phương thức TT</div>
+      <div class="radio-row">
+        <label class="radio-option">
+          <input type="radio" name="pttt" value="tien-mat" checked onchange="onPTTTChange(this)">
+          <span class="radio-custom"></span>
+          <span class="radio-label">Tiền mặt</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="pttt" value="chuyen-khoan" onchange="onPTTTChange(this)">
+          <span class="radio-custom"></span>
+          <span class="radio-label">Chuyển khoản</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="pttt" value="cong-tt" onchange="onPTTTChange(this)">
+          <span class="radio-custom"></span>
+          <span class="radio-label">Cổng thanh toán</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="pttt" value="thong-thuong" onchange="onPTTTChange(this)">
+          <span class="radio-custom"></span>
+          <span class="radio-label">Cơ bản</span>
+        </label>
+      </div>
+
+      <!-- Card: Chuyển khoản → combobox -->
+      <div class="qr-card" id="card-chuyen-khoan" style="display:none">
+        <div style="padding:14px 16px">
+          <div class="combo-wrapper">
+            <button class="combo-trigger" id="trigger-ck" onclick="toggleCombo('dd-ck','trigger-ck')">
+              <span class="combo-label" id="label-ck">Vietcombank - 1053863279 - Duong Linh</span>
+              <i data-lucide="chevron-down"></i>
+            </button>
+            <div class="combo-dropdown" id="dd-ck" style="display:none">
+              <div class="account-item" onclick="pickCK(this,'dd-ck','trigger-ck','label-ck','TPBank - 70369880955 - HA TUẤN PHONG',17)">
+                <div class="account-item-info">
+                  <div class="account-item-name">TPBank - 70369880955</div>
+                  <div class="account-item-owner">HA TUẤN PHONG</div>
+                </div>
+                <div class="account-item-icon"></div>
+              </div>
+              <div class="account-item selected" onclick="pickCK(this,'dd-ck','trigger-ck','label-ck','Vietcombank - 1053863279 - Duong Linh',31)">
+                <div class="account-item-info">
+                  <div class="account-item-name">Vietcombank - 1053863279</div>
+                  <div class="account-item-owner">Duong Linh</div>
+                </div>
+                <div class="account-item-icon"><i data-lucide="check" style="width:13px;height:13px"></i></div>
+              </div>
+              <div class="account-add" onclick="openAddPTTT()">
+                <i data-lucide="plus" style="width:13px;height:13px"></i>
+                Thêm phương thức thanh toán
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card: Cổng thanh toán → combobox -->
+      <div class="qr-card" id="card-cong-tt" style="display:none">
+        <div style="padding:14px 16px">
+          <div class="combo-wrapper">
+            <button class="combo-trigger" id="trigger-cong" onclick="toggleCombo('dd-cong','trigger-cong')">
+              <span class="combo-label" id="label-cong">Vietcombank Gateway</span>
+              <i data-lucide="chevron-down"></i>
+            </button>
+            <div class="combo-dropdown" id="dd-cong" style="display:none">
+              <div class="account-item selected" onclick="pickCong(this,'dd-cong','trigger-cong','label-cong','Vietcombank Gateway',57)">
+                <div class="account-item-info">
+                  <div class="account-item-name">Vietcombank Gateway</div>
+                  <div class="account-item-owner">Kết nối cổng thanh toán</div>
+                </div>
+                <div class="account-item-icon"><i data-lucide="check" style="width:13px;height:13px"></i></div>
+              </div>
+              <div class="account-item" onclick="pickCong(this,'dd-cong','trigger-cong','label-cong','VNPay',83)">
+                <div class="account-item-info">
+                  <div class="account-item-name">VNPay</div>
+                  <div class="account-item-owner">Kết nối cổng thanh toán</div>
+                </div>
+                <div class="account-item-icon"></div>
+              </div>
+              <div class="account-add" onclick="openAddPTTT()">
+                <i data-lucide="plus" style="width:13px;height:13px"></i>
+                Thêm cổng thanh toán
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card: Thông thường → combobox không QR -->
+      <div class="plain-card" id="card-thong-thuong" style="display:none">
+        <div class="combo-wrapper">
+          <button class="combo-trigger" id="trigger-basic" onclick="toggleCombo('dd-basic','trigger-basic')">
+            <span class="combo-label" id="label-basic">Tiền mặt shop 2</span>
+            <i data-lucide="chevron-down"></i>
+          </button>
+          <div class="combo-dropdown" id="dd-basic" style="display:none">
+            <div class="account-item" onclick="pickBasic(this,'dd-basic','trigger-basic','label-basic','Văn Huy Luân')">
+              <div class="account-item-info">
+                <div class="account-item-name">Văn Huy Luân</div>
+              </div>
+              <div class="account-item-icon"></div>
+            </div>
+            <div class="account-item selected" onclick="pickBasic(this,'dd-basic','trigger-basic','label-basic','Tiền mặt shop 2')">
+              <div class="account-item-info">
+                <div class="account-item-name">Tiền mặt shop 2</div>
+              </div>
+              <div class="account-item-icon"><i data-lucide="check" style="width:13px;height:13px"></i></div>
+            </div>
+            <div class="account-add" onclick="openAddPTTT()">
+              <i data-lucide="plus" style="width:13px;height:13px"></i>
+              Thêm phương thức thanh toán
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PTTT hóa đơn — dropdown -->
+    <div class="field-group">
+      <div class="field-label">Phương thức TT hóa đơn</div>
+      <div class="select-wrapper">
+        <select class="ep-select">
+          <option>Tiền mặt</option>
+          <option>Chuyển khoản</option>
+          <option>TM/CK</option>
+          <option>Khác</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Khách trả -->
+    <div class="field-group">
+      <div class="field-label">Khách trả</div>
+      <input type="text" class="ep-input" id="khach-tra" value="22.000"
+             oninput="calcThua()" onfocus="this.select()">
+      <div class="tien-thua-row">
+        <span class="tien-thua-label">Tiền thừa</span>
+        <span class="tien-thua-val" id="tien-thua">0 đ</span>
+      </div>
+    </div>
+
+    <!-- Chi tiết thanh toán -->
+    <div class="chi-tiet">
+      <button class="chi-tiet-toggle" id="ct-toggle" onclick="toggleChiTiet()">
+        <span>Chi tiết thanh toán</span>
+        <i data-lucide="chevron-up"></i>
+      </button>
+      <div class="chi-tiet-body" id="ct-body">
+        <div class="ct-row">
+          <span class="ct-label">Tạm tính (1 sản phẩm)</span>
+          <span class="ct-val">12.000 đ</span>
+        </div>
+        <div class="ct-row">
+          <span class="ct-label">Chiết khấu</span>
+          <span class="ct-val">0 đ</span>
+        </div>
+        <div class="ct-row">
+          <span class="ct-label"><span class="badge badge-green">Khuyến mại</span></span>
+          <span class="ct-val">0 đ</span>
+        </div>
+        <div class="ct-row">
+          <span class="ct-label"><span class="badge badge-orange">Phụ thu</span></span>
+          <span class="ct-val">10.000 đ</span>
+        </div>
+        <div class="ct-divider"></div>
+        <div class="ct-row">
+          <span class="ct-label">Tổng tiền trước thuế</span>
+          <span class="ct-val">22.000 đ</span>
+        </div>
+        <div class="ct-row">
+          <span class="ct-label">Thuế giảm trừ</span>
+          <span class="ct-val">0 đ</span>
+        </div>
+        <div class="ct-divider"></div>
+        <div class="ct-row ct-total">
+          <span class="ct-label">Tổng tiền cần thanh toán</span>
+          <span class="ct-val">22.000 đ</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /modal-body -->
+
+  <!-- Footer -->
+  <div class="modal-footer">
+    <button class="btn btn-secondary">Hủy bỏ</button>
+    <button class="btn btn-primary" onclick="handleThanhToan()">
+      <i data-lucide="check" style="width:16px;height:16px"></i>
+      Thanh toán
+    </button>
+  </div>
+
+</div>
+
+<script>
+  lucide.createIcons();
+
+  /* ── PTTT radio change ── */
+  function onPTTTChange(input) {
+    ['card-chuyen-khoan','card-cong-tt','card-thong-thuong'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+    closeAllCombos();
+    if (input.value === 'chuyen-khoan') {
+      document.getElementById('card-chuyen-khoan').style.display = 'block';
+    } else if (input.value === 'cong-tt') {
+      document.getElementById('card-cong-tt').style.display = 'block';
+    } else if (input.value === 'thong-thuong') {
+      document.getElementById('card-thong-thuong').style.display = 'block';
+    }
+    lucide.createIcons();
+  }
+
+  /* ── Combobox toggle ── */
+  function toggleCombo(ddId, triggerId) {
+    const dd = document.getElementById(ddId);
+    const trigger = document.getElementById(triggerId);
+    const isOpen = dd.style.display !== 'none';
+    closeAllCombos();
+    if (!isOpen) {
+      dd.style.display = 'block';
+      trigger.classList.add('open');
+      lucide.createIcons();
+    }
+  }
+  function closeAllCombos() {
+    document.querySelectorAll('.combo-dropdown').forEach(d => d.style.display = 'none');
+    document.querySelectorAll('.combo-trigger').forEach(t => t.classList.remove('open'));
+  }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.combo-wrapper')) closeAllCombos();
+  });
+
+  /* ── Pick item helpers ── */
+  function _pickItem(el, ddId, triggerId, labelId, label) {
+    const dd = document.getElementById(ddId);
+    dd.querySelectorAll('.account-item').forEach(i => {
+      i.classList.remove('selected');
+      i.querySelector('.account-item-icon').innerHTML = '';
+    });
+    el.classList.add('selected');
+    el.querySelector('.account-item-icon').innerHTML = '<i data-lucide="check" style="width:13px;height:13px"></i>';
+    document.getElementById(labelId).textContent = label;
+    dd.style.display = 'none';
+    document.getElementById(triggerId).classList.remove('open');
+    lucide.createIcons();
+  }
+  function pickCK(el, ddId, triggerId, labelId, label, seed) {
+    _pickItem(el, ddId, triggerId, labelId, label);
+    currentQRSeed = seed || 31;
+  }
+  function pickCong(el, ddId, triggerId, labelId, label, seed) {
+    _pickItem(el, ddId, triggerId, labelId, label);
+    currentQRSeed = seed || 57;
+  }
+  function pickBasic(el, ddId, triggerId, labelId, label) {
+    _pickItem(el, ddId, triggerId, labelId, label);
+  }
+
+  /* ── Thanh toán → mở QR nếu CK / Cổng TT ── */
+  let currentQRSeed = 31;
+  function handleThanhToan() {
+    const pttt = document.querySelector('input[name="pttt"]:checked').value;
+    if (pttt === 'chuyen-khoan' || pttt === 'cong-tt') {
+      openQROverlay();
+    }
+  }
+
+  /* ── Chi tiết toggle ── */
+  function toggleChiTiet() {
+    document.getElementById('ct-body').classList.toggle('hidden');
+    document.getElementById('ct-toggle').classList.toggle('collapsed');
+  }
+
+  /* ── Tiền thừa ── */
+  function calcThua() {
+    const raw = document.getElementById('khach-tra').value.replace(/\./g, '');
+    const paid = parseInt(raw) || 0;
+    const change = paid - 22000;
+    const el = document.getElementById('tien-thua');
+    el.textContent = (change > 0 ? formatNum(change) : '0') + ' đ';
+    if (paid > 0) document.getElementById('khach-tra').value = formatNum(paid);
+  }
+  function formatNum(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+
+  /* ── QR overlay ── */
+  function openQROverlay() {
+    drawQR('qr-big-canvas', currentQRSeed, 220);
+    document.getElementById('qr-overlay').classList.add('visible');
+    lucide.createIcons();
+  }
+  function closeQROverlay() {
+    document.getElementById('qr-overlay').classList.remove('visible');
+  }
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('qr-overlay')) closeQROverlay();
+  }
+
+  /* ── QR canvas ── */
+  function drawQR(id, seed, size) {
+    const c = document.getElementById(id);
+    if (!c) return;
+    if (size) { c.width = size; c.height = size; }
+    const ctx = c.getContext('2d');
+    const sz = c.width, m = 21, cell = sz / m;
+    let s = seed || 1;
+    const rand = () => { s=(s*1664525+1013904223)&0xffffffff; return (s>>>0)/0xffffffff; };
+    ctx.fillStyle='#fff'; ctx.fillRect(0,0,sz,sz);
+    ctx.fillStyle='#151B33';
+    for (let r=0;r<m;r++) for (let c2=0;c2<m;c2++) {
+      const inF=(r<8&&c2<8)||(r<8&&c2>=m-8)||(r>=m-8&&c2<8);
+      if (!inF && rand()>.45) ctx.fillRect(c2*cell,r*cell,cell-.5,cell-.5);
+    }
+    [
+      [0,0],[( m-7)*cell,0],[0,(m-7)*cell]
+    ].forEach(([x,y])=>drawFinder(ctx,x,y,cell));
+  }
+  /* ── Thêm PTTT modal ── */
+  function openAddPTTT() {
+    closeAllCombos();
+    document.getElementById('loai-pttt').value = 'co-ban';
+    document.getElementById('vietqr-fields').classList.remove('visible');
+    document.getElementById('hint-co-ban').classList.add('visible');
+    document.getElementById('add-pttt-overlay').classList.add('visible');
+    lucide.createIcons();
+  }
+  function closeAddPTTT() {
+    document.getElementById('add-pttt-overlay').classList.remove('visible');
+  }
+  function onLoaiChange(sel) {
+    document.getElementById('vietqr-fields').classList.toggle('visible', sel.value === 'chuyen-khoan');
+    document.getElementById('hint-co-ban').classList.toggle('visible', sel.value === 'co-ban');
+  }
+
+  function drawFinder(ctx,x,y,cell) {
+    ctx.fillStyle='#151B33'; ctx.fillRect(x,y,cell*7,cell*7);
+    ctx.fillStyle='#fff';    ctx.fillRect(x+cell,y+cell,cell*5,cell*5);
+    ctx.fillStyle='#151B33'; ctx.fillRect(x+cell*2,y+cell*2,cell*3,cell*3);
+  }
+</script>
+</body>
+</html>

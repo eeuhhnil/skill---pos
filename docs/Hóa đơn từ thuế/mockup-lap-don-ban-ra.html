@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Mockup – Lập đơn từ HĐ Bán Ra (CQT)</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --color-primary-500:#0074BD;--color-primary-600:#006AAC;--color-primary-700:#005286;--color-primary-50:#E6F1F8;
+  --color-neutral-800:#333333;--color-neutral-700:#545454;--color-neutral-600:#8A8A8A;
+  --color-neutral-400:#E6E6E6;--color-neutral-300:#EBEBEB;--color-neutral-50:#F7F7F7;
+  --color-success:#13C05D;--color-error:#EB5146;--color-warning:#F08D14;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;
+  --font-primary:'Poppins',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-primary);background:var(--color-neutral-50);font-size:13px;color:var(--color-neutral-800)}
+/* ── App shell ── */
+.app-nav{background:#1e3a8a;color:#fff;height:48px;display:flex;align-items:center;padding:0 20px;gap:16px;font-size:14px;font-weight:600;letter-spacing:.3px}
+.app-nav span{opacity:.6;font-weight:400;font-size:12px}
+.page{padding:20px;min-height:calc(100vh - 48px)}
+/* ── Cards ── */
+.card{background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+/* ── Page header ── */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.page-header h2{font-size:17px;font-weight:700;color:#1e3a8a}
+/* ── Filter bar ── */
+.filter-bar{display:flex;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid #f0f0f0}
+.filter-bar input,.filter-bar select{border:1px solid #d1d5db;border-radius:6px;padding:6px 10px;font-size:12px;background:#fff}
+.filter-bar input{width:220px}
+/* ── Tables ── */
+table{width:100%;border-collapse:collapse}
+th{background:#f8fafc;color:#6b7280;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:10px 12px;text-align:left;border-bottom:2px solid #e5e7eb;white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid #f3f4f6;vertical-align:middle}
+tr:hover td{background:#fafbff}
+/* ── Badges ── */
+.badge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-pending{background:#fef9c3;color:#854d0e}
+.badge-done{background:#dcfce7;color:#166534}
+.badge-cancel{background:#fee2e2;color:#991b1b}
+.badge-gtgt{background:#ede9fe;color:#5b21b6}
+.badge-bh{background:#e0f2fe;color:#075985}
+/* ── Buttons ── */
+.btn{padding:7px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:500;transition:.15s all;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--color-primary-500);color:#fff}.btn-primary:hover{background:var(--color-primary-600)}
+.btn-primary:disabled{background:#8ABFE1;cursor:not-allowed}
+.btn-ghost{background:#fff;color:#374151;border:1px solid #d1d5db}.btn-ghost:hover{background:#f9fafb}
+.btn-success{background:#059669;color:#fff}.btn-success:hover{background:#047857}
+.btn-sm{padding:4px 10px;font-size:12px;border-radius:5px}
+.btn-icon{padding:5px 8px;border-radius:5px;border:none;cursor:pointer;background:#fff;border:1px solid #e5e7eb;font-size:14px;line-height:1}
+/* ── Modal ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:center;justify-content:center}
+.modal{background:#fff;border-radius:10px;width:960px;max-width:96vw;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.2)}
+.modal-head{padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center}
+.modal-head h2{font-size:15px;font-weight:700;color:#1e3a8a}
+.modal-body{padding:20px;overflow-y:auto;flex:1}
+.modal-foot{padding:14px 20px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;background:#f9fafb;border-radius:0 0 10px 10px}
+/* ── Invoice info strip ── */
+.inv-strip{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 18px;margin-bottom:16px;display:flex;gap:28px;flex-wrap:wrap}
+.inv-strip-item label{display:block;font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.inv-strip-item strong{font-size:13px;color:#1e3a8a;font-weight:700}
+/* ── Alert ── */
+.alert{padding:10px 14px;border-radius:6px;font-size:12px;margin-bottom:14px;display:flex;align-items:flex-start;gap:8px}
+.alert-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af}
+.alert-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e}
+/* ── Section title ── */
+.sec-title{font-size:12px;font-weight:700;color:#374151;margin-bottom:10px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.4px}
+.sec-title::before{content:'';display:block;width:3px;height:14px;background:#2563eb;border-radius:2px}
+/* ── Customer matching ── */
+.kh-box{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:16px}
+.kh-xml{flex:1.2;border-right:1px solid #e5e7eb;padding-right:16px}
+.kh-xml small{display:block;color:#9ca3af;font-size:11px;margin-bottom:4px}
+.kh-xml span{color:#6b7280;font-size:13px}
+.kh-arrow{font-size:22px;color:#9ca3af;flex-shrink:0}
+.kh-epos{flex:2}
+.kh-epos small{display:block;color:#9ca3af;font-size:11px;margin-bottom:4px}
+.kh-epos-val{display:flex;align-items:center;gap:8px}
+.kh-epos-val strong{font-size:14px;color:#065f46}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:600}
+.chip-green{background:#d1fae5;color:#065f46}
+.chip-yellow{background:#fef3c7;color:#92400e}
+.chip-blue{background:#dbeafe;color:#1e40af}
+/* ── Matching table ── */
+.match-table{width:100%;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb}
+.match-table th{background:#f1f5f9;font-size:11px;padding:9px 12px;border-bottom:1px solid #e5e7eb}
+.match-table td{padding:9px 12px;border-bottom:1px solid #f3f4f6;vertical-align:middle}
+.match-table tr:last-child td{border-bottom:none}
+.row-ok td{background:#fff}
+.row-warn td{background:#fffbeb}
+.row-discount td{background:#fdf4ff}
+.icon-ok{color:#10b981;font-size:16px}
+.icon-warn{color:#f59e0b;font-size:16px;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+select.epos-drop{border:1px solid #fbbf24;border-radius:6px;padding:5px 8px;font-size:12px;background:#fffbeb;width:200px;color:#1f2937}
+select.epos-drop.matched{border-color:#d1d5db;background:#fff;color:#1f2937}
+select.kho-drop{border:1px solid #d1d5db;border-radius:6px;padding:5px 8px;font-size:12px;background:#fff;width:130px}
+.xml-name{font-size:12px;color:#6b7280;max-width:200px}
+.xml-unit{display:inline-block;background:#f3f4f6;border-radius:4px;padding:2px 7px;font-size:11px;color:#374151;margin-left:4px}
+.epos-matched-name{font-size:12px;font-weight:600;color:#1f2937}
+.epos-matched-code{font-size:10px;color:#9ca3af;margin-top:1px}
+.change-link{font-size:11px;color:#2563eb;cursor:pointer;text-decoration:underline;margin-left:6px}
+.discount-label{display:flex;align-items:center;gap:6px;font-size:12px;color:#7c3aed}
+.num{text-align:right;font-size:12px;color:#374151;white-space:nowrap}
+.unmatched-badge{background:#fef3c7;color:#92400e;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600}
+.all-matched-badge{background:#d1fae5;color:#065f46;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600}
+/* ── Screen B2 ── */
+#screen-b2{display:flex;flex-direction:column;height:calc(100vh - 48px)}
+.b2-topbar{background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.b2-topbar-label{font-size:12px;color:#6b7280}
+.b2-main{display:flex;flex:1;overflow:hidden}
+.b2-left{flex:1;overflow-y:auto;padding:16px}
+.b2-right{width:270px;background:#fff;border-left:1px solid #e5e7eb;display:flex;flex-direction:column;padding:16px;gap:8px;flex-shrink:0}
+.b2-right h3{font-size:13px;font-weight:700;color:#374151;margin-bottom:4px}
+.b2-products-table th{font-size:11px}
+.b2-products-table td{font-size:13px}
+.qty-ctrl{display:flex;align-items:center;gap:4px}
+.qty-ctrl .qbtn{width:26px;height:26px;border:1px solid #d1d5db;background:#fff;border-radius:5px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;font-weight:300}
+.qty-ctrl .qbtn:hover{background:#f3f4f6}
+.qty-ctrl input{width:40px;text-align:center;border:1px solid #d1d5db;border-radius:5px;padding:3px 0;font-size:13px}
+.price-input{border:1px solid transparent;border-radius:5px;padding:3px 6px;font-size:13px;text-align:right;width:85px;color:#1f2937}
+.price-input:hover{border-color:#d1d5db}
+.price-input:focus{border-color:#2563eb;outline:none;background:#eff6ff}
+.del-btn{background:none;border:none;cursor:pointer;color:#ef4444;font-size:18px;padding:2px 6px;border-radius:4px}
+.del-btn:hover{background:#fef2f2}
+.pay-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px}
+.pay-row label{color:#6b7280}
+.pay-row span{font-weight:600;color:#1f2937}
+.pay-row.total{border-top:2px solid #e5e7eb;margin-top:6px;padding-top:10px}
+.pay-row.total label{font-size:14px;font-weight:700;color:#374151}
+.pay-row.total span{font-size:17px;color:#dc2626}
+.pay-row.discount span{color:#059669}
+.b2-product-name{font-weight:600;font-size:13px}
+.b2-product-sub{font-size:11px;color:#9ca3af;margin-top:1px}
+.tax-pct{font-size:11px;background:#ede9fe;color:#5b21b6;padding:2px 6px;border-radius:4px}
+.cqt-ref{font-size:11px;color:#9ca3af;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:4px 10px;display:flex;align-items:center;gap:4px}
+/* ── Misc ── */
+.separator{display:flex;align-items:center;gap:8px;color:#9ca3af;font-size:12px;margin:6px 0}
+.separator::before,.separator::after{content:'';flex:1;height:1px;background:#e5e7eb}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     APP NAV
+═══════════════════════════════════════════════════ -->
+<div class="app-nav">
+  <span>EPOS</span>
+  <span style="opacity:.3">›</span>
+  Hóa đơn từ thuế
+  <span style="opacity:.3">›</span>
+  Hóa đơn bán ra
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 1 – DANH SÁCH HÓA ĐƠN BÁN RA
+═══════════════════════════════════════════════════ -->
+<div id="screen-list" class="page">
+  <div class="page-header">
+    <h2>Hóa đơn bán ra từ thuế</h2>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm">📋 Lịch sử đồng bộ</button>
+      <button class="btn btn-primary btn-sm">⟳ Đồng bộ mới</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="filter-bar">
+      <input type="text" placeholder="🔍 Tìm số HĐ, tên khách hàng...">
+      <select>
+        <option>Tất cả trạng thái</option>
+        <option>Chưa lập đơn</option>
+        <option>Đã lập đơn</option>
+        <option>Trùng lặp</option>
+        <option>Hủy</option>
+      </select>
+      <select>
+        <option>Tất cả loại HĐ</option>
+        <option>Hóa đơn bán hàng</option>
+        <option>Hóa đơn GTGT</option>
+      </select>
+      <input type="date" value="2026-04-01" style="width:140px">
+      <span style="color:#9ca3af">—</span>
+      <input type="date" value="2026-05-20" style="width:140px">
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>STT</th>
+          <th>Số hóa đơn</th>
+          <th>Ngày HĐ</th>
+          <th>Loại HĐ</th>
+          <th>Tên khách hàng</th>
+          <th style="text-align:right">Tổng tiền</th>
+          <th>Trạng thái</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="color:#9ca3af">1</td>
+          <td><strong>118</strong></td>
+          <td>30/04/2026</td>
+          <td><span class="badge badge-bh">Bán hàng</span></td>
+          <td>Người mua không lấy hóa đơn</td>
+          <td style="text-align:right;font-weight:600">316.000 ₫</td>
+          <td><span class="badge badge-pending">Chưa lập đơn</span></td>
+          <td>
+            <button class="btn btn-primary btn-sm" onclick="openB1()">Lập đơn →</button>
+            <button class="btn btn-ghost btn-sm" style="margin-left:4px">Xem HĐ</button>
+          </td>
+        </tr>
+        <tr>
+          <td style="color:#9ca3af">2</td>
+          <td><strong>00013094</strong></td>
+          <td>14/05/2026</td>
+          <td><span class="badge badge-gtgt">GTGT</span></td>
+          <td>Nguyễn Bá Ngọc</td>
+          <td style="text-align:right;font-weight:600">12.524.580 ₫</td>
+          <td><span class="badge badge-pending">Chưa lập đơn</span></td>
+          <td>
+            <button class="btn btn-primary btn-sm" disabled style="opacity:.4;cursor:not-allowed">Lập đơn →</button>
+            <button class="btn btn-ghost btn-sm" style="margin-left:4px">Xem HĐ</button>
+          </td>
+        </tr>
+        <tr>
+          <td style="color:#9ca3af">3</td>
+          <td><strong>117</strong></td>
+          <td>28/04/2026</td>
+          <td><span class="badge badge-bh">Bán hàng</span></td>
+          <td>Công ty TNHH ABC</td>
+          <td style="text-align:right;font-weight:600">5.200.000 ₫</td>
+          <td><span class="badge badge-done">Đã lập đơn</span></td>
+          <td>
+            <button class="btn btn-ghost btn-sm">Xem đơn</button>
+            <button class="btn btn-ghost btn-sm" style="margin-left:4px">Xem HĐ</button>
+          </td>
+        </tr>
+        <tr>
+          <td style="color:#9ca3af">4</td>
+          <td><strong>116</strong></td>
+          <td>25/04/2026</td>
+          <td><span class="badge badge-bh">Bán hàng</span></td>
+          <td>Nguyễn Văn An</td>
+          <td style="text-align:right;font-weight:600">890.000 ₫</td>
+          <td><span class="badge badge-cancel">Hủy</span></td>
+          <td>
+            <button class="btn btn-ghost btn-sm" style="opacity:.4;cursor:not-allowed" disabled>Lập đơn →</button>
+            <button class="btn btn-ghost btn-sm" style="margin-left:4px">Xem HĐ</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="padding:12px 16px;color:#9ca3af;font-size:12px;border-top:1px solid #f3f4f6">
+      Hiển thị 4/4 hóa đơn
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     POPUP B1 – GHÉP CẶP SẢN PHẨM
+═══════════════════════════════════════════════════ -->
+<div id="modal-b1" class="overlay" style="display:none">
+  <div class="modal">
+    <!-- HEAD -->
+    <div class="modal-head">
+      <div>
+        <h2>Lập đơn từ hóa đơn #118</h2>
+        <div style="font-size:11px;color:#6b7280;margin-top:3px">Bước 1/2 — Ghép khách hàng &amp; sản phẩm</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="closeB1()">✕ Đóng</button>
+    </div>
+
+    <!-- BODY -->
+    <div class="modal-body">
+
+      <!-- Invoice info strip -->
+      <div class="inv-strip">
+        <div class="inv-strip-item"><label>Số hóa đơn</label><strong>#118</strong></div>
+        <div class="inv-strip-item"><label>Ngày hóa đơn</label><strong>30/04/2026</strong></div>
+        <div class="inv-strip-item"><label>Loại hóa đơn</label><strong>Bán hàng</strong></div>
+        <div class="inv-strip-item"><label>Tổng tiền</label><strong style="color:#dc2626">316.000 ₫</strong></div>
+        <div class="inv-strip-item"><label>Ký hiệu</label><strong>C26MAA</strong></div>
+      </div>
+
+      <!-- Alert -->
+      <div class="alert alert-info">
+        ℹ️ Hàng hóa sẽ tự động ghép theo <strong>tên + đơn vị tính</strong> nếu đã có mapping. Các dòng chưa khớp cần chọn thủ công trước khi xác nhận.
+      </div>
+
+      <!-- KHÁCH HÀNG -->
+      <div class="sec-title">Khách hàng</div>
+      <div class="kh-box">
+        <div class="kh-xml">
+          <small>Tên trên hóa đơn thuế</small>
+          <span>Người mua không lấy hóa đơn</span>
+        </div>
+        <div class="kh-arrow">→</div>
+        <div class="kh-epos">
+          <small>Khách hàng trong EPOS</small>
+          <div class="kh-epos-val">
+            <strong>Khách lẻ</strong>
+            <span class="chip chip-green">✓ Tự động (CusCode: KH1)</span>
+            <span class="change-link">Đổi</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SẢN PHẨM -->
+      <div class="sec-title" style="margin-bottom:8px">
+        Sản phẩm
+        <span id="unmatched-counter" class="unmatched-badge">⚠ 1 dòng chưa ghép</span>
+      </div>
+
+      <table class="match-table">
+        <thead>
+          <tr>
+            <th style="width:36px">STT</th>
+            <th>Tên SP từ hóa đơn thuế</th>
+            <th style="width:20px"></th>
+            <th>SP trong EPOS</th>
+            <th>Kho hàng</th>
+            <th style="text-align:right">SL</th>
+            <th style="text-align:right">Đơn giá</th>
+            <th style="text-align:right">Thành tiền</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- Row 1: AUTO MATCHED -->
+          <tr class="row-ok">
+            <td style="color:#9ca3af;text-align:center">1</td>
+            <td>
+              <div class="xml-name">kitkat thanh chunky banh quy kem 38g (864457)</div>
+              <div style="margin-top:3px"><span class="xml-unit">thanh</span></div>
+            </td>
+            <td style="text-align:center"><span class="icon-ok">✓</span></td>
+            <td>
+              <div class="epos-matched-name">KitKat Chunky 38g</div>
+              <div class="epos-matched-code">SP109 · thanh <span class="chip chip-green" style="font-size:10px">Tự động</span></div>
+            </td>
+            <td>
+              <select class="kho-drop">
+                <option selected>Kho bán hàng</option>
+                <option>Kho 2</option>
+              </select>
+            </td>
+            <td class="num">1</td>
+            <td class="num">26.000</td>
+            <td class="num"><strong>26.000 ₫</strong></td>
+          </tr>
+
+          <!-- Row 2: UNMATCHED -->
+          <tr class="row-warn" id="row-unmatch">
+            <td style="color:#9ca3af;text-align:center">2</td>
+            <td>
+              <div class="xml-name">xoài sấy dẻo 500g</div>
+              <div style="margin-top:3px"><span class="xml-unit">Gói</span></div>
+            </td>
+            <td style="text-align:center"><span class="icon-warn" id="warn-icon">⚠</span></td>
+            <td>
+              <select class="epos-drop" id="epos-select-2" onchange="onSelectProduct(this)">
+                <option value="">-- Chọn SP trong EPOS --</option>
+                <option value="SP271">Xoài sấy dẻo Đà Lạt 500g (SP271)</option>
+                <option value="SP272">Xoài sấy giòn 500g (SP272)</option>
+                <option value="SP273">Xoài sấy mềm 500g (SP273)</option>
+                <option value="new">➕ Tạo sản phẩm mới...</option>
+              </select>
+              <div id="kh-epos-matched" style="display:none">
+                <div class="epos-matched-name" id="matched-name"></div>
+                <div class="epos-matched-code" id="matched-code"></div>
+                <span class="change-link" onclick="resetSelect()">Đổi</span>
+              </div>
+            </td>
+            <td>
+              <select class="kho-drop" id="kho-select-2" disabled style="opacity:.4">
+                <option>Kho bán hàng</option>
+                <option>Kho 2</option>
+              </select>
+            </td>
+            <td class="num">2</td>
+            <td class="num">140.000</td>
+            <td class="num"><strong>280.000 ₫</strong></td>
+          </tr>
+
+          <!-- Row 3: AUTO MATCHED -->
+          <tr class="row-ok">
+            <td style="color:#9ca3af;text-align:center">3</td>
+            <td>
+              <div class="xml-name">kitkat tra xanh 2f 17g (753908)</div>
+              <div style="margin-top:3px"><span class="xml-unit">thanh</span></div>
+            </td>
+            <td style="text-align:center"><span class="icon-ok">✓</span></td>
+            <td>
+              <div class="epos-matched-name">KitKat Trà Xanh 17g</div>
+              <div class="epos-matched-code">SP105 · thanh <span class="chip chip-green" style="font-size:10px">Tự động</span></div>
+            </td>
+            <td>
+              <select class="kho-drop">
+                <option selected>Kho bán hàng</option>
+                <option>Kho 2</option>
+              </select>
+            </td>
+            <td class="num">1</td>
+            <td class="num">14.000</td>
+            <td class="num"><strong>14.000 ₫</strong></td>
+          </tr>
+
+          <!-- Row 4: DISCOUNT (TChat=3) -->
+          <tr class="row-discount">
+            <td style="color:#9ca3af;text-align:center">4</td>
+            <td colspan="3">
+              <div class="discount-label">
+                <span style="font-size:15px">🏷</span>
+                <span style="font-weight:600;color:#7c3aed">Chiết khấu thương mại</span>
+                <span class="chip" style="background:#f3e8ff;color:#6d28d9;font-size:10px">Dòng đặc biệt</span>
+              </div>
+              <div style="font-size:11px;color:#9ca3af;margin-top:3px">Từ XML: &lt;TChat&gt;3&lt;/TChat&gt; — hiển thị để bạn xem xét</div>
+            </td>
+            <td></td>
+            <td class="num" style="color:#059669">—</td>
+            <td class="num" style="color:#dc2626">−4.000</td>
+            <td class="num"><strong style="color:#dc2626">−4.000 ₫</strong></td>
+          </tr>
+
+        </tbody>
+      </table>
+
+      <div style="margin-top:10px;font-size:12px;color:#6b7280;text-align:right">
+        Tổng tiền trên HĐ: <strong style="color:#1e3a8a">316.000 ₫</strong>
+      </div>
+
+    </div><!-- end modal-body -->
+
+    <!-- FOOTER -->
+    <div class="modal-foot">
+      <span id="footer-status" class="unmatched-badge">⚠ Còn 1 sản phẩm chưa ghép</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="closeB1()">Hủy</button>
+        <button class="btn btn-primary" id="confirm-btn" disabled onclick="openB2()">
+          Xác nhận → Mở màn bán hàng
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN B2 – MÀN BÁN HÀNG
+═══════════════════════════════════════════════════ -->
+<div id="screen-b2" style="display:none;flex-direction:column;height:calc(100vh - 48px)">
+
+  <!-- Top bar -->
+  <div class="b2-topbar">
+    <button class="btn btn-ghost btn-sm" onclick="backToList()">← Quay lại danh sách</button>
+    <div style="width:1px;height:20px;background:#e5e7eb"></div>
+    <span class="b2-topbar-label">Khách hàng:</span>
+    <span class="chip chip-blue" style="font-size:12px;padding:4px 12px">👤 Khách lẻ</span>
+    <div style="width:1px;height:20px;background:#e5e7eb"></div>
+    <div class="cqt-ref">📄 HĐ Bán hàng · #118 · 30/04/2026</div>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm">Xem HĐ gốc</button>
+    </div>
+  </div>
+
+  <div style="display:flex;flex:1;overflow:hidden">
+    <!-- LEFT: product table -->
+    <div class="b2-left">
+      <div class="card" style="overflow:hidden">
+        <div style="padding:12px 16px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between">
+          <span style="font-weight:700;font-size:13px;color:#374151">Sản phẩm</span>
+          <span style="font-size:12px;color:#9ca3af">Đơn giá &amp; số lượng có thể chỉnh sửa</span>
+        </div>
+        <table class="b2-products-table">
+          <thead>
+            <tr>
+              <th style="width:36px">STT</th>
+              <th>Tên sản phẩm</th>
+              <th style="text-align:center">Số lượng</th>
+              <th style="text-align:right">Đơn giá</th>
+              <th style="text-align:right">Giảm giá</th>
+              <th style="text-align:right">Tiền thuế</th>
+              <th style="text-align:right">Thành tiền</th>
+              <th style="width:36px"></th>
+            </tr>
+          </thead>
+          <tbody id="b2-tbody">
+            <tr>
+              <td style="color:#9ca3af;text-align:center">1</td>
+              <td>
+                <div class="b2-product-name">KitKat Chunky 38g</div>
+                <div class="b2-product-sub">SP109 · thanh · Kho bán hàng</div>
+              </td>
+              <td>
+                <div class="qty-ctrl" style="justify-content:center">
+                  <button class="qbtn" onclick="changeQty(this,-1)">−</button>
+                  <input type="number" value="1" min="1" oninput="recalc()" class="qty-input">
+                  <button class="qbtn" onclick="changeQty(this,1)">+</button>
+                </div>
+              </td>
+              <td style="text-align:right"><input class="price-input" type="number" value="26000" oninput="recalc()"></td>
+              <td style="text-align:right;color:#9ca3af">0</td>
+              <td style="text-align:right;color:#9ca3af">—</td>
+              <td style="text-align:right;font-weight:600" class="row-total">26.000 ₫</td>
+              <td><button class="del-btn" onclick="deleteRow(this)">🗑</button></td>
+            </tr>
+            <tr>
+              <td style="color:#9ca3af;text-align:center">2</td>
+              <td>
+                <div class="b2-product-name">Xoài sấy dẻo Đà Lạt 500g</div>
+                <div class="b2-product-sub">SP271 · Gói · Kho bán hàng</div>
+              </td>
+              <td>
+                <div class="qty-ctrl" style="justify-content:center">
+                  <button class="qbtn" onclick="changeQty(this,-1)">−</button>
+                  <input type="number" value="2" min="1" oninput="recalc()" class="qty-input">
+                  <button class="qbtn" onclick="changeQty(this,1)">+</button>
+                </div>
+              </td>
+              <td style="text-align:right"><input class="price-input" type="number" value="140000" oninput="recalc()"></td>
+              <td style="text-align:right;color:#9ca3af">0</td>
+              <td style="text-align:right;color:#9ca3af">—</td>
+              <td style="text-align:right;font-weight:600" class="row-total">280.000 ₫</td>
+              <td><button class="del-btn" onclick="deleteRow(this)">🗑</button></td>
+            </tr>
+            <tr>
+              <td style="color:#9ca3af;text-align:center">3</td>
+              <td>
+                <div class="b2-product-name">KitKat Trà Xanh 17g</div>
+                <div class="b2-product-sub">SP105 · thanh · Kho bán hàng</div>
+              </td>
+              <td>
+                <div class="qty-ctrl" style="justify-content:center">
+                  <button class="qbtn" onclick="changeQty(this,-1)">−</button>
+                  <input type="number" value="1" min="1" oninput="recalc()" class="qty-input">
+                  <button class="qbtn" onclick="changeQty(this,1)">+</button>
+                </div>
+              </td>
+              <td style="text-align:right"><input class="price-input" type="number" value="14000" oninput="recalc()"></td>
+              <td style="text-align:right;color:#9ca3af">0</td>
+              <td style="text-align:right;color:#9ca3af">—</td>
+              <td style="text-align:right;font-weight:600" class="row-total">14.000 ₫</td>
+              <td><button class="del-btn" onclick="deleteRow(this)">🗑</button></td>
+            </tr>
+            <tr style="background:#fdf4ff">
+              <td style="color:#9ca3af;text-align:center">4</td>
+              <td>
+                <div class="b2-product-name" style="color:#7c3aed">🏷 Chiết khấu thương mại</div>
+                <div class="b2-product-sub">Dòng chiết khấu từ HĐ thuế</div>
+              </td>
+              <td style="text-align:center;color:#9ca3af">—</td>
+              <td style="text-align:right;color:#9ca3af">—</td>
+              <td style="text-align:right;color:#dc2626;font-weight:600">4.000</td>
+              <td style="text-align:right;color:#9ca3af">—</td>
+              <td style="text-align:right;font-weight:600;color:#dc2626">−4.000 ₫</td>
+              <td><button class="del-btn" onclick="deleteRow(this)">🗑</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- RIGHT: payment panel -->
+    <div class="b2-right">
+
+      <!-- Tiêu đề -->
+      <div style="font-size:14px;font-weight:600;color:var(--color-neutral-800);padding-bottom:12px;border-bottom:1px solid var(--color-neutral-300);margin-bottom:12px">
+        Chi tiết thanh toán
+      </div>
+
+      <!-- Tóm tắt giá -->
+      <div>
+        <div class="pay-row">
+          <label>Tạm tính (3 sản phẩm)</label>
+          <span id="subtotal">320.000 ₫</span>
+        </div>
+        <div class="pay-row discount">
+          <label>Chiết khấu</label>
+          <span id="discount-val">−4.000 ₫</span>
+        </div>
+        <div class="pay-row">
+          <label>Tiền thuế</label>
+          <span style="color:var(--color-neutral-600)">—</span>
+        </div>
+        <div class="pay-row total">
+          <label>Tổng cần thanh toán</label>
+          <span id="total-val">316.000 ₫</span>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div style="height:1px;background:var(--color-neutral-300);margin:14px 0"></div>
+
+      <!-- Ngày tạo -->
+      <div style="margin-bottom:10px">
+        <div style="font-size:12px;font-weight:500;color:var(--color-neutral-700);margin-bottom:6px">Ngày tạo</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--color-neutral-400);border-radius:var(--radius-md);background:#fff">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-neutral-600)" stroke-width="2" style="flex-shrink:0">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <input type="date" value="2026-04-30"
+            style="border:none;outline:none;font-size:13px;color:var(--color-neutral-800);font-family:var(--font-primary);flex:1;background:transparent;cursor:pointer">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary-500)" stroke-width="2" style="cursor:pointer;flex-shrink:0">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Ghi chú -->
+      <div style="margin-bottom:14px">
+        <div style="font-size:12px;font-weight:500;color:var(--color-neutral-700);margin-bottom:6px">Ghi chú</div>
+        <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border:1px solid var(--color-neutral-400);border-radius:var(--radius-md);background:#fff">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-neutral-600)" stroke-width="2" style="flex-shrink:0;margin-top:2px">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          <textarea placeholder="Nhập ghi chú..." rows="2"
+            style="border:none;outline:none;font-size:13px;color:var(--color-neutral-800);font-family:var(--font-primary);width:100%;resize:none;background:transparent;line-height:1.5;"></textarea>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div style="height:1px;background:var(--color-neutral-300);margin-bottom:14px"></div>
+
+      <!-- Nút Lưu đơn -->
+      <button onclick="saveDraft()"
+        style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;background:#fff;border:1px solid var(--color-neutral-400);border-radius:var(--radius-md);cursor:pointer;font-size:14px;font-weight:500;font-family:var(--font-primary);color:var(--color-neutral-800);margin-bottom:8px;transition:.15s"
+        onmouseover="this.style.background='var(--color-neutral-50)'"
+        onmouseout="this.style.background='#fff'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+        </svg>
+        Lưu đơn
+      </button>
+
+      <!-- Nút Thanh toán -->
+      <button onclick="openPayment()"
+        style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;background:var(--color-primary-500);border:none;border-radius:var(--radius-md);cursor:pointer;font-size:14px;font-weight:600;font-family:var(--font-primary);color:#fff;transition:.15s"
+        onmouseover="this.style.background='var(--color-primary-600)'"
+        onmouseout="this.style.background='var(--color-primary-500)'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+        </svg>
+        Thanh toán
+        <span style="font-size:12px;opacity:.75;font-weight:400">(F9)</span>
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PAYMENT POPUP
+═══════════════════════════════════════════════════ -->
+<div id="payment-modal" class="overlay" style="display:none">
+  <div class="modal" style="width:420px;max-height:unset">
+    <div class="modal-head">
+      <h2>💳 Thanh toán</h2>
+      <button class="btn btn-ghost btn-sm" onclick="closePayment()">✕</button>
+    </div>
+    <div class="modal-body" style="overflow:unset">
+      <div style="margin-bottom:14px">
+        <div style="font-size:12px;color:#6b7280;margin-bottom:6px">Số tiền cần thanh toán</div>
+        <div style="font-size:24px;font-weight:700;color:#dc2626">316.000 ₫</div>
+      </div>
+      <div class="separator">Hình thức thanh toán</div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <label style="flex:1;border:2px solid #2563eb;border-radius:8px;padding:10px;cursor:pointer;text-align:center;background:#eff6ff">
+          <input type="radio" name="pay-method" value="cash" checked style="display:none">
+          <div style="font-size:18px">💵</div>
+          <div style="font-size:12px;font-weight:600;color:#1e40af;margin-top:4px">Tiền mặt</div>
+        </label>
+        <label style="flex:1;border:2px solid #e5e7eb;border-radius:8px;padding:10px;cursor:pointer;text-align:center" onclick="selectPayMethod(this)">
+          <input type="radio" name="pay-method" value="transfer" style="display:none">
+          <div style="font-size:18px">🏦</div>
+          <div style="font-size:12px;font-weight:600;color:#374151;margin-top:4px">Chuyển khoản</div>
+        </label>
+        <label style="flex:1;border:2px solid #e5e7eb;border-radius:8px;padding:10px;cursor:pointer;text-align:center" onclick="selectPayMethod(this)">
+          <input type="radio" name="pay-method" value="card" style="display:none">
+          <div style="font-size:18px">💳</div>
+          <div style="font-size:12px;font-weight:600;color:#374151;margin-top:4px">Thẻ</div>
+        </label>
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="font-size:12px;color:#6b7280;display:block;margin-bottom:6px">Tiền khách đưa</label>
+        <input type="number" value="316000" style="width:100%;border:1px solid #d1d5db;border-radius:6px;padding:8px 12px;font-size:15px;text-align:right" id="cash-input" oninput="calcChange()">
+      </div>
+      <div class="pay-row" style="background:#f9fafb;padding:8px 12px;border-radius:6px">
+        <label style="font-weight:600">Tiền thừa</label>
+        <span style="font-weight:700;color:#059669" id="change-val">0 ₫</span>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closePayment()">Hủy</button>
+      <button class="btn btn-success" onclick="alert('✅ Thanh toán thành công!\nĐơn hàng đã được tạo với trạng thái Hoàn thành.\nTồn kho đã được trừ.')">
+        ✓ Xác nhận thanh toán
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════ -->
+<script>
+// ── B1 modal ──────────────────────────────────────
+function openB1() {
+  document.getElementById('modal-b1').style.display = 'flex';
+}
+function closeB1() {
+  document.getElementById('modal-b1').style.display = 'none';
+}
+
+let isMatched = false;
+
+function onSelectProduct(sel) {
+  const val = sel.value;
+  if (!val) return;
+
+  if (val === 'new') {
+    sel.value = '';
+    alert('→ Mở form tạo sản phẩm mới trong popup\n(Nghiệp vụ US-07)\n\nSau khi tạo xong, SP sẽ tự động điền vào dòng này.');
+    return;
+  }
+
+  const names = {
+    SP271: 'Xoài sấy dẻo Đà Lạt 500g',
+    SP272: 'Xoài sấy giòn 500g',
+    SP273: 'Xoài sấy mềm 500g'
+  };
+
+  // Show matched state
+  sel.style.display = 'none';
+  document.getElementById('kh-epos-matched').style.display = 'block';
+  document.getElementById('matched-name').textContent = names[val];
+  document.getElementById('matched-code').innerHTML = val + ' · Gói <span style="background:#d1fae5;color:#065f46;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600">Ghép thủ công</span>';
+
+  // Update row style
+  const row = document.getElementById('row-unmatch');
+  row.className = 'row-ok';
+  document.getElementById('warn-icon').innerHTML = '<span class="icon-ok">✓</span>';
+
+  // Enable kho
+  const khoSel = document.getElementById('kho-select-2');
+  khoSel.disabled = false;
+  khoSel.style.opacity = '1';
+
+  // Update footer
+  document.getElementById('unmatched-counter').className = 'all-matched-badge';
+  document.getElementById('unmatched-counter').textContent = '✓ Tất cả đã ghép';
+  document.getElementById('footer-status').className = 'all-matched-badge';
+  document.getElementById('footer-status').textContent = '✓ Sẵn sàng tạo đơn';
+  document.getElementById('confirm-btn').disabled = false;
+
+  isMatched = true;
+}
+
+function resetSelect() {
+  const sel = document.getElementById('epos-select-2');
+  sel.value = '';
+  sel.style.display = 'block';
+  document.getElementById('kh-epos-matched').style.display = 'none';
+
+  const row = document.getElementById('row-unmatch');
+  row.className = 'row-warn';
+  document.getElementById('warn-icon').outerHTML = '<span class="icon-warn" id="warn-icon">⚠</span>';
+
+  document.getElementById('kho-select-2').disabled = true;
+  document.getElementById('kho-select-2').style.opacity = '.4';
+
+  document.getElementById('unmatched-counter').className = 'unmatched-badge';
+  document.getElementById('unmatched-counter').textContent = '⚠ 1 dòng chưa ghép';
+  document.getElementById('footer-status').className = 'unmatched-badge';
+  document.getElementById('footer-status').textContent = '⚠ Còn 1 sản phẩm chưa ghép';
+  document.getElementById('confirm-btn').disabled = true;
+}
+
+// ── B2 screen ─────────────────────────────────────
+function openB2() {
+  closeB1();
+  document.getElementById('screen-list').style.display = 'none';
+  const b2 = document.getElementById('screen-b2');
+  b2.style.display = 'flex';
+  recalc();
+}
+
+function backToList() {
+  document.getElementById('screen-b2').style.display = 'none';
+  document.getElementById('screen-list').style.display = 'block';
+}
+
+// ── Qty & price ────────────────────────────────────
+function changeQty(btn, delta) {
+  const input = btn.parentElement.querySelector('input');
+  const newVal = Math.max(1, (parseInt(input.value) || 1) + delta);
+  input.value = newVal;
+  recalc();
+}
+
+function fmt(n) {
+  return n.toLocaleString('vi-VN') + ' ₫';
+}
+
+function recalc() {
+  const rows = document.querySelectorAll('#b2-tbody tr');
+  let subtotal = 0;
+  const discount = 4000;
+
+  rows.forEach((row, i) => {
+    const qtyInput = row.querySelector('.qty-input');
+    const priceInput = row.querySelector('.price-input');
+    const totalCell = row.querySelector('.row-total');
+    if (!qtyInput || !priceInput || !totalCell) return;
+    const qty = parseInt(qtyInput.value) || 0;
+    const price = parseInt(priceInput.value) || 0;
+    const total = qty * price;
+    subtotal += total;
+    totalCell.textContent = total.toLocaleString('vi-VN') + ' ₫';
+  });
+
+  document.getElementById('subtotal').textContent = fmt(subtotal);
+  document.getElementById('discount-val').textContent = '−' + fmt(discount);
+  document.getElementById('total-val').textContent = fmt(subtotal - discount);
+}
+
+function deleteRow(btn) {
+  if (!confirm('Xóa dòng sản phẩm này?')) return;
+  btn.closest('tr').remove();
+  recalc();
+}
+
+// ── Save draft ─────────────────────────────────────
+function saveDraft() {
+  alert('💾 Đã lưu đơn nháp thành công!\nĐơn hàng được lưu với trạng thái Nháp.\nTồn kho chưa bị trừ.');
+}
+
+// ── Payment ────────────────────────────────────────
+function openPayment() {
+  document.getElementById('payment-modal').style.display = 'flex';
+}
+function closePayment() {
+  document.getElementById('payment-modal').style.display = 'none';
+}
+function calcChange() {
+  const given = parseInt(document.getElementById('cash-input').value) || 0;
+  const need = 316000;
+  const change = Math.max(0, given - need);
+  document.getElementById('change-val').textContent = change.toLocaleString('vi-VN') + ' ₫';
+}
+function selectPayMethod(label) {
+  document.querySelectorAll('[onclick="selectPayMethod(this)"], label:has([value=cash])')
+    .forEach(l => { l.style.borderColor='#e5e7eb'; l.style.background=''; });
+  label.style.borderColor = '#2563eb';
+  label.style.background = '#eff6ff';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>EasyPOS — Xác nhận thanh toán (Phiên bản 3)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="colors_and_type.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  button{font:inherit;border:none;background:none;cursor:pointer;color:inherit;text-align:left}
+  input{font:inherit;border:none;outline:none;background:none;color:inherit}
+  html,body{height:100%;background:#0d1526;overflow:hidden}
+  body{font-family:var(--font-sans);color:var(--ink);display:flex;align-items:center;justify-content:center}
+
+  /* ===== Canvas 1920x1080 ===== */
+  #stage{width:1920px;height:1080px;position:relative;overflow:hidden;background:var(--surface-page);
+         transform-origin:center center;flex:none}
+
+  /* ===== POS shell behind the modal ===== */
+  .shell{position:absolute;inset:0;display:flex;flex-direction:column;filter:saturate(.85)}
+  .shell-top{height:70px;background:var(--blue-500);display:flex;align-items:center;gap:24px;padding:0 24px;color:#fff;flex:none}
+  .shell-brand{font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:.3px}
+  .shell-search{flex:0 0 380px;height:40px;border-radius:var(--radius-md);background:rgba(255,255,255,.16);
+                display:flex;align-items:center;gap:10px;padding:0 14px;font-size:14px;color:rgba(255,255,255,.8)}
+  .shell-tabs{display:flex;gap:10px}
+  .shell-tab{height:38px;padding:0 18px;border-radius:var(--radius-md);background:rgba(255,255,255,.14);
+             display:flex;align-items:center;font-size:14px;font-weight:500}
+  .shell-tab.on{background:#fff;color:var(--blue-700);font-weight:600}
+  .shell-spacer{flex:1}
+  .shell-body{flex:1;display:flex;gap:16px;padding:16px;min-height:0}
+  .shell-rail{width:72px;background:#fff;border-radius:var(--radius-xl);display:flex;flex-direction:column;
+              align-items:center;gap:6px;padding:12px 0;flex:none}
+  .rail-item{width:52px;height:48px;border-radius:var(--radius-md);display:flex;align-items:center;
+             justify-content:center;color:var(--text-secondary)}
+  .rail-item.on{background:var(--blue-100);color:var(--blue-500)}
+  .shell-panel{background:#fff;border-radius:var(--radius-xl);padding:20px;min-height:0}
+  .shell-cart{flex:0 0 46%;display:flex;flex-direction:column;gap:14px}
+  .shell-pick{flex:1}
+  .sk-row{display:flex;align-items:center;gap:14px}
+  .sk-line{height:12px;border-radius:99px;background:var(--surface-subtle)}
+  .sk-thumb{width:52px;height:52px;border-radius:var(--radius-md);background:var(--surface-subtle);flex:none}
+  .sk-title{height:16px;border-radius:99px;background:#EDEFF2}
+  .sk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px}
+  .sk-card{height:150px;border-radius:var(--radius-lg);background:var(--surface-subtle)}
+
+  /* ===== Overlay + modal ===== */
+  .overlay{position:absolute;inset:0;background:rgba(10,18,35,.5);display:flex;align-items:center;
+           justify-content:center;z-index:50}
+  .overlay.gone{display:none}
+  .modal{width:640px;background:#fff;border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);
+         display:flex;flex-direction:column;overflow:hidden;animation:pop .16s ease}
+  @keyframes pop{from{transform:scale(.97);opacity:0}to{transform:scale(1);opacity:1}}
+
+  /* --- head --- */
+  .m-head{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;
+          border-bottom:1px solid var(--border)}
+  .m-head h2{font-family:var(--font-display);font-size:22px;font-weight:700}
+  .m-head-right{display:flex;align-items:center;gap:12px}
+  .esc-hint{font:var(--caption);color:var(--text-placeholder)}
+  .icon-btn{width:34px;height:34px;border-radius:var(--radius-md);background:var(--surface-subtle);
+            color:var(--text-secondary);display:flex;align-items:center;justify-content:center}
+  .icon-btn:hover{background:#ECEEF1}
+
+  /* --- customer --- */
+  .m-cust{padding:12px 24px;border-bottom:1px solid var(--border)}
+  .cust-row{display:flex;align-items:center;gap:12px}
+  .cust-name{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+  .cust-name b{font-size:15px;font-weight:600;color:var(--blue-600)}
+  .cust-name span{font-size:14px;color:var(--text-secondary)}
+  .pricebook{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border:1px solid var(--border);
+             border-radius:var(--radius-md);font-size:14px;color:var(--text-secondary)}
+  .pricebook:hover{border-color:var(--blue-300)}
+  .debt{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:2px 10px;border-radius:var(--radius-full);
+        background:var(--error-50);color:var(--error-700);font-size:12px;font-weight:600}
+
+  /* --- generic money line --- */
+  .line{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:26px;width:100%}
+  .line .lbl{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text-secondary)}
+  .line .val{font-family:var(--font-num);font-weight:600;font-size:15px;font-variant-numeric:tabular-nums}
+  .line.hide{display:none}
+  .line.deduct .lbl,.line.deduct .val{color:var(--success-700)}
+  .line.strong .lbl{color:var(--ink);font-weight:600}
+  .keycap{font-size:11px;font-weight:700;border-radius:var(--radius-xs);padding:2px 6px;
+          background:var(--blue-100);color:var(--blue-700);letter-spacing:.3px}
+
+  /* --- entry points --- */
+  .m-entry{padding:16px 24px 14px;display:flex;flex-direction:column;gap:12px}
+  .promo{display:flex;align-items:center;gap:10px;height:42px;padding:0 14px;border:1px solid var(--border);
+         border-radius:var(--radius-md);color:var(--text-secondary)}
+  .promo:focus-within{border-color:var(--blue-500)}
+  .promo input{flex:1;font-size:14px;color:var(--ink)}
+  .promo input::placeholder{color:var(--text-placeholder)}
+
+  .disc-head{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text-secondary);width:100%}
+  .disc-head:hover{color:var(--blue-600)}
+  .disc-head .chev{transition:transform .15s ease;flex:none}
+  .disc-head.open .chev{transform:rotate(90deg)}
+  .disc-head .hint{font:var(--caption);color:var(--text-placeholder)}
+  .disc-body{display:none;flex-direction:column;gap:10px;padding:12px 14px;margin-top:8px;
+             background:var(--surface-subtle);border-radius:var(--radius-md)}
+  .disc-body.open{display:flex}
+  .disc-line{display:flex;align-items:center;gap:12px}
+  .disc-line .dl-lbl{flex:1;display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink)}
+  .disc-line .dl-amt{width:110px;height:34px;border:1px solid var(--border);border-radius:var(--radius-sm);
+                     background:#fff;display:flex;align-items:center;justify-content:flex-end;padding:0 10px;
+                     font-family:var(--font-num);font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
+  .disc-line.off .dl-amt{background:var(--surface-subtle);color:var(--text-placeholder);border-color:var(--border-faint)}
+  .disc-line.off .dl-lbl{color:var(--text-placeholder)}
+
+  .sw{width:40px;height:22px;border-radius:var(--radius-full);background:#D6DAE0;position:relative;flex:none;
+      transition:background .15s ease}
+  .sw::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+             background:#fff;box-shadow:var(--shadow-sm);transition:transform .15s ease}
+  .sw.on{background:var(--blue-500)}
+  .sw.on::after{transform:translateX(18px)}
+
+  /* --- detail ladder --- */
+  .detail{margin:0 24px;border-top:1px solid var(--border);padding-top:12px}
+  .det-head{display:flex;align-items:center;gap:8px;width:100%;font-size:13px;font-weight:600;
+            letter-spacing:.03em;color:var(--text-secondary);padding-bottom:4px}
+  .det-head:hover{color:var(--blue-600)}
+  .det-head .chev{transition:transform .15s ease;flex:none}
+  .det-head.open .chev{transform:rotate(90deg)}
+  .det-body{display:none;flex-direction:column;gap:9px;padding:8px 0 2px}
+  .det-body.open{display:flex}
+  .sub-head{width:100%}
+  .sub-head .chev{transition:transform .15s ease;flex:none}
+  .sub-head.open .chev{transform:rotate(90deg)}
+  .sub-head:hover .lbl{color:var(--blue-600)}
+  .sub-body{display:none;flex-direction:column;gap:7px;margin:4px 0 2px 22px;padding-left:12px;
+            border-left:2px solid var(--border)}
+  .sub-body.open{display:flex}
+  .sub-body .line .lbl,.sub-body .line .val{font-size:13px;color:var(--text-tertiary)}
+  .sub-body .line{min-height:20px}
+
+  /* --- due --- */
+  .due{margin:16px 24px 18px;background:var(--blue-50);border-radius:var(--radius-lg);padding:14px 18px;
+       display:flex;align-items:center;justify-content:space-between}
+  .due .lbl{font-size:13px;font-weight:600;letter-spacing:.04em;color:var(--text-secondary)}
+  .due .amt{font-family:var(--font-num);font-weight:700;font-size:34px;line-height:1;color:var(--blue-500);
+            font-variant-numeric:tabular-nums}
+
+  /* --- pay --- */
+  .m-pay{padding:18px 24px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:14px}
+  .methods{display:flex;align-items:center;gap:6px}
+  .method{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:var(--radius-md);
+          font-size:14px;color:var(--text-secondary)}
+  .method:hover{background:var(--surface-subtle)}
+  .method .dot{width:18px;height:18px;border-radius:50%;border:2px solid #C4C9D0;flex:none;position:relative}
+  .method.on{color:var(--blue-600);font-weight:600}
+  .method.on .dot{border-color:var(--blue-500)}
+  .method.on .dot::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--blue-500)}
+  .methods .more{margin-left:auto;width:34px;height:34px;border-radius:var(--radius-md);
+                 border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
+                 color:var(--text-secondary)}
+
+  .tender-lbl{font:var(--label);color:var(--text-secondary)}
+  .tender{display:flex;align-items:center;gap:10px;height:52px;border:1.5px solid var(--border);
+          border-radius:var(--radius-md);padding:0 8px 0 16px}
+  .tender:focus-within{border-color:var(--blue-500)}
+  .tender input{flex:1;text-align:right;font-family:var(--font-num);font-weight:700;font-size:24px;
+                color:var(--ink);font-variant-numeric:tabular-nums}
+  .tender .unit{font-size:18px;color:var(--text-secondary)}
+  .tender .qr{width:38px;height:38px;border-radius:var(--radius-sm);background:var(--blue-100);
+              color:var(--blue-600);display:flex;align-items:center;justify-content:center}
+
+  .denoms{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .denom{height:40px;border-radius:var(--radius-md);background:var(--surface-subtle);
+         font-family:var(--font-num);font-weight:600;font-size:15px;color:var(--ink);
+         font-variant-numeric:tabular-nums;border:1.5px solid transparent;text-align:center}
+  .denom:hover{background:var(--blue-100);color:var(--blue-600)}
+  .denom.exact{background:var(--blue-100);border-color:var(--blue-300);color:var(--blue-700)}
+
+  .change{border-radius:var(--radius-lg);padding:14px 18px;display:flex;align-items:center;
+          justify-content:space-between;background:var(--success-50)}
+  .change .lbl{font-size:13px;font-weight:600;letter-spacing:.04em;color:var(--success-700)}
+  .change .amt{font-family:var(--font-num);font-weight:700;font-size:26px;line-height:1;
+               color:var(--success-700);font-variant-numeric:tabular-nums}
+  .change.short{background:var(--error-50)}
+  .change.short .lbl,.change.short .amt{color:var(--error-700)}
+
+  /* --- foot --- */
+  .m-foot{border-top:1px solid var(--border);padding:14px 24px 18px;display:flex;flex-direction:column;gap:14px;
+          background:var(--surface-page)}
+  .foot-opts{display:flex;align-items:center;justify-content:space-between}
+  .chk{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink)}
+  .box{width:20px;height:20px;border-radius:var(--radius-xs);border:1.5px solid #C4C9D0;flex:none;
+       display:flex;align-items:center;justify-content:center;color:#fff}
+  .box.on{background:var(--blue-500);border-color:var(--blue-500)}
+  .box svg{display:none}
+  .box.on svg{display:block}
+  .einv{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--blue-600);font-weight:500}
+  .foot-acts{display:flex;gap:12px}
+  .btn{height:52px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;gap:10px;
+       font-weight:700;font-size:17px}
+  .btn.sec{flex:0 0 34%;background:var(--blue-100);border:1px solid var(--blue-500);color:var(--blue-500)}
+  .btn.sec:hover{background:#DCEBF6}
+  .btn.pri{flex:1;background:var(--blue-500);color:#fff}
+  .btn.pri:hover{background:var(--blue-600)}
+  .btn.pri:active{transform:translateY(1px)}
+  .btn.pri:disabled{background:#F7F7F7;color:#B0B0B0;cursor:not-allowed;transform:none}
+  .btn .kc{font-size:13px;font-weight:700;border-radius:var(--radius-xs);padding:3px 8px;
+           background:rgba(255,255,255,.22);color:#fff}
+  .btn.pri:disabled .kc{background:#ECECEC;color:#B0B0B0}
+
+  /* ===== state switcher + toast ===== */
+  .states{position:absolute;top:86px;right:20px;z-index:60;display:flex;gap:8px;background:rgba(255,255,255,.94);
+          padding:8px;border-radius:var(--radius-lg);box-shadow:var(--shadow-md)}
+  .states b{font:var(--title-xs);color:var(--text-secondary);align-self:center;padding:0 6px}
+  .st{height:32px;padding:0 14px;border-radius:var(--radius-full);background:var(--surface-subtle);
+      font-size:13px;font-weight:600;color:var(--text-secondary);text-align:center}
+  .st:hover{background:var(--blue-100);color:var(--blue-600)}
+  .st.on{background:var(--blue-500);color:#fff}
+  .reopen{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:40}
+  .reopen.show{display:flex}
+  .toast{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:10px;
+         padding:14px 22px;border-radius:var(--radius-md);background:var(--success-500);color:#fff;
+         font-size:16px;font-weight:600;box-shadow:var(--shadow-lg);z-index:70}
+  .toast.show{display:flex;animation:pop .16s ease}
+</style>
+</head>
+<body>
+
+<div id="stage">
+
+  <!-- ================= POS shell (backdrop) ================= -->
+  <div class="shell">
+    <div class="shell-top">
+      <div class="shell-brand">EasyPOS</div>
+      <div class="shell-search"><i data-lucide="search" style="width:18px;height:18px"></i>Tìm kiếm sản phẩm</div>
+      <div class="shell-tabs">
+        <div class="shell-tab on">Hóa đơn 1</div>
+        <div class="shell-tab">Hóa đơn 2</div>
+        <div class="shell-tab">+</div>
+      </div>
+      <div class="shell-spacer"></div>
+      <i data-lucide="bell" style="width:24px;height:24px"></i>
+      <i data-lucide="settings" style="width:24px;height:24px"></i>
+    </div>
+    <div class="shell-body">
+      <div class="shell-rail">
+        <div class="rail-item on"><i data-lucide="shopping-cart" style="width:24px;height:24px"></i></div>
+        <div class="rail-item"><i data-lucide="package" style="width:24px;height:24px"></i></div>
+        <div class="rail-item"><i data-lucide="users" style="width:24px;height:24px"></i></div>
+        <div class="rail-item"><i data-lucide="receipt" style="width:24px;height:24px"></i></div>
+        <div class="rail-item"><i data-lucide="bar-chart-3" style="width:24px;height:24px"></i></div>
+        <div class="rail-item"><i data-lucide="wallet" style="width:24px;height:24px"></i></div>
+        <div class="rail-item"><i data-lucide="store" style="width:24px;height:24px"></i></div>
+      </div>
+      <div class="shell-panel shell-cart">
+        <div class="sk-title" style="width:200px"></div>
+        <div class="sk-row"><div class="sk-thumb"></div><div style="flex:1"><div class="sk-line" style="width:70%;margin-bottom:8px"></div><div class="sk-line" style="width:40%"></div></div></div>
+        <div class="sk-row"><div class="sk-thumb"></div><div style="flex:1"><div class="sk-line" style="width:55%;margin-bottom:8px"></div><div class="sk-line" style="width:35%"></div></div></div>
+      </div>
+      <div class="shell-panel shell-pick">
+        <div class="sk-title" style="width:260px"></div>
+        <div class="sk-grid">
+          <div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div>
+          <div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div>
+          <div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= state switcher ================= -->
+  <div class="states">
+    <b>Trạng thái</b>
+    <button class="st on" data-state="ok">Đủ tiền</button>
+    <button class="st" data-state="short">Còn thiếu</button>
+    <button class="st" data-state="points">Có áp điểm</button>
+    <button class="st" data-state="clean">Không phụ thu</button>
+  </div>
+
+  <!-- ================= modal ================= -->
+  <div class="overlay" id="overlay">
+    <div class="modal">
+
+      <div class="m-head">
+        <h2>Thanh toán</h2>
+        <div class="m-head-right">
+          <span class="esc-hint">Esc để đóng</span>
+          <button class="icon-btn" id="btnClose"><i data-lucide="x" style="width:18px;height:18px"></i></button>
+        </div>
+      </div>
+
+      <div class="m-cust">
+        <div class="cust-row">
+          <div class="cust-name">
+            <i data-lucide="users" style="width:20px;height:20px;color:var(--blue-500)"></i>
+            <b>Hà Tuấn Phong</b><span>· 0329428493</span>
+          </div>
+          <button class="pricebook">Bảng giá chung <i data-lucide="chevron-down" style="width:16px;height:16px"></i></button>
+        </div>
+        <span class="debt"><i data-lucide="alert-circle" style="width:13px;height:13px"></i>Nợ cũ 25.000đ</span>
+      </div>
+
+      <!-- ===== entry points: luôn hiện dù bằng 0 ===== -->
+      <div class="m-entry">
+        <div class="promo">
+          <i data-lucide="ticket-percent" style="width:18px;height:18px"></i>
+          <input placeholder="Nhập mã khuyến mại">
+        </div>
+
+        <div class="line">
+          <span class="lbl">Giảm giá <span class="keycap">F6</span></span>
+          <span class="val" id="valDiscountEntry">0đ</span>
+        </div>
+
+        <div>
+          <button class="disc-head" id="discHead">
+            <i data-lucide="chevron-right" class="chev" style="width:16px;height:16px"></i>
+            Điểm thưởng / Thẻ khách hàng
+            <span class="hint">(khách có 1.000 điểm)</span>
+          </button>
+          <div class="disc-body" id="discBody">
+            <div class="disc-line off" id="rowPoints">
+              <span class="dl-lbl"><i data-lucide="star" style="width:16px;height:16px"></i>1.000 điểm thưởng</span>
+              <span class="sw" id="swPoints"></span>
+              <span class="dl-amt" id="amtPoints">0đ</span>
+            </div>
+            <div class="disc-line off" id="rowCard">
+              <span class="dl-lbl"><i data-lucide="credit-card" style="width:16px;height:16px"></i>Thẻ khách hàng 125.000đ</span>
+              <span class="sw" id="swCard"></span>
+              <span class="dl-amt" id="amtCard">0đ</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== detail ladder: dòng chỉ-đọc, ẩn khi bằng 0 ===== -->
+      <div class="detail">
+        <button class="det-head open" id="detHead">
+          <i data-lucide="chevron-right" class="chev" style="width:15px;height:15px"></i>
+          CHI TIẾT THANH TOÁN
+        </button>
+        <div class="det-body open" id="detBody">
+
+          <div class="line"><span class="lbl">Tạm tính · 2 sản phẩm</span><span class="val" id="lnSub">140.889đ</span></div>
+
+          <div class="line hide" id="lnDiscount"><span class="lbl">Chiết khấu</span><span class="val">0đ</span></div>
+          <div class="line hide" id="lnPromo"><span class="lbl">Khuyến mại</span><span class="val">0đ</span></div>
+
+          <div class="line deduct hide" id="lnDeduct">
+            <span class="lbl"><i data-lucide="minus" style="width:14px;height:14px"></i>Trừ điểm thưởng / thẻ KH</span>
+            <span class="val" id="valDeduct">0đ</span>
+          </div>
+
+          <div id="surWrap">
+            <button class="line sub-head open" id="surHead">
+              <span class="lbl"><i data-lucide="chevron-right" class="chev" style="width:14px;height:14px"></i>Phụ thu</span>
+              <span class="val" id="lnSur">21.133đ</span>
+            </button>
+            <div class="sub-body open" id="surBody">
+              <div class="line"><span class="lbl">Phí dịch vụ 10%</span><span class="val">14.089đ</span></div>
+              <div class="line"><span class="lbl">Phụ thu khác 5%</span><span class="val">7.044đ</span></div>
+            </div>
+          </div>
+
+          <div class="line strong"><span class="lbl">Tổng tiền trước thuế</span><span class="val" id="lnPreTax">162.022đ</span></div>
+          <div class="line" id="lnTaxRow"><span class="lbl">Tổng tiền thuế</span><span class="val" id="lnTax">11.111đ</span></div>
+
+        </div>
+      </div>
+
+      <div class="due">
+        <span class="lbl">KHÁCH CẦN TRẢ</span>
+        <span class="amt" id="valDue">173.133đ</span>
+      </div>
+
+      <div class="m-pay">
+        <div class="methods">
+          <button class="method on" data-m="cash"><span class="dot"></span>Tiền mặt</button>
+          <button class="method" data-m="bank"><span class="dot"></span>Chuyển khoản</button>
+          <button class="method" data-m="card"><span class="dot"></span>Thẻ</button>
+          <button class="method" data-m="wallet"><span class="dot"></span>Ví</button>
+          <button class="more" title="Hình thức khác"><i data-lucide="more-horizontal" style="width:18px;height:18px"></i></button>
+        </div>
+
+        <div>
+          <label class="tender-lbl" style="display:block;margin-bottom:7px">Tiền khách đưa</label>
+          <div class="tender">
+            <input id="inpTender" value="200.000" inputmode="numeric">
+            <span class="unit">đ</span>
+            <button class="qr" title="Nhận thanh toán bằng mã QR"><i data-lucide="qr-code" style="width:20px;height:20px"></i></button>
+          </div>
+        </div>
+
+        <div class="denoms" id="denoms"></div>
+
+        <div class="change" id="changeBox">
+          <span class="lbl" id="changeLbl">TIỀN THỐI LẠI</span>
+          <span class="amt" id="changeAmt">26.867đ</span>
+        </div>
+      </div>
+
+      <div class="m-foot">
+        <div class="foot-opts">
+          <button class="chk" id="chkPrint">
+            <span class="box on"><i data-lucide="check" style="width:14px;height:14px"></i></span>
+            In hóa đơn <span class="keycap">F10</span>
+          </button>
+          <button class="einv">Thông tin xuất hóa đơn <i data-lucide="chevron-right" style="width:16px;height:16px"></i></button>
+        </div>
+        <div class="foot-acts">
+          <button class="btn sec">In tạm tính</button>
+          <button class="btn pri" id="btnPay">Thanh toán <span class="kc">F9</span></button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="reopen" id="reopen">
+    <button class="btn pri" style="padding:0 32px;flex:none" onclick="openModal()">Mở lại màn thanh toán</button>
+  </div>
+
+  <div class="toast" id="toast"><i data-lucide="check-circle-2" style="width:22px;height:22px"></i>Thanh toán thành công</div>
+</div>
+
+<script>
+/* ---------- format ---------- */
+const fmt   = n => new Intl.NumberFormat('vi-VN').format(Math.round(n));
+const money = n => fmt(n) + 'đ';
+const $ = id => document.getElementById(id);
+
+/* ---------- dữ liệu mẫu: lấy đúng bộ số trong ảnh chụp màn hình thật ----------
+   Tạm tính 140.889 + Phụ thu 21.133 = Trước thuế 162.022
+   Thuế 11.111  →  Cần trả 173.133                                              */
+const SUB       = 140889;   // tạm tính (2 sản phẩm)
+const DISCOUNT  = 0;        // chiết khấu
+const PROMO     = 0;        // khuyến mại
+const SUR_SVC   = 14089;    // phụ thu · phí dịch vụ 10%   ← TÊN DÒNG CON LÀ TẠM ĐẶT
+const SUR_OTHER = 7044;     // phụ thu · khác 5%           ← TÊN DÒNG CON LÀ TẠM ĐẶT
+const POINTS    = 10000;    // 1.000 điểm = 10.000đ
+const CARD      = 125000;   // thẻ khách hàng
+const TAX_RATE  = 11111 / 162022;   // suy ngược từ ảnh ≈ 6,86%
+
+const s = { points:false, card:false, surcharge:true, tender:200000, method:'cash', print:true };
+
+/* ---------- tính tiền ---------- */
+function calc(){
+  const ded    = deduction();
+  const sur    = s.surcharge ? SUR_SVC + SUR_OTHER : 0;
+  const preTax = Math.max(0, SUB - DISCOUNT - PROMO - ded + sur);
+  const tax    = Math.round(preTax * TAX_RATE);
+  return { ded, sur, preTax, tax, due: preTax + tax };
+}
+function deduction(){
+  const p = s.points ? POINTS : 0;
+  const c = s.card ? Math.min(CARD, Math.max(0, SUB - DISCOUNT - PROMO - p)) : 0;
+  return p + c;
+}
+
+/* ---------- mệnh giá gợi ý ---------- */
+function denomList(d){
+  const c = new Set([d]);
+  [1000, 5000, 10000, 50000, 100000].forEach(step => c.add(Math.ceil(d/step)*step));
+  const base = Math.ceil(d/50000)*50000;
+  [1,2,3,4].forEach(k => c.add(base + k*50000));
+  [500000, 1000000].forEach(v => c.add(v));
+  return [...c].filter(v => v >= d).sort((a,b) => a-b).slice(0,8);
+}
+
+/* ---------- render ---------- */
+function render(){
+  const { ded, sur, preTax, tax, due } = calc();
+  const change = s.tender - due;
+
+  /* thang chi tiết — dòng chỉ-đọc ẩn khi bằng 0 */
+  $('lnSub').textContent    = money(SUB);
+  $('lnPreTax').textContent = money(preTax);
+  $('lnTax').textContent    = money(tax);
+  $('lnSur').textContent    = money(sur);
+  $('valDeduct').textContent = '−' + money(ded);
+
+  $('lnDiscount').classList.toggle('hide', DISCOUNT === 0);
+  $('lnPromo').classList.toggle('hide', PROMO === 0);
+  $('lnDeduct').classList.toggle('hide', ded === 0);
+  $('lnTaxRow').classList.toggle('hide', tax === 0);
+  $('surWrap').style.display = sur === 0 ? 'none' : 'block';
+
+  /* điểm thưởng / thẻ KH */
+  $('swPoints').classList.toggle('on', s.points);
+  $('swCard').classList.toggle('on', s.card);
+  $('rowPoints').classList.toggle('off', !s.points);
+  $('rowCard').classList.toggle('off', !s.card);
+  $('amtPoints').textContent = money(s.points ? POINTS : 0);
+  $('amtCard').textContent   = money(s.card ? Math.min(CARD, Math.max(0, SUB - DISCOUNT - PROMO - (s.points?POINTS:0))) : 0);
+
+  /* khách cần trả */
+  $('valDue').textContent = money(due);
+
+  /* mệnh giá */
+  $('denoms').innerHTML = denomList(due).map((v,i) =>
+    `<button class="denom${i===0?' exact':''}" data-v="${v}"${i===0?' title="Vừa đủ"':''}>${fmt(v)}</button>`).join('');
+  $('denoms').querySelectorAll('.denom').forEach(b =>
+    b.onclick = () => { s.tender = +b.dataset.v; $('inpTender').value = fmt(s.tender); render(); });
+
+  /* tiền thối / còn thiếu */
+  const short = change < 0;
+  $('changeBox').classList.toggle('short', short);
+  $('changeLbl').textContent = short ? 'CÒN THIẾU' : 'TIỀN THỐI LẠI';
+  $('changeAmt').textContent = money(Math.abs(change));
+  $('btnPay').disabled = short;
+
+  document.querySelectorAll('.method').forEach(m => m.classList.toggle('on', m.dataset.m === s.method));
+  $('chkPrint').querySelector('.box').classList.toggle('on', s.print);
+}
+
+/* ---------- gập / mở ---------- */
+function toggle(headId, bodyId){
+  $(headId).classList.toggle('open');
+  $(bodyId).classList.toggle('open');
+}
+$('discHead').onclick = () => toggle('discHead','discBody');
+$('detHead').onclick  = () => toggle('detHead','detBody');
+$('surHead').onclick  = () => toggle('surHead','surBody');
+
+$('swPoints').onclick = e => { e.stopPropagation(); s.points = !s.points; render(); };
+$('swCard').onclick   = e => { e.stopPropagation(); s.card   = !s.card;   render(); };
+$('chkPrint').onclick = () => { s.print = !s.print; render(); };
+document.querySelectorAll('.method').forEach(m => m.onclick = () => { s.method = m.dataset.m; render(); });
+
+$('inpTender').oninput = e => {
+  const raw = e.target.value.replace(/\D/g,'');
+  s.tender = +raw || 0;
+  e.target.value = raw ? fmt(s.tender) : '';
+  render();
+};
+
+/* ---------- đóng / mở modal, thanh toán ---------- */
+function openModal(){ $('overlay').classList.remove('gone'); $('reopen').classList.remove('show'); }
+function closeModal(){ $('overlay').classList.add('gone'); $('reopen').classList.add('show'); }
+$('btnClose').onclick = closeModal;
+
+function pay(){
+  if ($('btnPay').disabled) return;
+  const t = $('toast'); t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+$('btnPay').onclick = pay;
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'F9' || (e.key === 'Enter' && document.activeElement.tagName !== 'BUTTON')) { e.preventDefault(); pay(); }
+  if (e.key === 'F10'){ e.preventDefault(); s.print = !s.print; render(); }
+});
+
+/* ---------- 4 trạng thái demo ---------- */
+document.querySelectorAll('.st').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.st').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  const st = b.dataset.state;
+  Object.assign(s, { points:false, card:false, surcharge:true });
+  if (st === 'ok')     s.tender = 200000;
+  if (st === 'short')  s.tender = 150000;
+  if (st === 'points'){ s.points = true; s.tender = 200000; $('discHead').classList.add('open'); $('discBody').classList.add('open'); }
+  if (st === 'clean'){ s.surcharge = false; s.tender = 200000; }
+  if (st !== 'points'){ $('discHead').classList.remove('open'); $('discBody').classList.remove('open'); }
+  $('inpTender').value = fmt(s.tender);
+  openModal(); render();
+});
+
+/* ---------- fit canvas ---------- */
+function fit(){
+  const k = Math.min(window.innerWidth/1920, window.innerHeight/1080);
+  $('stage').style.transform = 'scale(' + k + ')';
+}
+window.addEventListener('resize', fit);
+
+fit(); render();
+lucide.createIcons();
+</script>
+</body>
+</html>

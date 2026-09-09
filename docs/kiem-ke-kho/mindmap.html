@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kiểm kê kho — Sơ đồ tư duy (Giai đoạn 1)</title>
+<style>
+  :root{
+    --bg:#f6f7fb;
+    --panel:#ffffff;
+    --ink:#1d2433;
+    --ink-soft:#5b6577;
+    --line:#c9d0de;
+    --border:#e2e6ef;
+    --shadow:0 1px 2px rgba(20,28,45,.08), 0 4px 12px rgba(20,28,45,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:"Segoe UI",system-ui,-apple-system,"Noto Sans",Arial,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    overflow:hidden;
+  }
+
+  header{
+    position:fixed; inset:0 0 auto 0; z-index:10;
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+    padding:10px 16px;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--border);
+  }
+  header h1{font-size:15px; margin:0; font-weight:650; letter-spacing:.2px}
+  header .sub{font-size:12px; color:var(--ink-soft); margin-left:-8px}
+  .tools{display:flex; gap:6px; margin-left:auto; flex-wrap:wrap}
+  button{
+    font:inherit; font-size:12.5px;
+    padding:6px 11px; border-radius:7px;
+    border:1px solid var(--border); background:#fff; color:var(--ink);
+    cursor:pointer; transition:background .12s, border-color .12s;
+  }
+  button:hover{background:#f0f3f9; border-color:var(--line)}
+  button:active{background:#e6ebf4}
+
+  #stage{position:fixed; inset:0; top:0; cursor:grab}
+  #stage.drag{cursor:grabbing}
+  #canvas{position:absolute; transform-origin:0 0}
+  #wires{position:absolute; left:0; top:0; overflow:visible; pointer-events:none}
+
+  .node{
+    position:absolute;
+    padding:7px 12px;
+    border-radius:9px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-left:4px solid hsl(var(--h) 62% 55%);
+    box-shadow:var(--shadow);
+    font-size:13px; line-height:1.45;
+    white-space:normal; word-break:break-word;
+  }
+  .node.d0{
+    padding:14px 20px;
+    border:none; border-left:none;
+    background:linear-gradient(135deg,#2f3d55,#1d2433);
+    color:#fff;
+    font-size:16px; font-weight:650; text-align:center;
+    border-radius:14px;
+    box-shadow:0 6px 20px rgba(20,28,45,.22);
+  }
+  .node.d1{
+    font-size:14px; font-weight:640;
+    background:hsl(var(--h) 70% 96%);
+    border-color:hsl(var(--h) 45% 82%);
+  }
+  .node.d2{font-weight:560}
+  .node.d3, .node.d4{font-size:12.5px; color:#333c4d; border-left-width:3px}
+  .node .tag{
+    display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.3px;
+    color:hsl(var(--h) 55% 38%); background:hsl(var(--h) 70% 94%);
+    border-radius:4px; padding:1px 5px; margin-right:6px; vertical-align:1px;
+  }
+  .node .note{display:block; font-size:11.5px; color:var(--ink-soft); margin-top:2px}
+
+  .toggle{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:18px; height:18px; border-radius:50%;
+    border:1px solid hsl(var(--h) 40% 70%); background:#fff;
+    color:hsl(var(--h) 50% 40%);
+    font-size:12px; line-height:1; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; padding:0; box-shadow:0 1px 3px rgba(20,28,45,.14);
+  }
+  .toggle:hover{background:hsl(var(--h) 70% 95%)}
+  .toggle.r{right:-9px}
+  .toggle.l{left:-9px}
+  .toggle.on{background:hsl(var(--h) 62% 55%); color:#fff; border-color:transparent}
+
+  footer{
+    position:fixed; left:0; right:0; bottom:0; z-index:10;
+    padding:6px 16px; font-size:11.5px; color:var(--ink-soft);
+    background:rgba(255,255,255,.9); border-top:1px solid var(--border);
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#151922; --panel:#1e2430; --ink:#e8ecf4; --ink-soft:#9aa6bb;
+      --line:#3a4459; --border:#2d3542;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.3);
+    }
+    header,footer{background:rgba(21,25,34,.92)}
+    button{background:#242b38; color:var(--ink)}
+    button:hover{background:#2c3543}
+    .node.d1{background:hsl(var(--h) 30% 20%); border-color:hsl(var(--h) 35% 34%)}
+    .node .tag{color:hsl(var(--h) 60% 72%); background:hsl(var(--h) 35% 22%)}
+    .node.d3,.node.d4{color:#c3ccdb}
+    .toggle{background:#242b38; color:hsl(var(--h) 55% 70%); border-color:hsl(var(--h) 30% 40%)}
+    .node.d0{background:linear-gradient(135deg,#33405a,#232b3a)}
+  }
+
+  @media print{
+    header,footer{display:none}
+    body{overflow:visible; background:#fff}
+    #stage{position:static}
+    #canvas{position:relative; transform:none !important}
+    @page{size:A3 landscape; margin:8mm}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Kiểm kê kho — Sơ đồ tư duy</h1>
+  <span class="sub">Giai đoạn 1: Nghiên cứu giải pháp sơ bộ &middot; 28/08/2026</span>
+  <div class="tools">
+    <button id="expand">Mở rộng tất cả</button>
+    <button id="collapse">Thu gọn</button>
+    <button id="zin">Phóng to</button>
+    <button id="zout">Thu nhỏ</button>
+    <button id="fit">Vừa màn hình</button>
+    <button id="print">In / PDF</button>
+  </div>
+</header>
+
+<div id="stage">
+  <div id="canvas">
+    <svg id="wires"></svg>
+  </div>
+</div>
+
+<footer>Kéo chuột để di chuyển &middot; giữ Ctrl và lăn chuột để phóng to thu nhỏ &middot; bấm nút tròn trên nhánh để bung hoặc thu &middot; nguồn: docs/kiem-ke-kho/gd1-giai-phap-so-bo.md</footer>
+
+<script>
+const DATA = {
+  t: "KIỂM KÊ KHO<span class='note'>Giải pháp sơ bộ — Giai đoạn 1</span>",
+  c: [
+    { t: "Làm rõ yêu cầu", c: [
+      { t: "1. Đặc điểm khách hàng", c: [
+        { t: "Thủ kho là người trực tiếp kiểm kê" },
+        { t: "Mọi loại hình kinh doanh, trừ cửa hàng xăng dầu" },
+        { t: "Mỗi phiếu chỉ một kho, chọn sản phẩm cần đếm<span class='note'>Không kiểm nhiều kho hay nhiều chi nhánh cùng lúc</span>" },
+        { t: "Tần suất kiểm kê do từng khách hàng tự quyết" }
+      ]},
+      { t: "2. Câu chuyện nghiệp vụ", c: [
+        { t: "Đếm thực tế thấy lệch thì mở từng sản phẩm sửa lại tồn" },
+        { t: "Hệ thống tự sinh phiếu nhập hoặc xuất phần chênh lệch" },
+        { t: "Sửa thẳng, không qua bước duyệt của ai" },
+        { t: "<b>Không đúng nguyên tắc kiểm kê kho của kế toán</b><span class='note'>Vì không có phiếu kiểm kê làm căn cứ</span>" },
+        { t: "Quy trình hiện tại", c: [
+          { t: "1. Đếm thực tế tại kho" },
+          { t: "2. So sánh với số trên phần mềm" },
+          { t: "3. Mở từng sản phẩm sửa lại tồn" },
+          { t: "4. Hệ thống sinh phiếu nhập/xuất phần chênh lệch" }
+        ]}
+      ]},
+      { t: "3. Phần mềm đáp ứng", c: [
+        { t: "<span class='tag'>ĐÃ CÓ</span>Chỉnh sửa số lượng tồn trực tiếp trên màn sản phẩm", c: [
+          { t: "Nhập lại số tồn, hệ thống cập nhật tồn hiện có" },
+          { t: "Tự sinh phiếu điều chỉnh nhập/xuất phần chênh lệch" },
+          { t: "Sản phẩm có theo dõi lô thì sửa theo từng lô" }
+        ]},
+        { t: "<span class='tag'>CHƯA CÓ</span>Nghiệp vụ kiểm kê kho đúng chuẩn kế toán", c: [
+          { t: "Chưa có phiếu kiểm kê chốt danh sách sản phẩm cần đếm tại một thời điểm" },
+          { t: "Chưa lưu song song số tồn sổ sách và số đếm thực tế để đối chiếu" },
+          { t: "Không truy vết được ai đã kiểm và kiểm khi nào" }
+        ]}
+      ]},
+      { t: "4. Khó khăn", c: [
+        { t: "Mở lần lượt từng sản phẩm nên mất nhiều thời gian khi kho nhiều mặt hàng" },
+        { t: "Số đếm chỉ ghi trên giấy hoặc file ngoài, sửa xong là mất dấu<span class='note'>Không đối chiếu lại được số sổ sách trước khi sửa với số đã đếm</span>" },
+        { t: "Kế toán không có chứng từ kiểm kê hợp lệ để ghi nhận thừa/thiếu" },
+        { t: "Không quy được trách nhiệm ai sửa, sửa vì lý do gì" },
+        { t: "Người dùng đã trực tiếp phản ánh phần mềm chưa có chức năng này" },
+        { t: "<i>Chưa có số liệu số mã hàng và thời gian mỗi đợt kiểm</i><span class='note'>Đưa vào câu hỏi mở số 5</span>" }
+      ]},
+      { t: "5. Mong muốn", c: [
+        { t: "Có phiếu kiểm kê kho riêng" },
+        { t: "Chọn kho, chọn một hoặc nhiều sản phẩm, sản phẩm theo lô thì chọn tới từng lô" },
+        { t: "Hệ thống tự lấy số tồn sổ sách tại thời điểm kiểm" },
+        { t: "Thủ kho nhập số đếm thực tế, hệ thống tự tính chênh lệch thừa/thiếu" },
+        { t: "Hoàn thành phiếu thì cân bằng tồn theo số thực tế và sinh chứng từ điều chỉnh" },
+        { t: "Lưu phiếu làm bằng chứng ai kiểm và kiểm khi nào" }
+      ]}
+    ]},
+
+    { t: "Yêu cầu nghiệp vụ", c: [
+      { t: "Khả năng thu thập", c: [
+        { t: "Lập phiếu kiểm kê cho một kho, chọn một hoặc nhiều sản phẩm" },
+        { t: "Sản phẩm có theo dõi lô thì chọn tới từng lô cần đếm" },
+        { t: "Hệ thống tự nạp số tồn sổ sách từng dòng tại thời điểm lập phiếu" }
+      ]},
+      { t: "Khả năng xử lý", c: [
+        { t: "Nhận số đếm thực tế người dùng nhập cho từng dòng" },
+        { t: "Tự tính chênh lệch thừa/thiếu theo từng mã và từng lô" },
+        { t: "Tổng hợp số dòng lệch của cả phiếu" }
+      ]},
+      { t: "Khả năng kiểm soát", c: [
+        { t: "Cho kiểm tra và sửa lại số thực tế trước khi hoàn thành phiếu" },
+        { t: "Khi hoàn thành thì cân bằng tồn kho theo số thực tế" },
+        { t: "Tự sinh chứng từ điều chỉnh nhập/xuất đúng phần chênh lệch" }
+      ]},
+      { t: "Khả năng lưu trữ và tra cứu", c: [
+        { t: "Lưu người kiểm, kho, thời điểm kiểm" },
+        { t: "Lưu số sổ sách, số thực tế, chênh lệch của từng dòng" },
+        { t: "Tra cứu lại được để kế toán đối soát" }
+      ]},
+      { t: "<span class='tag'>MỤC TIÊU</span>Mọi điều chỉnh tồn từ kiểm kê đều có phiếu kiểm kê làm căn cứ và chứng từ điều chỉnh đi kèm<span class='note'>Đủ căn cứ cho kế toán ghi nhận thừa/thiếu và quy trách nhiệm người thực hiện</span>" }
+    ]},
+
+    { t: "Giải pháp nghiệp vụ<span class='note'>Tính năng \"Kiểm kê kho\" — phân hệ chứng từ riêng</span>", c: [
+      { t: "Giao diện (UI)", c: [
+        { t: "Menu <b>Kho</b> thêm mục <b>Kiểm kê kho</b>, đặt dưới mục Giao dịch" },
+        { t: "Màn danh sách phiếu kiểm kê<span class='note'>Lọc theo kho, thời gian, người kiểm</span>" },
+        { t: "Màn lập phiếu kiểm kê", c: [
+          { t: "Đầu phiếu: kho, ngày kiểm, người kiểm, ghi chú" },
+          { t: "Lưới dòng kiểm: Sản phẩm — Lô — Tồn sổ sách — Số thực tế — Chênh lệch" }
+        ]},
+        { t: "Màn xem chi tiết phiếu đã hoàn thành, chỉ đọc, phục vụ đối soát" }
+      ]},
+      { t: "Logic xử lý", c: [
+        { t: "Tồn sổ sách do hệ thống tự nạp, người dùng không sửa được" },
+        { t: "Chênh lệch tự tính bằng số thực tế trừ số sổ sách" },
+        { t: "Dòng thừa sinh chứng từ nhập điều chỉnh, dòng thiếu sinh chứng từ xuất điều chỉnh<span class='note'>Dùng lại cơ chế chứng từ điều chỉnh của chức năng sửa tồn hiện có</span>" },
+        { t: "Sản phẩm theo dõi lô thì cân bằng tới từng lô" },
+        { t: "Phiếu kiểm kê <b>không cần bước duyệt</b>" },
+        { t: "Phiếu đã hoàn thành bị khóa, muốn chỉnh phải lập phiếu mới" }
+      ]},
+      { t: "Quy trình mới (Process)", c: [
+        { t: "1. Vào Kiểm kê kho" },
+        { t: "2. Thêm phiếu" },
+        { t: "3. Chọn kho" },
+        { t: "4. Chọn sản phẩm và lô cần đếm" },
+        { t: "5. Hệ thống nạp tồn sổ sách" },
+        { t: "6. Nhập số đếm thực tế" },
+        { t: "7. Lưu nháp nếu đếm dở" },
+        { t: "8. Hoàn thành phiếu, hệ thống cân bằng tồn và sinh chứng từ điều chỉnh" }
+      ]},
+      { t: "Phương án khi vẫn bán hàng lúc đang đếm", c: [
+        { t: "<span class='tag'>ĐÃ CHỐT</span><b>A — Ghi đè tồn theo số đếm thực tế</b><span class='note'>Ưu: tồn sau kiểm đúng bằng số đã đếm, dễ hiểu với thủ kho. Nhược: nuốt mất giao dịch bán phát sinh trong lúc đếm. Khắc phục: cảnh báo khi tồn sổ sách đã đổi kể từ lúc lập phiếu, yêu cầu nạp lại trước khi hoàn thành</span>" },
+        { t: "B — Áp mức chênh lệch lên tồn hiện tại<span class='note'>Ưu: không nuốt giao dịch giữa chừng. Nhược: tồn sau kiểm có thể khác số đã đếm</span>" },
+        { t: "C — Khóa giao dịch trong lúc kiểm<span class='note'>Ưu: số liệu sạch tuyệt đối. Nhược: cửa hàng phải ngừng bán</span>" }
+      ]},
+      { t: "Phạm vi ảnh hưởng", c: [
+        { t: "Dùng lại cơ chế chứng từ điều chỉnh sẵn có<span class='note'>Cần chốt có tách riêng loại chứng từ \"kiểm kê\" để phân biệt nguồn gốc không</span>" },
+        { t: "Báo cáo xuất nhập tồn và báo cáo lợi nhuận<span class='note'>Kiểm tra cách hiển thị và cách tính giá vốn phần thừa/thiếu</span>" },
+        { t: "Nghiệp vụ tồn theo lô — cân bằng phải áp xuống từng lô" },
+        { t: "Bổ sung quyền sử dụng chức năng kiểm kê cho vai trò thủ kho" },
+        { t: "Xác định có làm trên app mobile không<span class='note'>Thủ kho thường cầm điện thoại đi đếm tại kho</span>" }
+      ]}
+    ]},
+
+
+  ]
+};
+
+const HUES = [212, 158, 28, 340, 268];
+const HGAP = 46, VGAP = 12, PAD = 60;
+const MAXW = [260, 210, 230, 300, 300];
+
+const stage = document.getElementById('stage');
+const canvas = document.getElementById('canvas');
+const wires = document.getElementById('wires');
+
+let root, view = {x: 0, y: 0, k: 1};
+
+function build(n, depth, hue, parent){
+  const node = {t: n.t, depth, hue, parent, children: [], collapsed: depth >= 2};
+  (n.c || []).forEach((c, i) => node.children.push(build(c, depth + 1, depth === 0 ? HUES[i % HUES.length] : hue, node)));
+  return node;
+}
+
+function walk(n, fn){ fn(n); n.children.forEach(c => walk(c, fn)); }
+
+function render(){
+  canvas.querySelectorAll('.node').forEach(e => e.remove());
+  const visible = [];
+
+  (function collect(n){
+    visible.push(n);
+    if(!n.collapsed) n.children.forEach(collect);
+  })(root);
+
+  // 1. create + measure
+  visible.forEach(n => {
+    const el = document.createElement('div');
+    el.className = 'node d' + Math.min(n.depth, 4);
+    el.style.setProperty('--h', n.hue);
+    el.style.maxWidth = MAXW[Math.min(n.depth, 4)] + 'px';
+    el.innerHTML = n.t;
+    canvas.appendChild(el);
+    n.el = el;
+    n.w = el.offsetWidth;
+    n.h = el.offsetHeight;
+  });
+
+  // 2. split top-level branches between right and left, balanced by size
+  const tops = root.children;
+  tops.forEach(n => n.size = countLeaves(n));
+  const right = [], left = [];
+  let sr = 0, sl = 0;
+  tops.forEach(n => {
+    if(sr <= sl){ right.push(n); n.side = 1; sr += n.size; }
+    else { left.push(n); n.side = -1; sl += n.size; }
+  });
+  tops.forEach(n => walk(n, d => d.side = n.side));
+
+  // 3. vertical extents
+  [...right, ...left].forEach(measure);
+  const hR = sumH(right), hL = sumH(left);
+  const H = Math.max(hR, hL, root.h);
+
+  root.x = 0; root.cy = H / 2; root.y = root.cy - root.h / 2;
+
+  layoutSide(right, root.w + HGAP, H, 1);
+  layoutSide(left, -HGAP, H, -1);
+
+  // 4. normalise coordinates and paint
+  let minX = 0, minY = 0, maxX = root.w, maxY = H;
+  visible.forEach(n => {
+    minX = Math.min(minX, n.x); minY = Math.min(minY, n.y);
+    maxX = Math.max(maxX, n.x + n.w); maxY = Math.max(maxY, n.y + n.h);
+  });
+  const dx = PAD - minX, dy = PAD - minY;
+  visible.forEach(n => {
+    n.x += dx; n.y += dy; n.cy += dy;
+    n.el.style.left = n.x + 'px';
+    n.el.style.top = n.y + 'px';
+    if(n.children.length && n.depth > 0){
+      const b = document.createElement('button');
+      b.className = 'toggle ' + (n.side === 1 ? 'r' : 'l') + (n.collapsed ? '' : ' on');
+      b.textContent = n.collapsed ? '+' : '−';
+      b.title = n.collapsed ? 'Bung nhánh' : 'Thu nhánh';
+      b.onclick = e => { e.stopPropagation(); n.collapsed = !n.collapsed; render(); };
+      n.el.appendChild(b);
+    }
+  });
+
+  const W = maxX - minX + PAD * 2, TH = maxY - minY + PAD * 2;
+  canvas.style.width = W + 'px';
+  canvas.style.height = TH + 'px';
+  wires.setAttribute('width', W);
+  wires.setAttribute('height', TH);
+  wires.setAttribute('viewBox', `0 0 ${W} ${TH}`);
+
+  let d = '';
+  visible.forEach(n => {
+    if(n.collapsed) return;
+    n.children.forEach(c => {
+      const s = c.side;
+      const x1 = s === 1 ? n.x + n.w : n.x, x2 = s === 1 ? c.x : c.x + c.w;
+      const mx = (x1 + x2) / 2;
+      d += `<path d="M${x1} ${n.cy} C${mx} ${n.cy} ${mx} ${c.cy} ${x2} ${c.cy}" fill="none" stroke="hsl(${c.hue} 45% 62%)" stroke-width="${c.depth <= 1 ? 2.2 : 1.4}" opacity=".8"/>`;
+    });
+  });
+  wires.innerHTML = d;
+  apply();
+}
+
+function countLeaves(n){
+  if(!n.children.length) return 1;
+  return n.children.reduce((a, c) => a + countLeaves(c), 0);
+}
+
+function measure(n){
+  if(!n.children.length || n.collapsed){ n.sub = n.h; return n.sub; }
+  let s = 0;
+  n.children.forEach((c, i) => { s += measure(c); if(i) s += VGAP; });
+  n.sub = Math.max(n.h, s);
+  return n.sub;
+}
+
+function sumH(list){ return list.reduce((a, n, i) => a + n.sub + (i ? VGAP : 0), 0); }
+
+function layoutSide(list, xEdge, H, dir){
+  let top = H / 2 - sumH(list) / 2;
+  list.forEach(n => { place(n, xEdge, top, dir); top += n.sub + VGAP; });
+}
+
+function place(n, x, top, dir){
+  n.cy = top + n.sub / 2;
+  n.y = n.cy - n.h / 2;
+  n.x = dir === 1 ? x : x - n.w;
+  if(!n.children.length || n.collapsed) return;
+  const cx = dir === 1 ? n.x + n.w + HGAP : n.x - HGAP;
+  let t = n.cy - n.children.reduce((a, c, i) => a + c.sub + (i ? VGAP : 0), 0) / 2;
+  n.children.forEach(c => { place(c, cx, t, dir); t += c.sub + VGAP; });
+}
+
+function apply(){
+  canvas.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.k})`;
+}
+
+function fit(){
+  const w = canvas.offsetWidth, h = canvas.offsetHeight;
+  const availW = stage.clientWidth - 20, availH = stage.clientHeight - 100;
+  view.k = Math.min(1, availW / w, availH / h);
+  view.x = (stage.clientWidth - w * view.k) / 2;
+  view.y = 60 + (availH - h * view.k) / 2;
+  apply();
+}
+
+// interactions
+let drag = null;
+stage.addEventListener('mousedown', e => {
+  if(e.target.closest('.toggle')) return;
+  drag = {x: e.clientX - view.x, y: e.clientY - view.y};
+  stage.classList.add('drag');
+});
+window.addEventListener('mousemove', e => {
+  if(!drag) return;
+  view.x = e.clientX - drag.x; view.y = e.clientY - drag.y; apply();
+});
+window.addEventListener('mouseup', () => { drag = null; stage.classList.remove('drag'); });
+stage.addEventListener('wheel', e => {
+  if(!e.ctrlKey) return;
+  e.preventDefault();
+  const f = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+  const k = Math.max(.25, Math.min(2.5, view.k * f));
+  view.x = e.clientX - (e.clientX - view.x) * (k / view.k);
+  view.y = e.clientY - (e.clientY - view.y) * (k / view.k);
+  view.k = k; apply();
+}, {passive: false});
+
+function zoom(f){
+  const k = Math.max(.25, Math.min(2.5, view.k * f));
+  const cx = stage.clientWidth / 2, cy = stage.clientHeight / 2;
+  view.x = cx - (cx - view.x) * (k / view.k);
+  view.y = cy - (cy - view.y) * (k / view.k);
+  view.k = k; apply();
+}
+
+document.getElementById('zin').onclick = () => zoom(1.15);
+document.getElementById('zout').onclick = () => zoom(1 / 1.15);
+document.getElementById('fit').onclick = fit;
+document.getElementById('print').onclick = () => window.print();
+document.getElementById('expand').onclick = () => { walk(root, n => n.collapsed = false); render(); fit(); };
+document.getElementById('collapse').onclick = () => { walk(root, n => n.collapsed = n.depth >= 1); render(); fit(); };
+
+root = build(DATA, 0, 212, null);
+render();
+fit();
+</script>
+</body>
+</html>

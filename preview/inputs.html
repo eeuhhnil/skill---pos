@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><link rel="stylesheet" href="../colors_and_type.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  body{margin:0;font-family:var(--font-sans);background:#fff;color:var(--ink)}
+  .wrap{padding:22px 24px;display:flex;flex-direction:column;gap:14px;max-width:640px}
+  .field{display:flex;align-items:center;gap:8px;height:40px;border:1px solid var(--border);border-radius:6px;padding:0 14px;background:#fff;color:var(--text-secondary);font:var(--body-lg)}
+  .field.focus{border-color:var(--blue-500);box-shadow:0 0 0 3px var(--blue-100)}
+  .field svg{width:20px;height:20px;color:var(--text-secondary)}
+  .field.focus svg{color:var(--blue-500)}
+  .grow{flex:1}
+  .row{display:flex;gap:12px}
+  .lab{font:var(--label);color:var(--text-secondary);margin-bottom:6px;display:block}
+</style></head>
+<body><div class="wrap">
+  <div><span class="lab">Search (default)</span>
+    <div class="field"><i data-lucide="search"></i><span class="grow">Tìm kiếm hàng hóa</span></div></div>
+  <div class="row" style="flex:1">
+    <div style="flex:1"><span class="lab">Text field (focus)</span>
+      <div class="field focus"><span class="grow" style="color:var(--ink)">Khách lẻ</span><i data-lucide="x"></i></div></div>
+    <div style="flex:1"><span class="lab">Dropdown</span>
+      <div class="field"><span class="grow" style="color:var(--ink)">Bảng giá chung</span><i data-lucide="chevron-down"></i></div></div>
+  </div>
+  <div><span class="lab" style="color:var(--error-500)">Error</span>
+    <div class="field" style="border-color:var(--error-500)"><span class="grow" style="color:var(--ink)">0987</span><i data-lucide="alert-circle" style="color:var(--error-500)"></i></div></div>
+</div>
+<script>lucide.createIcons();</script>
+</body></html>

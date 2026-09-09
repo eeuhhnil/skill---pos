@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phương thức thanh toán — Mobile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root{
+      --blue-500:#0074BD; --blue-100:#E6F1F8; --blue-50:#F0F7FB;
+      --ink:#151B33; --text-secondary:#455064; --text-placeholder:#B0B0B0;
+      --surface:#FFFFFF; --surface-page:#F4F6F8; --surface-subtle:#F7F7F7;
+      --border:#E6E6E6; --border-faint:#EEEEEE;
+      --success-700:#1E7D45; --success-500:#2BA45C; --success-50:#E0FFEB;
+      --error-500:#EB5146; --error-50:#FEF3F2;
+      --orange-700:#A15926; --orange-50:#FCF2EB;
+      --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-xl:16px; --radius-full:999px;
+      --font-sans:'Noto Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      --font-display:'Be Vietnam Pro','Noto Sans',sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#e5e5ea;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;padding:32px 0;font-family:var(--font-sans);color:var(--ink);}
+
+    .phone{width:390px;background:var(--surface-page);border-radius:40px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative;height:844px;display:flex;flex-direction:column;}
+
+    .status-bar{background:#fff;display:flex;justify-content:space-between;align-items:center;padding:12px 22px 4px;font-size:13px;font-weight:600;}
+
+    .nav-header{background:#fff;padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border-faint);}
+    .nav-icon{color:var(--ink);display:flex;align-items:center;cursor:pointer;}
+    .nav-title{font-family:var(--font-display);font-size:17px;font-weight:600;flex:1;}
+
+    .content{overflow-y:auto;flex:1;padding-bottom:24px;}
+    .content::-webkit-scrollbar{width:0;}
+
+    .section{margin-top:14px;}
+    .section-head{display:flex;align-items:center;justify-content:space-between;padding:0 16px 8px;}
+    .section-title{font-family:var(--font-display);font-size:14px;font-weight:600;}
+    .btn-new{display:flex;align-items:center;gap:5px;background:var(--blue-500);color:#fff;border:none;border-radius:var(--radius-md);padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-sans);}
+    .btn-new i{width:15px;height:15px;}
+
+    .card{background:#fff;border-radius:var(--radius-lg);margin:0 12px;overflow:hidden;box-shadow:var(--shadow-sm,0 1px 2px rgba(16,24,40,.06));}
+
+    /* Gateway row */
+    .gw-row{display:flex;align-items:center;gap:12px;padding:14px 14px;border-bottom:1px solid var(--border-faint);}
+    .gw-row:last-child{border-bottom:none;}
+    .bank-logo{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:#fff;flex-shrink:0;letter-spacing:.3px;}
+    .logo-vcb{background:#007a3d;} .logo-tcb{background:#e31f26;} .logo-bidv{background:#00833f;}
+    .gw-info{flex:1;min-width:0;}
+    .gw-name{font-size:13.5px;font-weight:500;line-height:1.35;}
+    .gw-sub{font-size:12px;margin-top:3px;color:var(--text-secondary);}
+    .gw-sub.ok{color:var(--success-500);font-weight:600;display:flex;align-items:center;gap:4px;}
+    .gw-sub.ok i{width:14px;height:14px;}
+    .btn-connect{background:var(--blue-500);color:#fff;border:none;padding:7px 16px;border-radius:var(--radius-md);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:var(--font-sans);}
+
+    /* Search */
+    .search-wrap{margin:0 12px 10px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:var(--radius-md);padding:9px 12px;}
+    .search-wrap i{width:18px;height:18px;color:var(--text-placeholder);}
+    .search-wrap input{border:none;outline:none;flex:1;font-size:14px;font-family:var(--font-sans);color:var(--ink);background:none;}
+    .search-wrap input::placeholder{color:var(--text-placeholder);}
+
+    /* Method card item */
+    .method-list{padding:0 12px;display:flex;flex-direction:column;gap:10px;}
+    .method{background:var(--surface-subtle);border-radius:var(--radius-lg);padding:13px 14px;display:flex;align-items:flex-start;gap:10px;}
+    .m-main{flex:1;min-width:0;}
+    .m-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .m-name{font-size:15px;font-weight:700;}
+    .tag{font-size:11px;font-weight:600;padding:2px 9px;border-radius:var(--radius-full);white-space:nowrap;}
+    .tag-basic{background:#fff;color:var(--text-secondary);border:1px solid var(--border);}
+    .tag-qr{background:var(--blue-100);color:var(--blue-500);}
+    .status-pill{margin-top:9px;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 11px;border-radius:var(--radius-full);}
+    .status-pill::before{content:'';width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+    .sp-on{background:var(--success-50);color:var(--success-700);}
+    .sp-on::before{background:var(--success-500);}
+    .sp-off{background:var(--error-50);color:var(--error-500);}
+    .sp-off::before{background:var(--error-500);}
+    .m-menu{background:none;border:none;cursor:pointer;width:32px;height:32px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--text-secondary);flex-shrink:0;}
+    .m-menu:hover{background:#fff;}
+    .m-menu i{width:20px;height:20px;}
+
+    /* Pagination */
+    .pager{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 4px;}
+    .pager .count{font-size:12px;color:var(--text-secondary);}
+    .pager-pages{display:flex;align-items:center;gap:4px;}
+    .pg{min-width:28px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--border);background:#fff;font-size:13px;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+    .pg.on{background:var(--blue-500);color:#fff;border-color:var(--blue-500);font-weight:600;}
+    .pg i{width:15px;height:15px;}
+
+    /* Default setting */
+    .default-card{background:#fff;border-radius:var(--radius-lg);margin:0 12px;padding:14px;}
+    .default-desc{font-size:12px;color:var(--text-secondary);line-height:1.45;margin-bottom:12px;}
+    .select-row{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-radius:var(--radius-md);padding:11px 12px;cursor:pointer;}
+    .select-row .sv{font-size:14.5px;font-weight:500;}
+    .select-row i{width:18px;height:18px;color:var(--text-secondary);}
+
+    .save-wrap{padding:16px 12px 6px;}
+    .btn-save{width:100%;background:var(--blue-500);color:#fff;border:none;border-radius:var(--radius-md);padding:14px;font-size:16px;font-weight:600;cursor:pointer;font-family:var(--font-display);}
+    /* Full-screen push: Thêm mới PTTT */
+    .add-screen{display:none;position:absolute;inset:0;z-index:50;background:var(--surface-page);flex-direction:column;border-radius:40px;overflow:hidden;}
+    .add-screen.show{display:flex;animation:slideIn .24s ease;}
+    @keyframes slideIn{from{transform:translateX(100%);}to{transform:translateX(0);}}
+    .as-body{flex:1;overflow-y:auto;padding-bottom:12px;}
+    .as-body::-webkit-scrollbar{width:0;}
+    .as-card{background:#fff;padding:4px 16px 8px;}
+    .f-row{padding:14px 0;border-bottom:1px solid var(--border-faint);}
+    .f-row:last-child{border-bottom:none;}
+    .f-label{font-size:13px;color:var(--text-secondary);margin-bottom:6px;display:block;}
+    .f-label .req{color:var(--error-500);margin-left:2px;}
+    .f-control{width:100%;border:none;padding:2px 0;font-size:15.5px;font-family:var(--font-sans);color:var(--ink);outline:none;background:none;}
+    .f-control::placeholder{color:var(--text-placeholder);}
+    .f-select{display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+    .f-select span{font-size:15.5px;color:var(--text-placeholder);}
+    .f-select i{width:18px;height:18px;color:var(--text-secondary);}
+    .check-row{display:flex;align-items:center;gap:10px;padding:2px 0;cursor:pointer;}
+    .check-box{width:20px;height:20px;border-radius:5px;border:1.5px solid #C5CAD3;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s;}
+    .check-box i{width:14px;height:14px;color:#fff;opacity:0;transition:.15s;}
+    .check-row.checked .check-box{background:var(--blue-500);border-color:var(--blue-500);}
+    .check-row.checked .check-box i{opacity:1;}
+    .check-text{font-size:14.5px;}
+    .as-footer{display:flex;gap:12px;padding:12px 16px 24px;background:#fff;border-top:1px solid var(--border);}
+    .btn-ghost{flex:1;background:#fff;color:var(--blue-500);border:1.2px solid var(--blue-500);border-radius:var(--radius-md);padding:13px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font-sans);}
+    .btn-primary{flex:1;background:var(--blue-500);color:#fff;border:none;border-radius:var(--radius-md);padding:13px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font-sans);}
+
+    .home-ind{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:130px;height:5px;border-radius:3px;background:#000;opacity:.25;}
+  </style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span>9:01</span>
+    <span style="display:flex;gap:6px;align-items:center;font-size:12px;">●●●  Wifi  🔋</span>
+  </div>
+
+  <!-- Nav -->
+  <div class="nav-header">
+    <span class="nav-icon"><i data-lucide="chevron-left" style="width:24px;height:24px;"></i></span>
+    <span class="nav-title">Phương thức thanh toán</span>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- Cổng thanh toán điện tử -->
+    <div class="section">
+      <div class="section-head"><span class="section-title">Cổng thanh toán điện tử</span></div>
+      <div class="card">
+        <div class="gw-row">
+          <div class="bank-logo logo-vcb">VCB</div>
+          <div class="gw-info">
+            <div class="gw-name">Ngân hàng TMCP Ngoại thương Việt Nam</div>
+            <div class="gw-sub ok"><i data-lucide="check-circle-2"></i> Đã kết nối</div>
+          </div>
+        </div>
+        <div class="gw-row">
+          <div class="bank-logo logo-tcb">TCB</div>
+          <div class="gw-info">
+            <div class="gw-name">Ngân hàng TMCP Kỹ Thương Việt Nam</div>
+            <div class="gw-sub">Chưa kết nối</div>
+          </div>
+          <button class="btn-connect">Kết nối</button>
+        </div>
+        <div class="gw-row">
+          <div class="bank-logo logo-bidv">BIDV</div>
+          <div class="gw-info">
+            <div class="gw-name">Ngân hàng TMCP Đầu tư và Phát triển Việt Nam</div>
+            <div class="gw-sub">Chưa kết nối</div>
+          </div>
+          <button class="btn-connect">Kết nối</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Danh sách phương thức thanh toán -->
+    <div class="section">
+      <div class="section-head">
+        <span class="section-title">Danh sách phương thức thanh toán</span>
+        <button class="btn-new" onclick="openSheet()"><i data-lucide="plus"></i> Thêm mới</button>
+      </div>
+
+      <div class="search-wrap">
+        <i data-lucide="search"></i>
+        <input type="text" placeholder="Nhập tên thẻ" />
+      </div>
+
+      <div class="method-list">
+        <div class="method">
+          <div class="m-main">
+            <div class="m-top"><span class="m-name">abc</span><span class="tag tag-basic">Cơ bản</span></div>
+            <span class="status-pill sp-on">Đang hoạt động</span>
+          </div>
+          <button class="m-menu"><i data-lucide="more-vertical"></i></button>
+        </div>
+        <div class="method">
+          <div class="m-main">
+            <div class="m-top"><span class="m-name">asd</span><span class="tag tag-basic">Cơ bản</span></div>
+            <span class="status-pill sp-on">Đang hoạt động</span>
+          </div>
+          <button class="m-menu"><i data-lucide="more-vertical"></i></button>
+        </div>
+        <div class="method">
+          <div class="m-main">
+            <div class="m-top"><span class="m-name">afg</span><span class="tag tag-basic">Cơ bản</span></div>
+            <span class="status-pill sp-on">Đang hoạt động</span>
+          </div>
+          <button class="m-menu"><i data-lucide="more-vertical"></i></button>
+        </div>
+        <div class="method">
+          <div class="m-main">
+            <div class="m-top"><span class="m-name">VietQR</span><span class="tag tag-qr">VietQR</span></div>
+            <span class="status-pill sp-on">Đang hoạt động</span>
+          </div>
+          <button class="m-menu"><i data-lucide="more-vertical"></i></button>
+        </div>
+        <div class="method">
+          <div class="m-main">
+            <div class="m-top"><span class="m-name">Chuyển khoản</span><span class="tag tag-basic">Cơ bản</span></div>
+            <span class="status-pill sp-off">Ngưng hoạt động</span>
+          </div>
+          <button class="m-menu"><i data-lucide="more-vertical"></i></button>
+        </div>
+        <div class="method">
+          <div class="m-main">
+            <div class="m-top"><span class="m-name">TM/CK</span><span class="tag tag-basic">Cơ bản</span></div>
+            <span class="status-pill sp-on">Đang hoạt động</span>
+          </div>
+          <button class="m-menu"><i data-lucide="more-vertical"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cài đặt mặc định -->
+    <div class="section">
+      <div class="section-head"><span class="section-title">Cài đặt phương thức thanh toán mặc định</span></div>
+      <div class="default-card">
+        <div class="default-desc">Phương thức thanh toán được ưu tiên sử dụng khi xác nhận thanh toán đơn hàng.</div>
+        <label class="field-label" style="font-size:13px;color:var(--text-secondary);display:block;margin-bottom:6px;">Phương thức mặc định</label>
+        <div class="select-row">
+          <span class="sv">Tiền mặt</span>
+          <i data-lucide="chevron-down"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lưu -->
+    <div class="save-wrap">
+      <button class="btn-save">Lưu cài đặt</button>
+    </div>
+
+  </div>
+
+  <!-- ── Màn mới (full-screen): Thêm mới PTTT ── -->
+  <div class="add-screen" id="addScreen">
+    <!-- Status bar -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <span style="display:flex;gap:6px;align-items:center;font-size:12px;">●●●  Wifi  🔋</span>
+    </div>
+    <!-- Nav -->
+    <div class="nav-header">
+      <span class="nav-icon" onclick="closeScreen()"><i data-lucide="chevron-left" style="width:24px;height:24px;"></i></span>
+      <span class="nav-title">Thêm mới PTTT</span>
+    </div>
+
+    <div class="as-body">
+      <div class="as-card" style="margin-top:10px;">
+        <div class="f-row">
+          <label class="f-label">Loại phương thức TT <span class="req">*</span></label>
+          <div class="f-control f-select"><span>Chọn loại phương thức</span><i data-lucide="chevron-down"></i></div>
+        </div>
+        <div class="f-row">
+          <label class="f-label">Tên phương thức <span class="req">*</span></label>
+          <input class="f-control" type="text" placeholder="Nhập..." />
+        </div>
+        <div class="f-row">
+          <label class="f-label">Ngân hàng <span class="req">*</span></label>
+          <div class="f-control f-select"><span>Chọn ngân hàng</span><i data-lucide="chevron-down"></i></div>
+        </div>
+        <div class="f-row">
+          <label class="f-label">Tên ngân hàng hiển thị <span class="req">*</span></label>
+          <input class="f-control" type="text" placeholder="Nhập..." />
+        </div>
+        <div class="f-row">
+          <label class="f-label">Số tài khoản <span class="req">*</span></label>
+          <input class="f-control" type="text" placeholder="Nhập..." />
+        </div>
+        <div class="f-row">
+          <label class="f-label">Tên người hưởng thụ <span class="req">*</span></label>
+          <input class="f-control" type="text" placeholder="Nhập..." />
+        </div>
+      </div>
+
+      <div class="as-card" style="margin-top:10px;">
+        <div class="check-row" onclick="this.classList.toggle('checked')" style="padding:12px 0;">
+          <div class="check-box"><i data-lucide="check"></i></div>
+          <span class="check-text">Kích hoạt phương thức</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="as-footer">
+      <button class="btn-ghost" onclick="closeScreen()">Hủy</button>
+      <button class="btn-primary" onclick="closeScreen()">Lưu</button>
+    </div>
+
+    <div class="home-ind"></div>
+  </div>
+
+  <div class="home-ind"></div>
+
+</div>
+
+<script>
+  function openSheet(){ document.getElementById('addScreen').classList.add('show'); lucide.createIcons(); }
+  function closeScreen(){ document.getElementById('addScreen').classList.remove('show'); }
+  lucide.createIcons();
+</script>
+</body>
+</html>

@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chi tiết sản phẩm (bán hàng) — Giảm giá theo lô</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --color-primary-900: #00314F;
+      --color-primary-800: #004068;
+      --color-primary-700: #005286;
+      --color-primary-600: #006AAC;
+      --color-primary-500: #0074BD;
+      --color-primary-50:  #E6F1F8;
+
+      --color-neutral-900: #000000;
+      --color-neutral-800: #333333;
+      --color-neutral-700: #545454;
+      --color-neutral-600: #8A8A8A;
+      --color-neutral-500: #B0B0B0;
+      --color-neutral-400: #E6E6E6;
+      --color-neutral-300: #EBEBEB;
+      --color-neutral-200: #EEEEEE;
+      --color-neutral-50:  #F7F7F7;
+
+      --color-error: #EB5146;
+      --color-error-bg: #FEF3F2;
+      --color-success: #13C05D;
+
+      --font-primary: 'Inter', sans-serif;
+
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 100px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-primary);
+      background: var(--color-neutral-200);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: var(--spacing-lg);
+    }
+
+    /* ── Overlay ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    /* ── Modal shell ── */
+    .modal {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      width: 800px;
+      max-width: calc(100vw - 32px);
+      max-height: calc(100vh - 48px);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 32px rgba(0,0,0,.18);
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .modal-header {
+      background: var(--color-primary-500);
+      padding: 0 var(--spacing-lg);
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .modal-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 24px;
+    }
+    .modal-close {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: rgba(255,255,255,.18);
+      border-radius: var(--radius-sm);
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .modal-close:hover { background: rgba(255,255,255,.32); }
+
+    /* ── Body ── */
+    .modal-body {
+      padding: var(--spacing-lg);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    /* ── Form grid ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-md) var(--spacing-lg);
+    }
+    .form-grid.full { grid-template-columns: 1fr; }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .field.span-2 { grid-column: 1 / -1; }
+
+    .field-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-neutral-700);
+      line-height: 20px;
+    }
+    .field-label .required { color: var(--color-error); margin-left: 2px; }
+    .field-hint {
+      font-size: 11px;
+      color: var(--color-neutral-600);
+      font-weight: 400;
+    }
+
+    /* ── Input ── */
+    .field-input,
+    .field-select {
+      height: 40px;
+      padding: 0 var(--spacing-md);
+      border: 1px solid var(--color-neutral-400);
+      border-radius: var(--radius-md);
+      font-family: var(--font-primary);
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--color-neutral-800);
+      background: #fff;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+      width: 100%;
+    }
+    .field-input:focus,
+    .field-select:focus {
+      border-color: var(--color-primary-500);
+      box-shadow: 0 0 0 3px var(--color-primary-50);
+    }
+    .field-input.readonly {
+      background: var(--color-neutral-50);
+      color: var(--color-neutral-700);
+      cursor: default;
+    }
+    .field-input.total-pay {
+      font-weight: 700;
+      color: var(--color-primary-700);
+    }
+
+    /* ── Custom select wrapper ── */
+    .select-wrap { position: relative; }
+    .select-wrap .field-select {
+      appearance: none;
+      -webkit-appearance: none;
+      padding-right: 40px;
+      cursor: pointer;
+    }
+    .select-wrap::after {
+      content: "";
+      pointer-events: none;
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 6px solid var(--color-neutral-600);
+    }
+
+    /* ── Divider ── */
+    .divider { height: 1px; background: var(--color-neutral-300); }
+
+    /* ── Batch discount section ── */
+    .batch-section {
+      display: none;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+    .batch-section.visible { display: flex; }
+
+    .batch-section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-neutral-800);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+    .batch-section-title::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--color-neutral-300);
+    }
+
+    .batch-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1px solid var(--color-neutral-300);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      font-size: 13px;
+    }
+    .batch-table thead tr { background: var(--color-neutral-50); }
+    .batch-table th {
+      padding: 9px var(--spacing-md);
+      text-align: left;
+      font-weight: 600;
+      color: var(--color-neutral-700);
+      border-bottom: 1px solid var(--color-neutral-300);
+      white-space: nowrap;
+    }
+    .batch-table th:last-child { text-align: right; }
+
+    .batch-table tbody tr:not(:last-child) td {
+      border-bottom: 1px solid var(--color-neutral-200);
+    }
+    .batch-table tbody tr:hover td { background: var(--color-primary-50); }
+
+    .batch-table td {
+      padding: 8px var(--spacing-md);
+      color: var(--color-neutral-800);
+      vertical-align: middle;
+    }
+    .batch-table td:last-child { text-align: right; }
+
+    .batch-lot { display: flex; align-items: baseline; gap: 6px; }
+    .batch-code { font-weight: 600; color: var(--color-primary-500); }
+    .batch-hsd { font-size: 12px; color: var(--color-neutral-600); }
+    .batch-hsd::before {
+      content: "|";
+      margin-right: 6px;
+      color: var(--color-neutral-400);
+    }
+
+    /* Batch discount input */
+    .batch-discount-input {
+      height: 32px;
+      width: 130px;
+      padding: 0 10px;
+      border: 1px solid var(--color-neutral-400);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-primary);
+      font-size: 13px;
+      color: var(--color-neutral-800);
+      text-align: right;
+      background: #fff;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .batch-discount-input:focus {
+      border-color: var(--color-primary-500);
+      box-shadow: 0 0 0 3px var(--color-primary-50);
+    }
+    .batch-discount-input.error {
+      border-color: var(--color-error);
+      box-shadow: 0 0 0 3px var(--color-error-bg);
+    }
+    .batch-unit { font-size: 12px; color: var(--color-neutral-600); margin-left: 4px; }
+    .batch-err {
+      display: block;
+      font-size: 11px;
+      color: var(--color-error);
+      margin-top: 3px;
+      min-height: 0;
+    }
+
+    /* ── Stepper ── */
+    .stepper {
+      display: inline-flex;
+      align-items: center;
+      height: 32px;
+      border: 1px solid var(--color-neutral-400);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .stepper-btn {
+      flex-shrink: 0;
+      width: 30px;
+      height: 100%;
+      border: none;
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--color-neutral-700);
+      transition: background .15s;
+      user-select: none;
+    }
+    .stepper-btn:hover { background: var(--color-neutral-50); }
+    .stepper-btn.plus { background: var(--color-primary-500); color: #fff; }
+    .stepper-btn.plus:hover { background: var(--color-primary-600); }
+    .stepper-btn.plus:active { background: var(--color-primary-700); }
+    .stepper-divider { width: 1px; height: 18px; background: var(--color-neutral-400); flex-shrink: 0; }
+    .stepper-value {
+      width: 36px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-neutral-800);
+      background: #fff;
+      border: none;
+      outline: none;
+      cursor: default;
+      font-family: var(--font-primary);
+    }
+
+    .batch-total-row td {
+      font-weight: 600;
+      background: var(--color-neutral-50);
+      color: var(--color-neutral-800);
+      border-top: 1px solid var(--color-neutral-300) !important;
+    }
+
+    /* ── Footer ── */
+    .modal-footer {
+      padding: var(--spacing-md) var(--spacing-lg);
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--spacing-sm);
+      border-top: 1px solid var(--color-neutral-300);
+      flex-shrink: 0;
+    }
+
+    .btn {
+      height: 40px;
+      padding: 0 var(--spacing-lg);
+      border-radius: var(--radius-md);
+      font-family: var(--font-primary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: none;
+      transition: background .15s, color .15s, box-shadow .15s;
+      line-height: 1;
+    }
+    .btn-outline {
+      background: #fff;
+      border: 1px solid var(--color-neutral-400);
+      color: var(--color-neutral-800);
+    }
+    .btn-outline:hover { background: var(--color-neutral-50); border-color: var(--color-neutral-500); }
+    .btn-primary { background: var(--color-primary-500); color: #fff; }
+    .btn-primary:hover { background: var(--color-primary-600); }
+    .btn-primary:active { background: var(--color-primary-700); }
+  </style>
+</head>
+<body>
+
+<div class="overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+
+    <!-- Header -->
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Chi tiết sản phẩm</span>
+      <button class="modal-close" title="Đóng" onclick="closeModal()">✕</button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+
+      <!-- Row 1: Tên sản phẩm / Đơn vị -->
+      <div class="form-grid">
+        <div class="field">
+          <label class="field-label">Tên sản phẩm</label>
+          <input class="field-input" type="text" value="Test lô" />
+        </div>
+        <div class="field">
+          <label class="field-label">Đơn vị</label>
+          <input class="field-input" type="text" value="Bao" />
+        </div>
+      </div>
+
+      <!-- Row 2: Đơn giá / Số lượng -->
+      <div class="form-grid">
+        <div class="field">
+          <label class="field-label">Đơn giá</label>
+          <input class="field-input" id="unit-price" type="text" value="13.000" oninput="recalc()" />
+        </div>
+        <div class="field">
+          <label class="field-label">
+            Số lượng
+            <span class="field-hint">— tự tính theo lô</span>
+          </label>
+          <input class="field-input readonly" id="quantity" type="text" value="3" readonly />
+        </div>
+      </div>
+
+      <!-- Row 3: Thành tiền -->
+      <div class="form-grid full">
+        <div class="field">
+          <label class="field-label">Thành tiền</label>
+          <input class="field-input readonly" id="amount" type="text" value="39.000" readonly />
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Row 4: Kiểu giảm giá / Tổng tiền giảm giá -->
+      <div class="form-grid">
+        <div class="field">
+          <label class="field-label">Kiểu giảm giá</label>
+          <div class="select-wrap">
+            <select class="field-select" id="discount-type" onchange="onDiscountTypeChange(this.value)">
+              <option value="">-- Không giảm giá --</option>
+              <option value="value" selected>Giảm theo giá trị</option>
+              <option value="percent">Giảm theo phần trăm</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label" id="discount-amount-label">Tổng tiền giảm giá</label>
+          <input class="field-input readonly" id="discount-amount" type="text" value="3.000" readonly />
+        </div>
+      </div>
+
+      <!-- Batch discount section (visible when SP có ≥ 2 lô) -->
+      <div class="batch-section visible" id="batch-section">
+        <div class="batch-section-title">Giảm giá theo lô</div>
+        <table class="batch-table">
+          <thead>
+            <tr>
+              <th>Lô hàng</th>
+              <th>Số lượng</th>
+              <th id="th-discount-label">Giảm giá (đ)</th>
+            </tr>
+          </thead>
+          <tbody id="batch-body"><!-- rows injected by JS --></tbody>
+          <tfoot>
+            <tr class="batch-total-row">
+              <td colspan="2">Tổng giảm giá</td>
+              <td id="batch-total">3.000 đ</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Row 5: Tổng tiền thanh toán -->
+      <div class="form-grid full">
+        <div class="field">
+          <label class="field-label">Tổng tiền thanh toán</label>
+          <input class="field-input readonly total-pay" id="total-pay" type="text" value="36.000" readonly />
+        </div>
+      </div>
+
+      <!-- Row 6: Nhân viên phục vụ -->
+      <div class="form-grid full">
+        <div class="field">
+          <label class="field-label">Nhân viên phục vụ</label>
+          <div class="select-wrap">
+            <select class="field-select">
+              <option selected>HỘ KINH DOANH TIẾN PHÁT</option>
+              <option>Nguyễn Văn A</option>
+              <option>Trần Thị B</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.modal-body -->
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Hủy bỏ</button>
+      <button class="btn btn-primary" onclick="saveData()">Lưu</button>
+    </div>
+
+  </div><!-- /.modal -->
+</div><!-- /.overlay -->
+
+<script>
+  // ── Dữ liệu lô (demo) ──
+  const lots = [
+    { id: 'lh101', code: 'LH101', hsd: '30/9/2026',  qty: 2, discount: '2.000' },
+    { id: 'lh100', code: 'LH100', hsd: '31/10/2026', qty: 1, discount: '1.000' },
+  ];
+
+  function parseNum(str) {
+    return parseFloat((str || '0').toString().replace(/\./g, '').replace(/,/g, '.')) || 0;
+  }
+  function formatNum(n) { return Math.round(n).toLocaleString('vi-VN'); }
+
+  function unitPrice() { return parseNum(document.getElementById('unit-price').value); }
+
+  // ── Render bảng lô ──
+  function renderBatch() {
+    const type = document.getElementById('discount-type').value;
+    const unit = type === 'percent' ? '%' : 'đ';
+    const body = document.getElementById('batch-body');
+    body.innerHTML = lots.map(l => `
+      <tr>
+        <td>
+          <div class="batch-lot">
+            <span class="batch-code">${l.code}</span>
+            <span class="batch-hsd">HSD: ${l.hsd}</span>
+          </div>
+        </td>
+        <td>
+          <div class="stepper">
+            <button class="stepper-btn minus" onclick="stepBatch('${l.id}',-1)">−</button>
+            <div class="stepper-divider"></div>
+            <input class="stepper-value" id="qty-${l.id}" type="text" value="${l.qty}" readonly />
+            <div class="stepper-divider"></div>
+            <button class="stepper-btn plus" onclick="stepBatch('${l.id}',1)">+</button>
+          </div>
+        </td>
+        <td>
+          <input class="batch-discount-input" id="disc-${l.id}" type="text"
+                 value="${l.discount}" placeholder="0"
+                 oninput="onDiscountInput('${l.id}', this.value)" />
+          <span class="batch-unit" id="unit-${l.id}">${unit}</span>
+          <span class="batch-err" id="err-${l.id}"></span>
+        </td>
+      </tr>
+    `).join('');
+    recalc();
+  }
+
+  function stepBatch(id, delta) {
+    const lot = lots.find(l => l.id === id);
+    lot.qty = Math.max(0, lot.qty + delta);
+    document.getElementById('qty-' + id).value = lot.qty;
+    // % thì giảm giá phụ thuộc SL → validate lại
+    validateAndStore(id, document.getElementById('disc-' + id).value);
+    recalc();
+  }
+
+  function onDiscountInput(id, val) {
+    validateAndStore(id, val);
+    recalc();
+  }
+
+  // Ràng buộc trần: VND ≤ SL×đơn giá; % ≤ 100
+  function validateAndStore(id, val) {
+    const type   = document.getElementById('discount-type').value;
+    const lot    = lots.find(l => l.id === id);
+    const input  = document.getElementById('disc-' + id);
+    const errEl  = document.getElementById('err-' + id);
+    const num    = parseNum(val);
+    const lineAmt = lot.qty * unitPrice();
+    let err = '';
+
+    if (type === 'percent') {
+      if (num > 100) err = 'Tối đa 100%';
+    } else {
+      if (num > lineAmt) err = 'Vượt thành tiền lô (' + formatNum(lineAmt) + 'đ)';
+    }
+    lot.discount = val;
+    if (err) { input.classList.add('error'); errEl.textContent = err; }
+    else     { input.classList.remove('error'); errEl.textContent = ''; }
+  }
+
+  // Tiền giảm thực của 1 lô (quy về VND)
+  function lotDiscountAmount(lot) {
+    const type = document.getElementById('discount-type').value;
+    const num  = parseNum(lot.discount);
+    if (type === 'percent') return (lot.qty * unitPrice()) * num / 100;
+    return num;
+  }
+
+  function recalc() {
+    const type = document.getElementById('discount-type').value;
+
+    // Số lượng = Σ SL lô
+    const totalQty = lots.reduce((s, l) => s + l.qty, 0);
+    document.getElementById('quantity').value = totalQty;
+
+    // Thành tiền = Σ SL × đơn giá
+    const amount = totalQty * unitPrice();
+    document.getElementById('amount').value = formatNum(amount);
+
+    // Tổng tiền giảm giá = Σ tiền giảm các lô
+    const totalDiscount = lots.reduce((s, l) => s + lotDiscountAmount(l), 0);
+    document.getElementById('discount-amount').value = formatNum(totalDiscount);
+
+    // Tổng dòng bảng lô — theo đơn vị đang chọn
+    if (type === 'percent') {
+      const sumPct = lots.reduce((s, l) => s + parseNum(l.discount), 0);
+      document.getElementById('batch-total').textContent = formatNum(totalDiscount) + ' đ';
+    } else {
+      document.getElementById('batch-total').textContent = formatNum(totalDiscount) + ' đ';
+    }
+
+    // Tổng tiền thanh toán = Thành tiền − Tổng giảm
+    document.getElementById('total-pay').value = formatNum(Math.max(0, amount - totalDiscount));
+  }
+
+  function onDiscountTypeChange(val) {
+    const section     = document.getElementById('batch-section');
+    const amountLabel = document.getElementById('discount-amount-label');
+    const thLabel     = document.getElementById('th-discount-label');
+
+    if (val === '') {
+      section.classList.remove('visible');
+      amountLabel.textContent = 'Tiền giảm giá';
+    } else {
+      section.classList.add('visible');
+      amountLabel.textContent = 'Tổng tiền giảm giá';
+      thLabel.textContent = (val === 'percent') ? 'Giảm giá (%)' : 'Giảm giá (đ)';
+      // Đổi kiểu → XÓA TRẮNG giảm giá tất cả lô về 0
+      lots.forEach(l => { l.discount = ''; });
+      renderBatch();
+      return;
+    }
+    recalc();
+  }
+
+  function closeModal() { document.querySelector('.overlay').style.display = 'none'; }
+  function saveData() {
+    const hasErr = lots.some(l => document.getElementById('err-' + l.id).textContent);
+    if (hasErr) { alert('Còn lô có giảm giá vượt giới hạn — vui lòng kiểm tra lại.'); return; }
+    alert('Đã lưu giảm giá theo lô!');
+  }
+
+  // Init
+  renderBatch();
+</script>
+</body>
+</html>

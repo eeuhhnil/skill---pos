@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kho hàng — Quản lý kho — Mobile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root{
+      --blue-500:#0074BD; --blue-100:#E6F1F8; --blue-50:#F0F7FB;
+      --ink:#151B33; --text-secondary:#455064; --text-placeholder:#B0B0B0;
+      --surface:#FFFFFF; --surface-page:#F4F6F8; --border:#E6E6E6; --border-faint:#EEEEEE;
+      --success-500:#2BA45C; --success-700:#1E7D45; --success-50:#E0FFEB;
+      --orange-500:#E37E36;
+      --radius-xs:4px; --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-xl:16px; --radius-full:999px;
+      --font-sans:'Noto Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      --font-display:'Be Vietnam Pro','Noto Sans',sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#e5e5ea;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;padding:32px 0;font-family:var(--font-sans);color:var(--ink);}
+
+    /* Phone frame */
+    .phone{width:390px;background:var(--surface-page);border-radius:40px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative;height:844px;display:flex;flex-direction:column;}
+
+    /* Status bar */
+    .status-bar{background:#fff;display:flex;justify-content:space-between;align-items:center;padding:12px 22px 4px;font-size:13px;font-weight:600;}
+
+    /* Nav header */
+    .nav-header{background:#fff;padding:8px 14px 12px;display:flex;align-items:center;gap:8px;}
+    .nav-icon{color:var(--ink);display:flex;align-items:center;cursor:pointer;}
+    .nav-title{font-family:var(--font-display);font-size:19px;font-weight:700;flex:1;}
+    .nav-add{width:30px;height:30px;border-radius:var(--radius-md);border:1.5px solid var(--blue-500);display:flex;align-items:center;justify-content:center;color:var(--blue-500);cursor:pointer;}
+
+    /* Search */
+    .search-wrap{background:#fff;padding:2px 14px 12px;display:flex;align-items:center;gap:10px;}
+    .search-box{flex:1;display:flex;align-items:center;gap:8px;background:var(--surface-page);border:1px solid var(--border);border-radius:var(--radius-md);padding:9px 12px;}
+    .search-box i{width:18px;height:18px;color:var(--text-placeholder);flex-shrink:0;}
+    .search-box input{border:none;outline:none;background:none;font-size:14px;font-family:var(--font-sans);color:var(--ink);width:100%;}
+    .search-box input::placeholder{color:var(--text-placeholder);}
+    .filter-btn{width:40px;height:40px;border-radius:var(--radius-md);background:var(--blue-500);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;cursor:pointer;}
+    .filter-btn i{width:20px;height:20px;}
+
+    /* Month filter row (chỉ hiện ở tab giao dịch) */
+    .month-filter{background:#fff;padding:2px 14px 14px;display:flex;align-items:center;gap:8px;font-size:15px;}
+    .month-filter i{width:20px;height:20px;color:var(--blue-500);}
+    .month-filter .mf-label{color:var(--text-secondary);}
+    .month-filter .mf-val{font-weight:700;color:var(--ink);}
+
+    /* Summary row (chỉ hiện ở tab giao dịch) */
+    .summary{background:#fff;display:flex;padding:14px 16px 16px;border-bottom:1px solid var(--border-faint);}
+    .sum-col{flex:1;}
+    .sum-col + .sum-col{border-left:1px solid var(--border);padding-left:16px;text-align:right;}
+    .sum-label{font-size:14px;color:var(--text-secondary);margin-bottom:6px;}
+    .sum-val{display:flex;align-items:center;gap:8px;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;}
+    .sum-col + .sum-col .sum-val{justify-content:flex-end;}
+    .sum-val i{width:22px;height:22px;flex-shrink:0;}
+    .sum-in i{color:var(--success-500);}
+    .sum-out i{color:var(--orange-500);}
+
+    /* Tabs */
+    .tabs-wrap{background:#fff;display:flex;align-items:center;border-bottom:1px solid var(--border);}
+    .tabs-menu{padding:0 12px;color:var(--text-secondary);display:flex;align-items:center;cursor:pointer;}
+    .tabs-menu i{width:22px;height:22px;}
+    .tabs{display:flex;flex:1;overflow-x:auto;scrollbar-width:none;}
+    .tabs::-webkit-scrollbar{height:0;}
+    .tab{white-space:nowrap;padding:13px 14px;font-size:15px;font-weight:500;color:var(--text-secondary);cursor:pointer;position:relative;}
+    .tab.active{color:var(--blue-500);font-weight:700;}
+    .tab.active::after{content:'';position:absolute;left:14px;right:14px;bottom:-1px;height:2.5px;border-radius:2px;background:var(--blue-500);}
+
+    /* Scroll content */
+    .content{overflow-y:auto;flex:1;padding-bottom:24px;}
+    .content::-webkit-scrollbar{width:0;}
+
+    /* Transaction card (Nhập/Xuất/Chuyển) */
+    .tx-card{background:#fff;margin-top:10px;padding:14px 16px 16px;}
+    .tx-badge{display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:var(--radius-full);background:var(--success-50);color:var(--success-700);margin-bottom:10px;}
+    .tx-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+    .tx-code{font-family:var(--font-display);font-size:18px;font-weight:700;}
+    .tx-more{color:var(--text-secondary);cursor:pointer;}
+    .tx-more i{width:20px;height:20px;}
+    .kv{display:flex;align-items:center;justify-content:space-between;padding:5px 0;}
+    .kv .k{font-size:15px;color:var(--text-secondary);}
+    .kv .v{font-size:15px;font-weight:700;color:var(--ink);text-align:right;font-variant-numeric:tabular-nums;}
+
+    /* Warehouse card (Quản lý kho) */
+    .wh-card{background:#fff;margin-top:10px;padding:14px 16px 16px;}
+    .wh-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border-faint);}
+    .wh-code{font-family:var(--font-display);font-size:18px;font-weight:700;display:flex;align-items:center;gap:9px;}
+    .wh-code i{width:20px;height:20px;color:var(--blue-500);}
+    .wh-badge{font-size:12px;font-weight:600;padding:3px 10px;border-radius:var(--radius-full);background:var(--success-50);color:var(--success-700);white-space:nowrap;}
+    .wh-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:5px 0;}
+    .wh-row .k{font-size:15px;color:var(--text-secondary);flex-shrink:0;}
+    .wh-row .v{font-size:15px;font-weight:600;color:var(--ink);text-align:right;font-variant-numeric:tabular-nums;}
+    .wh-row .v.muted{color:var(--text-placeholder);font-weight:500;}
+
+    .home-ind{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:130px;height:5px;border-radius:3px;background:#000;opacity:.25;}
+    .content{padding-bottom:34px;}
+    .wh-card{cursor:pointer;transition:background .12s;}
+    .wh-card:active{background:var(--blue-50);}
+
+    /* ============ Chi tiết kho (overlay) ============ */
+    .detail-screen{position:absolute;inset:0;background:#fff;display:none;flex-direction:column;z-index:20;}
+    .detail-screen .status-bar{border-bottom:1px solid var(--border-faint);}
+    .d-body{flex:1;overflow-y:auto;background:#fff;}
+    .d-body::-webkit-scrollbar{width:0;}
+    .d-field{padding:12px 16px;border-bottom:1px solid var(--border-faint);display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:default;}
+    .d-field.pick{cursor:pointer;}
+    .d-field .d-main{flex:1;min-width:0;}
+    .d-label{font-size:14px;color:var(--text-secondary);margin-bottom:4px;}
+    .d-label .req{color:#EB5146;margin-left:1px;}
+    .d-value{font-size:17px;font-weight:700;color:var(--ink);word-break:break-word;}
+    .d-value.placeholder{color:var(--text-placeholder);font-weight:400;}
+    .d-field .chev{width:22px;height:22px;color:var(--text-secondary);flex-shrink:0;}
+    .d-footer{padding:12px 16px 30px;background:#fff;border-top:1px solid var(--border-faint);}
+    .btn-update{width:100%;background:var(--blue-500);color:#fff;border:none;border-radius:var(--radius-md);padding:14px;font-size:16px;font-weight:700;font-family:var(--font-display);cursor:pointer;}
+
+    /* ⋮ menu */
+    .d-scrim{position:absolute;inset:0;z-index:25;display:none;}
+    .d-scrim.open{display:block;}
+    .d-menu{position:absolute;top:50px;right:14px;background:#fff;border-radius:var(--radius-lg);box-shadow:0 4px 12px rgba(16,24,40,.15);min-width:186px;overflow:hidden;z-index:30;display:none;}
+    .d-menu.open{display:block;}
+    .d-menu-item{padding:13px 16px;font-size:15px;font-weight:500;display:flex;align-items:center;gap:11px;cursor:pointer;color:var(--ink);}
+    .d-menu-item i{width:19px;height:19px;flex-shrink:0;}
+    .d-menu-item:active{background:var(--surface-page);}
+    .d-menu-item + .d-menu-item{border-top:1px solid var(--border-faint);}
+    .d-menu-item.danger{color:#EB5146;}
+
+    /* ============ Bộ lọc (overlay) ============ */
+    .filter-btn{position:relative;}
+    .filter-btn.has-filter::after{content:'';position:absolute;top:5px;right:5px;width:9px;height:9px;border-radius:50%;background:#fff;border:2px solid var(--blue-500);}
+    .filter-screen{position:absolute;inset:0;background:var(--surface-page);display:none;flex-direction:column;z-index:22;}
+    .filter-screen .status-bar{background:#fff;}
+    .filter-screen .nav-header{border-bottom:1px solid var(--border-faint);}
+    .f-body{flex:1;overflow-y:auto;padding:16px;}
+    .f-body::-webkit-scrollbar{width:0;}
+    .f-label{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:10px;}
+    .f-dropdown{background:#fff;border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+    .f-dropdown.open{border-radius:var(--radius-md) var(--radius-md) 0 0;border-color:var(--blue-500);}
+    .f-dropdown .fd-val{font-size:15px;color:var(--ink);}
+    .f-dropdown .fd-chev{width:20px;height:20px;color:var(--text-secondary);transition:transform .2s;}
+    .f-dropdown.open .fd-chev{transform:rotate(180deg);color:var(--blue-500);}
+    .f-menu{background:#fff;border:1px solid var(--blue-500);border-top:none;border-radius:0 0 var(--radius-md) var(--radius-md);overflow:hidden;display:none;}
+    .f-menu.open{display:block;}
+    .f-opt{padding:12px 14px;font-size:15px;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
+    .f-opt + .f-opt{border-top:1px solid var(--border-faint);}
+    .f-opt.sel{background:var(--blue-50);color:var(--blue-500);font-weight:600;}
+    .f-opt i{width:18px;height:18px;color:var(--blue-500);opacity:0;}
+    .f-opt.sel i{opacity:1;}
+    .f-footer{display:flex;gap:12px;padding:12px 16px 26px;background:#fff;border-top:1px solid var(--border-faint);}
+    .btn-reset{flex:1;background:var(--blue-50);color:var(--blue-500);border:1px solid var(--blue-200);border-radius:var(--radius-md);padding:13px;font-size:15px;font-weight:600;font-family:var(--font-sans);cursor:pointer;}
+    .btn-apply{flex:1;background:var(--blue-500);color:#fff;border:none;border-radius:var(--radius-md);padding:13px;font-size:15px;font-weight:700;font-family:var(--font-display);cursor:pointer;}
+    .wh-empty{display:none;text-align:center;color:var(--text-placeholder);padding:48px 16px;font-size:15px;}
+
+    /* ============ Thêm mới kho (overlay) ============ */
+    .add-screen{position:absolute;inset:0;background:#fff;display:none;flex-direction:column;z-index:23;}
+    .add-screen .status-bar{border-bottom:1px solid var(--border-faint);}
+    .a-body{flex:1;overflow-y:auto;padding:4px 16px;}
+    .a-body::-webkit-scrollbar{width:0;}
+    .a-field{padding:14px 0;border-bottom:1px solid var(--border-faint);}
+    .a-label{font-size:14px;color:var(--text-secondary);margin-bottom:6px;}
+    .a-label .req{color:#EB5146;margin-left:1px;}
+    .a-input{width:100%;border:none;outline:none;font-size:16px;font-family:var(--font-sans);color:var(--ink);background:none;padding:2px 0;}
+    .a-input::placeholder{color:var(--text-placeholder);}
+    .a-hint{font-size:12px;color:#EB5146;margin-top:6px;}
+    .a-check{display:flex;align-items:center;gap:10px;padding:18px 0;cursor:pointer;}
+    .a-check .cbox{width:22px;height:22px;border-radius:5px;border:1.5px solid #C5CAD3;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s;}
+    .a-check .cbox i{width:15px;height:15px;color:#fff;opacity:0;transition:.15s;}
+    .a-check.on .cbox{background:var(--blue-500);border-color:var(--blue-500);}
+    .a-check.on .cbox i{opacity:1;}
+    .a-check .ctxt{font-size:15px;color:var(--ink);}
+    .a-check .cinfo{width:16px;height:16px;color:var(--text-placeholder);}
+    .a-tip{display:none;font-size:13px;color:var(--text-secondary);background:var(--blue-50);border-radius:var(--radius-sm);padding:10px 12px;line-height:1.45;margin:-6px 0 6px;}
+    .a-tip.show{display:block;}
+    .a-footer{padding:12px 16px 30px;background:#fff;border-top:1px solid var(--border-faint);}
+  </style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span>4:27</span>
+    <span style="display:flex;gap:6px;align-items:center;font-size:12px;">●●●  Wifi  🔋</span>
+  </div>
+
+  <!-- Nav -->
+  <div class="nav-header">
+    <span class="nav-icon"><i data-lucide="chevron-left" style="width:24px;height:24px;"></i></span>
+    <span class="nav-title">Kho hàng</span>
+    <span class="nav-add" onclick="openAdd()"><i data-lucide="plus" style="width:20px;height:20px;"></i></span>
+  </div>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <div class="search-box">
+      <i data-lucide="search"></i>
+      <input id="searchInput" type="text" placeholder="Tên kho, mã kho" />
+    </div>
+    <div class="filter-btn" onclick="openFilter()"><i data-lucide="sliders-horizontal"></i></div>
+  </div>
+
+  <!-- Month filter (ẩn ở tab Quản lý kho) -->
+  <div class="month-filter" id="monthFilter" style="display:none;">
+    <i data-lucide="check-circle-2"></i>
+    <span class="mf-label">Lọc theo:</span>
+    <span class="mf-val">Tháng này</span>
+  </div>
+
+  <!-- Summary (ẩn ở tab Quản lý kho) -->
+  <div class="summary" id="summary" style="display:none;">
+    <div class="sum-col sum-in">
+      <div class="sum-label">Nhập kho</div>
+      <div class="sum-val"><i data-lucide="download"></i>11.661.830.323</div>
+    </div>
+    <div class="sum-col sum-out">
+      <div class="sum-label">Xuất kho</div>
+      <div class="sum-val"><i data-lucide="upload"></i>0</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-wrap">
+    <div class="tabs-menu"><i data-lucide="menu"></i></div>
+    <div class="tabs">
+      <div class="tab active" data-tab="quanly" onclick="switchTab(this)">Đa kho</div>
+      <div class="tab" data-tab="nhap" onclick="switchTab(this)">Nhập kho (3262)</div>
+      <div class="tab" data-tab="xuat" onclick="switchTab(this)">Xuất kho</div>
+      <div class="tab" data-tab="chuyen" onclick="switchTab(this)">Chuyển kho</div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- ============ TAB: QUẢN LÝ KHO ============ -->
+    <div class="pane" id="pane-quanly">
+
+      <div class="wh-card" data-status="active" onclick="openDetail('WH1')">
+        <div class="wh-head">
+          <div class="wh-code">WH1</div>
+          <span class="wh-badge">Đang hoạt động</span>
+        </div>
+        <div class="wh-row"><span class="k">Tên kho</span><span class="v">Kho bán hàng</span></div>
+        <div class="wh-row"><span class="k">Điện thoại</span><span class="v muted">--</span></div>
+        <div class="wh-row"><span class="k">Địa chỉ</span><span class="v muted">--</span></div>
+        <div class="wh-row"><span class="k">Số lượng sản phẩm</span><span class="v">1.450</span></div>
+        <div class="wh-row"><span class="k">Mô tả</span><span class="v muted">--</span></div>
+      </div>
+
+      <div class="wh-card" data-status="active" onclick="openDetail('dutru')">
+        <div class="wh-head">
+          <div class="wh-code">dutru</div>
+          <span class="wh-badge">Đang hoạt động</span>
+        </div>
+        <div class="wh-row"><span class="k">Tên kho</span><span class="v">Kho dự trữ</span></div>
+        <div class="wh-row"><span class="k">Điện thoại</span><span class="v muted">--</span></div>
+        <div class="wh-row"><span class="k">Địa chỉ</span><span class="v muted">--</span></div>
+        <div class="wh-row"><span class="k">Số lượng sản phẩm</span><span class="v">30</span></div>
+        <div class="wh-row"><span class="k">Mô tả</span><span class="v muted">--</span></div>
+      </div>
+
+      <div class="wh-card" data-status="active" onclick="openDetail('WH11')">
+        <div class="wh-head">
+          <div class="wh-code">WH11</div>
+          <span class="wh-badge">Đang hoạt động</span>
+        </div>
+        <div class="wh-row"><span class="k">Tên kho</span><span class="v">Kho 2</span></div>
+        <div class="wh-row"><span class="k">Điện thoại</span><span class="v muted">--</span></div>
+        <div class="wh-row"><span class="k">Địa chỉ</span><span class="v muted">--</span></div>
+        <div class="wh-row"><span class="k">Số lượng sản phẩm</span><span class="v">2</span></div>
+        <div class="wh-row"><span class="k">Mô tả</span><span class="v muted">--</span></div>
+      </div>
+
+      <div class="wh-empty" id="whEmpty">Không có kho phù hợp bộ lọc</div>
+
+    </div>
+
+    <!-- ============ TAB: NHẬP KHO (bản gốc để đối chiếu) ============ -->
+    <div class="pane" id="pane-nhap" style="display:none;">
+
+      <div class="tx-card">
+        <span class="tx-badge">Đã hoàn thành</span>
+        <div class="tx-head">
+          <span class="tx-code">NK3533</span>
+        </div>
+        <div class="kv"><span class="k">Số lượng</span><span class="v">100</span></div>
+        <div class="kv"><span class="k">Tổng tiền</span><span class="v">200.000 đ</span></div>
+        <div class="kv"><span class="k">Thời gian</span><span class="v">10/07/2026</span></div>
+        <div class="kv"><span class="k">Nhà cung cấp</span><span class="v">--</span></div>
+      </div>
+
+      <div class="tx-card">
+        <span class="tx-badge">Đã hoàn thành</span>
+        <div class="tx-head">
+          <span class="tx-code">NK3532</span>
+          <span class="tx-more"><i data-lucide="more-vertical"></i></span>
+        </div>
+        <div class="kv"><span class="k">Số lượng</span><span class="v">15</span></div>
+        <div class="kv"><span class="k">Tổng tiền</span><span class="v">55.025 đ</span></div>
+        <div class="kv"><span class="k">Thời gian</span><span class="v">09/07/2026</span></div>
+        <div class="kv"><span class="k">Nhà cung cấp</span><span class="v">Bán cho người tiêu dùng</span></div>
+      </div>
+
+    </div>
+
+    <!-- ============ TAB: XUẤT KHO ============ -->
+    <div class="pane" id="pane-xuat" style="display:none;">
+      <div class="tx-card" style="text-align:center;color:var(--text-placeholder);padding:48px 16px;">Chưa có phiếu xuất kho</div>
+    </div>
+
+    <!-- ============ TAB: CHUYỂN KHO ============ -->
+    <div class="pane" id="pane-chuyen" style="display:none;">
+      <div class="tx-card" style="text-align:center;color:var(--text-placeholder);padding:48px 16px;">Chưa có phiếu chuyển kho</div>
+    </div>
+
+  </div>
+
+  <!-- ============ THÊM MỚI KHO (overlay) ============ -->
+  <div class="add-screen" id="addScreen">
+
+    <div class="status-bar">
+      <span>4:27</span>
+      <span style="display:flex;gap:6px;align-items:center;font-size:12px;">●●●  Wifi  🔋</span>
+    </div>
+
+    <div class="nav-header">
+      <span class="nav-icon" onclick="closeAdd()"><i data-lucide="chevron-left" style="width:24px;height:24px;"></i></span>
+      <span class="nav-title">Thêm mới kho</span>
+    </div>
+
+    <div class="a-body">
+      <div class="a-field">
+        <div class="a-label">Tên kho <span class="req">*</span></div>
+        <input class="a-input" type="text" placeholder="Tên kho" />
+      </div>
+      <div class="a-field">
+        <div class="a-label">Mã kho</div>
+        <input class="a-input" type="text" placeholder="Mã kho" />
+        <div class="a-hint">Mã kho sẽ tự động sinh nếu để trống</div>
+      </div>
+      <div class="a-field">
+        <div class="a-label">Điện thoại</div>
+        <input class="a-input" type="text" placeholder="Điện thoại" />
+      </div>
+      <div class="a-field">
+        <div class="a-label">Địa chỉ</div>
+        <input class="a-input" type="text" placeholder="Địa chỉ" />
+      </div>
+      <div class="a-field">
+        <div class="a-label">Mô tả</div>
+        <input class="a-input" type="text" placeholder="Mô tả" />
+      </div>
+      <div class="a-check on" id="banCheck" onclick="toggleBanTT()">
+        <div class="cbox"><i data-lucide="check"></i></div>
+        <span class="ctxt">Bán trực tiếp</span>
+        <i class="cinfo" data-lucide="info" title="Cho phép kho và sản phẩm trong kho được hiển thị trên màn bán hàng" onclick="event.stopPropagation(); toggleBanTip()"></i>
+      </div>
+      <div class="a-tip" id="banTip">Cho phép kho và sản phẩm trong kho được hiển thị trên màn bán hàng</div>
+    </div>
+
+    <div class="a-footer">
+      <button class="btn-update" onclick="closeAdd()">Lưu</button>
+    </div>
+
+    <div class="home-ind"></div>
+  </div>
+
+  <!-- ============ BỘ LỌC (overlay) ============ -->
+  <div class="filter-screen" id="filterScreen">
+
+    <div class="status-bar">
+      <span>4:27</span>
+      <span style="display:flex;gap:6px;align-items:center;font-size:12px;">●●●  Wifi  🔋</span>
+    </div>
+
+    <div class="nav-header">
+      <span class="nav-icon" onclick="closeFilter()"><i data-lucide="chevron-left" style="width:24px;height:24px;"></i></span>
+      <span class="nav-title">Bộ lọc</span>
+    </div>
+
+    <div class="f-body">
+      <div class="f-label">Trạng thái</div>
+      <div class="f-dropdown" id="statusDropdown" onclick="toggleStatusDropdown()">
+        <span class="fd-val" id="statusVal">Tất cả</span>
+        <i class="fd-chev" data-lucide="chevron-down"></i>
+      </div>
+      <div class="f-menu" id="statusMenu">
+        <div class="f-opt sel" data-val="all" onclick="selectStatus('all','Tất cả')">Tất cả <i data-lucide="check"></i></div>
+        <div class="f-opt" data-val="active" onclick="selectStatus('active','Đang hoạt động')">Đang hoạt động <i data-lucide="check"></i></div>
+        <div class="f-opt" data-val="inactive" onclick="selectStatus('inactive','Ngừng hoạt động')">Ngừng hoạt động <i data-lucide="check"></i></div>
+      </div>
+    </div>
+
+    <div class="f-footer">
+      <button class="btn-reset" onclick="resetFilter()">Đặt lại</button>
+      <button class="btn-apply" onclick="applyFilter()">Áp dụng</button>
+    </div>
+
+    <div class="home-ind"></div>
+  </div>
+
+  <!-- ============ CHI TIẾT KHO (overlay) ============ -->
+  <div class="detail-screen" id="detailScreen">
+
+    <!-- Status bar -->
+    <div class="status-bar">
+      <span>4:51</span>
+      <span style="display:flex;gap:6px;align-items:center;font-size:12px;">●●●  Wifi  🔋</span>
+    </div>
+
+    <!-- Nav -->
+    <div class="nav-header">
+      <span class="nav-icon" onclick="closeDetail()"><i data-lucide="chevron-left" style="width:24px;height:24px;"></i></span>
+      <span class="nav-title">Cập nhật kho</span>
+      <span class="nav-icon" onclick="toggleMenu(event)"><i data-lucide="more-vertical" style="width:22px;height:22px;"></i></span>
+    </div>
+
+    <!-- Fields -->
+    <div class="d-body">
+      <div class="d-field">
+        <div class="d-main">
+          <div class="d-label">Mã kho <span class="req">*</span></div>
+          <div class="d-value" id="d-code">--</div>
+        </div>
+      </div>
+      <div class="d-field">
+        <div class="d-main">
+          <div class="d-label">Tên kho <span class="req">*</span></div>
+          <div class="d-value" id="d-name">--</div>
+        </div>
+      </div>
+      <div class="d-field">
+        <div class="d-main">
+          <div class="d-label">Điện thoại</div>
+          <div class="d-value" id="d-phone">--</div>
+        </div>
+      </div>
+      <div class="d-field">
+        <div class="d-main">
+          <div class="d-label">Địa chỉ</div>
+          <div class="d-value" id="d-address">--</div>
+        </div>
+      </div>
+      <div class="d-field">
+        <div class="d-main">
+          <div class="d-label">Mô tả</div>
+          <div class="d-value" id="d-desc">--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="d-footer">
+      <button class="btn-update">Cập nhật</button>
+    </div>
+
+    <!-- ⋮ menu -->
+    <div class="d-scrim" id="dScrim" onclick="closeMenu()"></div>
+    <div class="d-menu" id="dMenu">
+      <div class="d-menu-item" onclick="onDeactivate()"><i data-lucide="ban"></i>Ngừng hoạt động</div>
+      <div class="d-menu-item danger" onclick="onDelete()"><i data-lucide="trash-2"></i>Xóa</div>
+    </div>
+
+    <div class="home-ind"></div>
+  </div>
+
+  <div class="home-ind"></div>
+
+</div>
+
+<script>
+  var CFG = {
+    quanly: { placeholder:'Tên kho, mã kho', chrome:false },
+    nhap:   { placeholder:'Mã giao dịch, Tên khách hàng', chrome:true },
+    xuat:   { placeholder:'Mã giao dịch, Tên khách hàng', chrome:true },
+    chuyen: { placeholder:'Mã giao dịch, Tên khách hàng', chrome:true }
+  };
+
+  function switchTab(el){
+    var key = el.getAttribute('data-tab');
+    // tab active state
+    document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+    el.classList.add('active');
+    // panes
+    document.querySelectorAll('.pane').forEach(function(p){ p.style.display='none'; });
+    document.getElementById('pane-'+key).style.display='block';
+    // chrome: month filter + summary chỉ hiện ở tab giao dịch
+    var showChrome = CFG[key].chrome;
+    document.getElementById('monthFilter').style.display = showChrome ? 'flex' : 'none';
+    document.getElementById('summary').style.display     = showChrome ? 'flex' : 'none';
+    // search placeholder
+    document.getElementById('searchInput').placeholder = CFG[key].placeholder;
+  }
+
+  /* ===== Chi tiết kho ===== */
+  var WH = {
+    'WH1'  : { code:'WH1',   name:'Kho bán hàng', phone:'', address:'', qty:'1.450', status:'Đang hoạt động', desc:'' },
+    'dutru': { code:'dutru', name:'Kho dự trữ',   phone:'', address:'', qty:'30',    status:'Đang hoạt động', desc:'' },
+    'WH11' : { code:'WH11',  name:'Kho 2',        phone:'', address:'', qty:'2',     status:'Đang hoạt động', desc:'' }
+  };
+
+  function setField(id, val, placeholder){
+    var el = document.getElementById(id);
+    if(val){ el.textContent = val; el.classList.remove('placeholder'); }
+    else   { el.textContent = placeholder; el.classList.add('placeholder'); }
+  }
+
+  function openDetail(code){
+    var w = WH[code];
+    setField('d-code',    w.code,    'Nhập mã kho');
+    setField('d-name',    w.name,    'Nhập tên kho');
+    setField('d-phone',   w.phone,   'Nhập số điện thoại');
+    setField('d-address', w.address, 'Nhập địa chỉ');
+    setField('d-desc',    w.desc,    'Nhập mô tả');
+    document.getElementById('detailScreen').style.display = 'flex';
+  }
+
+  function closeDetail(){
+    closeMenu();
+    document.getElementById('detailScreen').style.display = 'none';
+  }
+
+  function toggleMenu(ev){
+    ev.stopPropagation();
+    document.getElementById('dMenu').classList.toggle('open');
+    document.getElementById('dScrim').classList.toggle('open');
+  }
+  function closeMenu(){
+    document.getElementById('dMenu').classList.remove('open');
+    document.getElementById('dScrim').classList.remove('open');
+  }
+  function onDeactivate(){ closeMenu(); /* TODO: gọi API ngừng hoạt động */ }
+  function onDelete(){ closeMenu(); /* TODO: xác nhận + gọi API xóa */ }
+
+  /* ===== Thêm mới kho ===== */
+  function openAdd(){ document.getElementById('addScreen').style.display = 'flex'; }
+  function closeAdd(){ document.getElementById('addScreen').style.display = 'none'; }
+  function toggleBanTT(){ document.getElementById('banCheck').classList.toggle('on'); }
+  function toggleBanTip(){ document.getElementById('banTip').classList.toggle('show'); }
+
+  /* ===== Bộ lọc (chỉ áp cho tab Quản lý kho) ===== */
+  var selectedStatus = 'all';
+
+  function openFilter(){
+    var active = document.querySelector('.tab.active').getAttribute('data-tab');
+    if(active !== 'quanly') return; // bộ lọc kho chỉ dùng ở tab Quản lý kho
+    document.getElementById('filterScreen').style.display = 'flex';
+  }
+  function closeFilter(){
+    document.getElementById('statusMenu').classList.remove('open');
+    document.getElementById('statusDropdown').classList.remove('open');
+    document.getElementById('filterScreen').style.display = 'none';
+  }
+  function toggleStatusDropdown(){
+    document.getElementById('statusMenu').classList.toggle('open');
+    document.getElementById('statusDropdown').classList.toggle('open');
+  }
+  function selectStatus(val, label){
+    selectedStatus = val;
+    document.getElementById('statusVal').textContent = label;
+    document.querySelectorAll('#statusMenu .f-opt').forEach(function(o){
+      o.classList.toggle('sel', o.getAttribute('data-val') === val);
+    });
+    document.getElementById('statusMenu').classList.remove('open');
+    document.getElementById('statusDropdown').classList.remove('open');
+  }
+  function resetFilter(){ selectStatus('all','Tất cả'); }
+  function applyFilter(){
+    var shown = 0;
+    document.querySelectorAll('#pane-quanly .wh-card').forEach(function(card){
+      var match = (selectedStatus === 'all') || (selectedStatus === card.getAttribute('data-status'));
+      card.style.display = match ? 'block' : 'none';
+      if(match) shown++;
+    });
+    document.getElementById('whEmpty').style.display = shown ? 'none' : 'block';
+    document.querySelector('.filter-btn').classList.toggle('has-filter', selectedStatus !== 'all');
+    closeFilter();
+  }
+
+  lucide.createIcons();
+</script>
+</body>
+</html>

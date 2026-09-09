@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=1920, initial-scale=1.0"/>
+  <title>Thông tin đơn hàng — Kho enhanced</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --color-primary-900: #00314F;
+      --color-primary-800: #004068;
+      --color-primary-700: #005286;
+      --color-primary-600: #006AAC;
+      --color-primary-500: #0074BD;
+      --color-primary-400: #3390CA;
+      --color-primary-50:  #E6F1F8;
+
+      --color-secondary-500: #E65100;
+      --color-secondary-50:  #FDEEE6;
+
+      --color-neutral-800: #333333;
+      --color-neutral-700: #545454;
+      --color-neutral-600: #8A8A8A;
+      --color-neutral-500: #B0B0B0;
+      --color-neutral-400: #E6E6E6;
+      --color-neutral-300: #EBEBEB;
+      --color-neutral-200: #EEEEEE;
+      --color-neutral-50:  #F7F7F7;
+
+      --color-success:    #13C05D;
+      --color-success-bg: #EDFCF3;
+      --color-warning:    #F08D14;
+      --color-warning-bg: #FFFAE7;
+      --color-error:      #EB5146;
+      --color-error-bg:   #FEF3F2;
+
+      --font-primary: 'Inter', sans-serif;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 100px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-primary);
+      background: var(--color-neutral-50);
+      color: var(--color-neutral-800);
+      font-size: 14px;
+      line-height: 1.5;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 56px;
+      background: #fff;
+      border-right: 1px solid var(--color-neutral-300);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 8px;
+      gap: 4px;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .sidebar-icon {
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: var(--radius-md);
+      color: var(--color-neutral-500);
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .sidebar-icon:hover { background: var(--color-neutral-50); color: var(--color-neutral-700); }
+    .sidebar-icon.active { background: var(--color-primary-50); color: var(--color-primary-500); }
+
+    /* ── Main ── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Topbar ── */
+    .topbar {
+      height: 48px;
+      background: var(--color-primary-500);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .topbar-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    /* ── Content ── */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ── Page title ── */
+    .page-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--color-neutral-800);
+    }
+
+    /* ── Config toggle strip ── */
+    .config-strip {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      background: var(--color-primary-50);
+      border: 1px solid var(--color-primary-200, #8ABFE1);
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      color: var(--color-primary-700);
+    }
+    .config-strip strong { font-weight: 600; }
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--color-neutral-700);
+    }
+    .toggle {
+      position: relative;
+      width: 40px; height: 22px;
+      cursor: pointer;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--color-neutral-400);
+      border-radius: var(--radius-pill);
+      transition: background .2s;
+    }
+    .toggle-slider::before {
+      content: "";
+      position: absolute;
+      width: 16px; height: 16px;
+      left: 3px; top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform .2s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--color-primary-500); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+    /* ── Info banner ── */
+    .info-banner {
+      background: var(--color-primary-50);
+      border: 1px solid var(--color-primary-200, #8ABFE1);
+      border-radius: var(--radius-md);
+      padding: 10px 16px;
+      font-size: 13px;
+      color: var(--color-neutral-700);
+      line-height: 1.6;
+    }
+
+    /* ── Toolbar row ── */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .label-sm { font-size: 13px; color: var(--color-neutral-600); }
+    .select-inline {
+      height: 34px;
+      padding: 0 12px;
+      border: 1px solid var(--color-neutral-400);
+      border-radius: var(--radius-md);
+      font-family: var(--font-primary);
+      font-size: 13px;
+      color: var(--color-neutral-800);
+      background: #fff;
+      outline: none;
+      min-width: 160px;
+      cursor: pointer;
+    }
+    .btn-icon {
+      width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--color-primary-500);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 18px;
+      transition: background .15s;
+    }
+    .btn-icon:hover { background: var(--color-primary-600); }
+
+    /* ── Table card ── */
+    .table-card {
+      background: #fff;
+      border: 1px solid var(--color-neutral-300);
+      border-radius: var(--radius-lg);
+      overflow: visible;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead tr {
+      background: var(--color-primary-50);
+      border-bottom: 2px solid var(--color-primary-200, #8ABFE1);
+    }
+    th {
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-neutral-700);
+      white-space: nowrap;
+    }
+    th.right { text-align: right; }
+    th.center { text-align: center; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--color-neutral-200);
+      transition: background .1s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #fafafa; }
+    tbody tr.row-error { background: #fff; }
+    tbody tr.row-error:hover { background: #fafafa; }
+    tbody tr.row-warning { background: #fff; }
+    tbody tr.row-warning:hover { background: #fafafa; }
+    tbody tr.row-split { background: var(--color-primary-50); }
+
+    td {
+      padding: 10px 12px;
+      font-size: 13px;
+      color: var(--color-neutral-800);
+      vertical-align: middle;
+    }
+    td.right { text-align: right; }
+    td.center { text-align: center; }
+
+    .stt { color: var(--color-neutral-600); font-size: 12px; }
+    .product-name { font-weight: 500; font-size: 13px; }
+    .product-unit { font-size: 11px; color: var(--color-neutral-600); margin-top: 1px; }
+
+    /* product chip */
+    .product-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border: 1px solid var(--color-primary-400);
+      border-radius: var(--radius-pill);
+      background: var(--color-primary-50);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--color-primary-700);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .chip-sub {
+      font-size: 11px;
+      color: var(--color-neutral-600);
+      margin-top: 3px;
+    }
+
+    /* lot chip */
+    .lot-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      background: var(--color-primary-500);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 500;
+      margin-top: 4px;
+    }
+    .lot-chip .remove {
+      cursor: pointer;
+      opacity: .7;
+      font-size: 10px;
+    }
+    .lot-chip .remove:hover { opacity: 1; }
+    .choose-lot {
+      font-size: 11px;
+      color: var(--color-primary-500);
+      cursor: pointer;
+      text-decoration: underline;
+      margin-top: 4px;
+      display: block;
+    }
+
+    /* ── Kho cell ── */
+    .kho-cell { position: relative; }
+
+    .kho-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 32px;
+      padding: 0 10px;
+      border: 1px solid var(--color-neutral-400);
+      border-radius: var(--radius-md);
+      background: #fff;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--color-neutral-800);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color .15s, box-shadow .15s;
+      user-select: none;
+      min-width: 110px;
+    }
+    .kho-chip:hover { border-color: var(--color-primary-400); }
+    .kho-chip.open { border-color: var(--color-primary-500); box-shadow: 0 0 0 3px var(--color-primary-50); }
+
+    .kho-chip.warning {
+      border-color: var(--color-warning);
+      background: var(--color-warning-bg);
+      color: #7a4800;
+    }
+    .kho-chip.warning:hover, .kho-chip.warning.open {
+      border-color: #c97000;
+      box-shadow: 0 0 0 3px #fff5d8;
+    }
+    .kho-chip.error {
+      border-color: var(--color-error);
+      background: var(--color-error-bg);
+      color: #8b1a13;
+    }
+    .kho-chip.error:hover, .kho-chip.error.open {
+      border-color: #c0251a;
+      box-shadow: 0 0 0 3px #fde8e7;
+    }
+
+    .kho-chip-icon { font-size: 11px; }
+    .kho-chip-chevron { color: var(--color-neutral-500); font-size: 10px; margin-left: 2px; }
+
+    .kho-stock-hint {
+      font-size: 11px;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .kho-stock-hint.warning { color: var(--color-warning); }
+    .kho-stock-hint.error   { color: var(--color-error); font-weight: 500; }
+
+    /* ── Kho dropdown ── */
+    .kho-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      width: 260px;
+      background: #fff;
+      border: 1px solid var(--color-neutral-300);
+      border-radius: var(--radius-md);
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      z-index: 200;
+      overflow: hidden;
+    }
+    .kho-dropdown.hidden { display: none; }
+
+    .kho-drop-search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--color-neutral-200);
+    }
+    .kho-drop-search input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-family: var(--font-primary);
+      font-size: 12px;
+      color: var(--color-neutral-800);
+      background: none;
+    }
+    .kho-drop-search input::placeholder { color: var(--color-neutral-500); }
+
+    .kho-drop-list { max-height: 200px; overflow-y: auto; }
+
+    .kho-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 14px;
+      cursor: pointer;
+      transition: background .1s;
+    }
+    .kho-option:hover:not(.disabled) { background: var(--color-primary-50); }
+    .kho-option.selected { background: var(--color-primary-50); }
+    .kho-option.disabled { opacity: .45; cursor: not-allowed; }
+
+    .kho-opt-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .kho-opt-dot.ok      { background: var(--color-success); }
+    .kho-opt-dot.warn    { background: var(--color-warning); }
+    .kho-opt-dot.empty   { background: var(--color-neutral-400); }
+    .kho-opt-dot.current { border: 2px solid var(--color-primary-500); background: #fff; }
+
+    .kho-opt-name {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-neutral-800);
+    }
+    .kho-opt-stock {
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .kho-opt-stock.ok   { color: var(--color-success); }
+    .kho-opt-stock.warn { color: var(--color-warning); }
+    .kho-opt-stock.empty { color: var(--color-neutral-500); }
+
+    .kho-drop-divider { height: 1px; background: var(--color-neutral-200); }
+
+    .kho-drop-footer {
+      padding: 10px 12px;
+      border-top: 1px solid var(--color-neutral-200);
+    }
+    .kho-split-action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      height: 34px;
+      padding: 0 12px;
+      border: 1.5px solid var(--color-primary-500);
+      border-radius: var(--radius-md);
+      background: #fff;
+      cursor: pointer;
+      font-family: var(--font-primary);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-primary-500);
+      transition: background .15s, color .15s;
+    }
+    .kho-split-action:hover {
+      background: var(--color-primary-500);
+      color: #fff;
+    }
+    .kho-split-action:hover svg path { stroke: #fff; }
+
+    /* split badge */
+    .split-badge {
+      display: inline-block;
+      padding: 1px 6px;
+      background: var(--color-primary-50);
+      border: 1px solid var(--color-primary-300);
+      border-radius: var(--radius-pill);
+      font-size: 10px;
+      color: var(--color-primary-700);
+      font-weight: 500;
+      vertical-align: middle;
+      margin-left: 4px;
+    }
+
+    .kho-select-placeholder {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 32px;
+      padding: 0 10px;
+      border: 1px dashed var(--color-primary-400);
+      border-radius: var(--radius-md);
+      background: var(--color-primary-50);
+      font-size: 12px;
+      color: var(--color-primary-500);
+      cursor: pointer;
+      min-width: 110px;
+    }
+
+    /* delete icon */
+    .btn-del {
+      width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      border: none; background: none; cursor: pointer;
+      color: var(--color-neutral-500);
+      border-radius: var(--radius-sm);
+      transition: color .15s, background .15s;
+    }
+    .btn-del:hover { color: var(--color-error); background: var(--color-error-bg); }
+
+    /* ── Payment section ── */
+    .payment-section {
+      background: #fff;
+      border: 1px solid var(--color-neutral-300);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .payment-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: var(--color-primary-50);
+      border-bottom: 1px solid var(--color-primary-200, #8ABFE1);
+      cursor: pointer;
+    }
+    .payment-header-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-primary-700);
+    }
+    .payment-body { padding: 0 20px 4px; }
+    .payment-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--color-neutral-200);
+      font-size: 13px;
+    }
+    .payment-row:last-child { border-bottom: none; }
+    .payment-row.total {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-primary-500);
+      padding: 12px 0;
+    }
+    .payment-row .edit-icon {
+      color: var(--color-primary-400);
+      cursor: pointer;
+      font-size: 12px;
+      margin-left: 6px;
+    }
+
+    /* ── Footer buttons ── */
+    .footer-bar {
+      background: #fff;
+      border-top: 1px solid var(--color-neutral-300);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .btn {
+      height: 40px;
+      padding: 0 24px;
+      border-radius: var(--radius-md);
+      font-family: var(--font-primary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      transition: background .15s, opacity .15s;
+    }
+    .btn-outline {
+      background: #fff;
+      border: 1px solid var(--color-neutral-400);
+      color: var(--color-neutral-800);
+    }
+    .btn-outline:hover { background: var(--color-neutral-50); }
+    .btn-primary {
+      background: var(--color-primary-500);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--color-primary-600); }
+    .btn-primary:active { background: var(--color-primary-700); }
+    .btn-primary:disabled {
+      background: var(--color-neutral-400);
+      color: var(--color-neutral-600);
+      cursor: not-allowed;
+    }
+
+    /* error badge on button */
+    .btn-error-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 4px;
+      background: var(--color-error);
+      color: #fff;
+      border-radius: var(--radius-pill);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    /* error inline row */
+    .row-error-msg {
+      font-size: 11px;
+      color: var(--color-error);
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 11px;
+      color: var(--color-neutral-600);
+    }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .legend-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="sidebar-icon active">
+    <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><path d="M3 3h14v2H3V3zm0 4h14v10H3V7z" fill="currentColor" opacity=".2"/><rect x="3" y="3" width="14" height="2" rx="1" fill="currentColor"/><rect x="3" y="7" width="14" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+  </div>
+  <div class="sidebar-icon">
+    <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M10 7v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+  </div>
+  <div class="sidebar-icon">
+    <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><rect x="3" y="3" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="3" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="11" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+  </div>
+  <div class="sidebar-icon">
+    <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M4 17c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+  </div>
+  <div class="sidebar-icon">
+    <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><path d="M10 2l2.4 5 5.6.8-4 3.9.9 5.5L10 14.5l-4.9 2.7.9-5.5-4-3.9 5.6-.8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+  </div>
+</nav>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><rect x="2" y="4" width="16" height="2" rx="1" fill="#fff"/><rect x="2" y="9" width="16" height="2" rx="1" fill="#fff"/><rect x="2" y="14" width="16" height="2" rx="1" fill="#fff"/></svg>
+    <span class="topbar-title">Epos</span>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <div class="page-title">Thông tin đơn hàng</div>
+
+    <!-- Info banner -->
+    <div class="info-banner">
+      Để tạo đơn hàng, vui lòng kiểm tra và chọn đúng khách hàng, hàng hóa theo hóa đơn. Nếu chưa có trong hệ thống, bạn có thể tạo mới. Lưu ý hàng hóa cần có đơn vị tính giống với hóa đơn từ thuế.
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <span class="label-sm">Khách hàng</span>
+      <select class="select-inline"><option>Chọn...</option></select>
+      <button class="btn-icon">+</button>
+      <span class="label-sm" style="margin-left:8px">📦 Mang về</span>
+      <select class="select-inline"></select>
+
+      <!-- Legend -->
+      <div class="legend" style="margin-left:auto">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--color-warning)"></div>
+          <span>Tồn không đủ (cho phép)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--color-error)"></div>
+          <span>Tồn không đủ (bị chặn)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--color-success)"></div>
+          <span>Đủ tồn</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table card -->
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:44px" class="center">STT</th>
+            <th style="width:220px">Sản phẩm từ thuế</th>
+            <th style="width:220px">Sản phẩm từ POS</th>
+            <th style="width:56px" class="center">SL</th>
+            <th style="width:100px" class="right">Đơn giá</th>
+            <th style="width:90px" class="right">Giảm giá</th>
+            <th style="width:60px" class="center">Thuế</th>
+            <th style="width:110px" class="right">Thành tiền</th>
+            <th style="width:160px">Kho hàng</th>
+            <th style="width:50px" class="center">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody id="order-tbody">
+
+          <!-- Row 1: Warning state (allow negative) -->
+          <tr class="row-warning" id="row-1">
+            <td class="stt center">1</td>
+            <td>
+              <div class="product-name">Đồ uống coke 390ml 4x6p pet</div>
+              <div class="product-unit">ĐVT: Thùng</div>
+            </td>
+            <td>
+              <div class="product-chip">
+                <span style="color:var(--color-warning);font-size:13px">⚠</span>
+                Coca-Cola 390ml
+                <svg width="12" height="12" fill="none" viewBox="0 0 12 12"><path d="M3 5l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              </div>
+              <div class="chip-sub">Chiếc · Kho mặc định</div>
+            </td>
+            <td class="center">15</td>
+            <td class="right">245,000</td>
+            <td class="right">0</td>
+            <td class="center">10%</td>
+            <td class="right">3,675,000</td>
+            <td class="kho-cell">
+              <div class="kho-chip warning open" id="chip-1" onclick="toggleDrop(1)">
+                <span class="kho-chip-icon">⚠</span>
+                Kho A
+                <svg class="kho-chip-chevron" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 4l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              </div>
+              <div class="kho-stock-hint warning">
+                <span>Tồn: 8 · Cần: 15 · Thiếu 7</span>
+              </div>
+              <!-- Dropdown row 1 -->
+              <div class="kho-dropdown" id="drop-1">
+                <div class="kho-drop-search">
+                  <svg width="13" height="13" fill="none" viewBox="0 0 13 13"><circle cx="6" cy="6" r="4.5" stroke="#8A8A8A" stroke-width="1.2"/><path d="M9.5 9.5l2 2" stroke="#8A8A8A" stroke-width="1.2" stroke-linecap="round"/></svg>
+                  <input type="text" placeholder="Tìm kho..." />
+                </div>
+                <div class="kho-drop-list">
+                  <div class="kho-option selected">
+                    <div class="kho-opt-dot warn"></div>
+                    <span class="kho-opt-name">Kho A</span>
+                    <span class="kho-opt-stock warn">Tồn: 8 ⚠</span>
+                  </div>
+                  <div class="kho-option" onclick="selectKho(1,'Kho B')">
+                    <div class="kho-opt-dot ok"></div>
+                    <span class="kho-opt-name">Kho B</span>
+                    <span class="kho-opt-stock ok">Tồn: 50 ✓</span>
+                  </div>
+                  <div class="kho-option" onclick="selectKho(1,'Kho C')">
+                    <div class="kho-opt-dot ok"></div>
+                    <span class="kho-opt-name">Kho C</span>
+                    <span class="kho-opt-stock ok">Tồn: 200 ✓</span>
+                  </div>
+                  <div class="kho-option disabled">
+                    <div class="kho-opt-dot empty"></div>
+                    <span class="kho-opt-name">Kho D</span>
+                    <span class="kho-opt-stock empty">Tồn: 0 —</span>
+                  </div>
+                </div>
+                <div class="kho-drop-footer">
+                  <button class="kho-split-action" onclick="splitRow(1)">
+                    <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M7 2v10M3 6l4-4 4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Tách sang kho khác
+                  </button>
+                </div>
+              </div>
+            </td>
+            <td class="center">
+              <button class="btn-del" title="Xóa dòng">
+                <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M3 4h10M6 4V3h4v1M5 4l.5 9h5l.5-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </td>
+          </tr>
+
+          <!-- Row 2: Error state (block negative) -->
+          <tr class="row-error" id="row-2">
+            <td class="stt center">2</td>
+            <td>
+              <div class="product-name">Đồ uống coke 390ml 4x6p pet</div>
+              <div class="product-unit">ĐVT: Thùng</div>
+            </td>
+            <td>
+              <div class="product-chip" style="border-color:var(--color-error);background:var(--color-error-bg);color:#8b1a13">
+                <span style="color:var(--color-error);font-size:13px">✕</span>
+                Coca-Cola 390ml
+                <svg width="12" height="12" fill="none" viewBox="0 0 12 12"><path d="M3 5l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              </div>
+              <div class="chip-sub">Chiếc · Kho mặc định</div>
+              <div class="row-error-msg">
+                <svg width="12" height="12" fill="none" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M6 4v3M6 8.5v.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                Kho E không đủ tồn · Vui lòng đổi kho hoặc tách dòng
+              </div>
+            </td>
+            <td class="center">15</td>
+            <td class="right">245,000</td>
+            <td class="right">0</td>
+            <td class="center">10%</td>
+            <td class="right">3,675,000</td>
+            <td class="kho-cell">
+              <div class="kho-chip error" id="chip-2" onclick="toggleDrop(2)">
+                <span class="kho-chip-icon">✕</span>
+                Kho E
+                <svg class="kho-chip-chevron" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 4l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              </div>
+              <div class="kho-stock-hint error">
+                <svg width="11" height="11" fill="none" viewBox="0 0 11 11"><circle cx="5.5" cy="5.5" r="4.5" stroke="currentColor" stroke-width="1"/><path d="M5.5 4v2.5M5.5 7.5v.3" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+                Tồn: 3 · Cần: 15 · Thiếu 12
+              </div>
+              <!-- Dropdown row 2 -->
+              <div class="kho-dropdown hidden" id="drop-2">
+                <div class="kho-drop-search">
+                  <svg width="13" height="13" fill="none" viewBox="0 0 13 13"><circle cx="6" cy="6" r="4.5" stroke="#8A8A8A" stroke-width="1.2"/><path d="M9.5 9.5l2 2" stroke="#8A8A8A" stroke-width="1.2" stroke-linecap="round"/></svg>
+                  <input type="text" placeholder="Tìm kho..." />
+                </div>
+                <div class="kho-drop-list">
+                  <div class="kho-option selected">
+                    <div class="kho-opt-dot" style="background:var(--color-error)"></div>
+                    <span class="kho-opt-name">Kho E</span>
+                    <span class="kho-opt-stock" style="color:var(--color-error)">Tồn: 3 ✕</span>
+                  </div>
+                  <div class="kho-option" onclick="selectKho(2,'Kho B')">
+                    <div class="kho-opt-dot ok"></div>
+                    <span class="kho-opt-name">Kho B</span>
+                    <span class="kho-opt-stock ok">Tồn: 50 ✓</span>
+                  </div>
+                  <div class="kho-option" onclick="selectKho(2,'Kho C')">
+                    <div class="kho-opt-dot ok"></div>
+                    <span class="kho-opt-name">Kho C</span>
+                    <span class="kho-opt-stock ok">Tồn: 200 ✓</span>
+                  </div>
+                  <div class="kho-option disabled">
+                    <div class="kho-opt-dot empty"></div>
+                    <span class="kho-opt-name">Kho D</span>
+                    <span class="kho-opt-stock empty">Tồn: 0 —</span>
+                  </div>
+                </div>
+                <div class="kho-drop-footer">
+                  <button class="kho-split-action" onclick="splitRow(2)">
+                    <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M7 2v10M3 6l4-4 4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Tách sang kho khác
+                  </button>
+                </div>
+              </div>
+            </td>
+            <td class="center">
+              <button class="btn-del" title="Xóa dòng">
+                <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M3 4h10M6 4V3h4v1M5 4l.5 9h5l.5-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </td>
+          </tr>
+
+          <!-- Row 3: Normal state -->
+          <tr id="row-3">
+            <td class="stt center">3</td>
+            <td>
+              <div class="product-name">Đồ uống coke 390ml 4x6p pet</div>
+              <div class="product-unit">ĐVT: Thùng</div>
+            </td>
+            <td>
+              <div class="product-chip">
+                Coca-Cola 390ml
+                <svg width="12" height="12" fill="none" viewBox="0 0 12 12"><path d="M3 5l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              </div>
+              <div class="chip-sub">Chiếc · Kho mặc định</div>
+              <div style="margin-top:4px">
+                <span class="lot-chip">16/05/05/2026 <span class="remove">✕</span></span>
+                <span class="choose-lot">Chọn lô</span>
+              </div>
+            </td>
+            <td class="center">15</td>
+            <td class="right">245,000</td>
+            <td class="right">0</td>
+            <td class="center">10%</td>
+            <td class="right">3,675,000</td>
+            <td class="kho-cell">
+              <div class="kho-chip" id="chip-3" onclick="toggleDrop(3)">
+                Kho B
+                <svg class="kho-chip-chevron" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 4l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              </div>
+              <div class="kho-stock-hint" style="color:var(--color-success)">
+                Tồn: 50 ✓
+              </div>
+              <div class="kho-dropdown hidden" id="drop-3">
+                <div class="kho-drop-search">
+                  <svg width="13" height="13" fill="none" viewBox="0 0 13 13"><circle cx="6" cy="6" r="4.5" stroke="#8A8A8A" stroke-width="1.2"/><path d="M9.5 9.5l2 2" stroke="#8A8A8A" stroke-width="1.2" stroke-linecap="round"/></svg>
+                  <input type="text" placeholder="Tìm kho..." />
+                </div>
+                <div class="kho-drop-list">
+                  <div class="kho-option" onclick="selectKho(3,'Kho A')">
+                    <div class="kho-opt-dot warn"></div>
+                    <span class="kho-opt-name">Kho A</span>
+                    <span class="kho-opt-stock warn">Tồn: 8 ⚠</span>
+                  </div>
+                  <div class="kho-option selected">
+                    <div class="kho-opt-dot ok"></div>
+                    <span class="kho-opt-name">Kho B</span>
+                    <span class="kho-opt-stock ok">Tồn: 50 ✓</span>
+                  </div>
+                  <div class="kho-option" onclick="selectKho(3,'Kho C')">
+                    <div class="kho-opt-dot ok"></div>
+                    <span class="kho-opt-name">Kho C</span>
+                    <span class="kho-opt-stock ok">Tồn: 200 ✓</span>
+                  </div>
+                  <div class="kho-option disabled">
+                    <div class="kho-opt-dot empty"></div>
+                    <span class="kho-opt-name">Kho D</span>
+                    <span class="kho-opt-stock empty">Tồn: 0 —</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td class="center">
+              <button class="btn-del" title="Xóa dòng">
+                <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M3 4h10M6 4V3h4v1M5 4l.5 9h5l.5-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Payment section -->
+    <div class="payment-section">
+      <div class="payment-header">
+        <span class="payment-header-title">Chi tiết thanh toán</span>
+        <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="payment-body">
+        <div class="payment-row"><span>Tạm tính</span><span>2,702,441 đ</span></div>
+        <div class="payment-row"><span>Chiết khấu</span><span>0 đ <span class="edit-icon">✏</span></span></div>
+        <div class="payment-row"><span>Phụ thu</span><span>0 đ <span class="edit-icon">✏</span></span></div>
+        <div class="payment-row"><span>Tổng tiền trước thuế</span><span>2,702,441 đ</span></div>
+        <div class="payment-row"><span>Tổng tiền thuế</span><span>216,195,28 đ</span></div>
+        <div class="payment-row total">
+          <span>Tổng tiền cần thanh toán</span>
+          <span>2,918,636,28 đ</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.content -->
+
+  <!-- Footer -->
+  <div class="footer-bar">
+    <span style="font-size:12px;color:var(--color-neutral-600)">📅 Ngày tạo: 26/05/2026 <span style="color:var(--color-primary-400)">✏</span></span>
+    <span style="margin-left:auto;font-size:12px;color:var(--color-neutral-600)">✏ Nhập ghi chú</span>
+    <button class="btn btn-outline">💾 Lưu đơn</button>
+    <button class="btn btn-primary" id="btn-checkout" disabled>
+      💳 Thanh toán
+      <span class="btn-error-badge" id="error-badge">1</span>
+    </button>
+  </div>
+
+</div><!-- /.main -->
+
+<script>
+  let allowNegative = true;
+  let errorRows = new Set([2]); // row 2 is error by default (config blocks)
+
+  // Config toggle
+  function onConfigChange(checked) {
+    allowNegative = checked;
+    document.getElementById('config-label').textContent = checked
+      ? 'Cho phép xuất quá tồn'
+      : 'Không cho phép xuất quá tồn';
+
+    const row1 = document.getElementById('row-1');
+    const chip1 = document.getElementById('chip-1');
+    const hint1 = chip1.nextElementSibling;
+
+    if (checked) {
+      // Row 1 becomes warning (allow)
+      row1.className = 'row-warning';
+      chip1.className = 'kho-chip warning';
+      chip1.querySelector('.kho-chip-icon').textContent = '⚠';
+      hint1.className = 'kho-stock-hint warning';
+      errorRows.delete(1);
+
+      // Row 2 becomes error (block - per its own config)
+      errorRows.add(2);
+    } else {
+      // Both rows become error
+      row1.className = 'row-error';
+      chip1.className = 'kho-chip error';
+      chip1.querySelector('.kho-chip-icon').textContent = '✕';
+      hint1.className = 'kho-stock-hint error';
+      errorRows.add(1);
+      errorRows.add(2);
+    }
+    updateCheckoutBtn();
+  }
+
+  // Toggle dropdown
+  function toggleDrop(rowId) {
+    // Close all
+    [1, 2, 3].forEach(id => {
+      const d = document.getElementById('drop-' + id);
+      const c = document.getElementById('chip-' + id);
+      if (id !== rowId) {
+        d.classList.add('hidden');
+        c.classList.remove('open');
+      }
+    });
+    const drop = document.getElementById('drop-' + rowId);
+    const chip = document.getElementById('chip-' + rowId);
+    const isHidden = drop.classList.contains('hidden');
+    drop.classList.toggle('hidden', !isHidden);
+    chip.classList.toggle('open', isHidden);
+  }
+
+  // Select warehouse
+  function selectKho(rowId, khoName) {
+    const chip = document.getElementById('chip-' + rowId);
+    // Update chip text (keep icon if warning/error)
+    const icon = chip.querySelector('.kho-chip-icon');
+    const iconText = icon ? icon.textContent : '';
+    chip.innerHTML = `
+      ${icon ? `<span class="kho-chip-icon">${iconText}</span>` : ''}
+      ${khoName}
+      <svg class="kho-chip-chevron" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 4l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    `;
+    // If switching to a fully-stocked warehouse, resolve error
+    if (khoName === 'Kho B' || khoName === 'Kho C') {
+      const row = document.getElementById('row-' + rowId);
+      row.className = '';
+      chip.className = 'kho-chip';
+      const hint = chip.closest('.kho-cell').querySelector('.kho-stock-hint');
+      if (hint) {
+        hint.className = 'kho-stock-hint';
+        hint.style.color = 'var(--color-success)';
+        hint.textContent = 'Tồn: 50 ✓';
+      }
+      errorRows.delete(rowId);
+      updateCheckoutBtn();
+    }
+    document.getElementById('drop-' + rowId).classList.add('hidden');
+    chip.classList.remove('open');
+  }
+
+  // Split row
+  function splitRow(rowId) {
+    document.getElementById('drop-' + rowId).classList.add('hidden');
+    document.getElementById('chip-' + rowId).classList.remove('open');
+
+    const tbody = document.getElementById('order-tbody');
+    const origRow = document.getElementById('row-' + rowId);
+
+    const splitId = 'split-' + rowId;
+    if (document.getElementById(splitId)) return; // already split
+
+    const splitRowEl = document.createElement('tr');
+    splitRowEl.id = splitId;
+    splitRowEl.className = 'row-split';
+
+    const khoCurrent = rowId === 1 ? 'Kho A' : 'Kho E';
+    const slCurrent  = rowId === 1 ? 8 : 3;
+    const slRemain   = rowId === 1 ? 7 : 12;
+
+    // Lấy nội dung sản phẩm từ row gốc
+    const origTds = origRow.querySelectorAll('td');
+    const productTaxHTML = origTds[1].innerHTML;
+    const origChip    = origTds[2].querySelector('.product-chip');
+    const origChipSub = origTds[2].querySelector('.chip-sub');
+    const posCellHTML = (origChip ? origChip.outerHTML : '') + (origChipSub ? origChipSub.outerHTML : '');
+
+    splitRowEl.innerHTML = `
+      <td class="stt center"></td>
+      <td>
+        ${productTaxHTML}
+        <div style="margin-top:4px"><span class="split-badge">Tách kho</span></div>
+      </td>
+      <td>${posCellHTML}</td>
+      <td class="center">${slRemain}</td>
+      <td class="right">245,000</td>
+      <td class="right">0</td>
+      <td class="center">10%</td>
+      <td class="right">${(slRemain * 245000).toLocaleString('vi-VN')}</td>
+      <td class="kho-cell">
+        <div class="kho-select-placeholder" title="Chọn kho cho phần tách">
+          <svg width="12" height="12" fill="none" viewBox="0 0 12 12"><path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Chọn kho...
+        </div>
+      </td>
+      <td class="center">
+        <button class="btn-del" onclick="removeSplit('${splitId}')">
+          <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M3 4h10M6 4V3h4v1M5 4l.5 9h5l.5-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </td>
+    `;
+
+    // Update original row SL
+    origRow.querySelectorAll('td')[3].textContent = slCurrent;
+    origRow.querySelectorAll('td')[7].textContent = (slCurrent * 245000).toLocaleString('vi-VN');
+
+    origRow.insertAdjacentElement('afterend', splitRowEl);
+    renumberRows();
+  }
+
+  function removeSplit(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+    renumberRows();
+  }
+
+  function renumberRows() {
+    const rows = document.querySelectorAll('#order-tbody tr');
+    rows.forEach((tr, i) => {
+      tr.querySelector('td.stt').textContent = i + 1;
+    });
+  }
+
+  // Checkout button state
+  function updateCheckoutBtn() {
+    const btn = document.getElementById('btn-checkout');
+    const badge = document.getElementById('error-badge');
+    const count = errorRows.size;
+    if (count > 0) {
+      btn.disabled = true;
+      badge.textContent = count;
+      badge.style.display = 'inline-flex';
+    } else {
+      btn.disabled = false;
+      badge.style.display = 'none';
+    }
+  }
+
+  // Close dropdowns on outside click
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.kho-cell')) {
+      [1, 2, 3].forEach(id => {
+        const d = document.getElementById('drop-' + id);
+        const c = document.getElementById('chip-' + id);
+        if (d) d.classList.add('hidden');
+        if (c) c.classList.remove('open');
+      });
+    }
+  });
+
+  updateCheckoutBtn();
+</script>
+</body>
+</html>

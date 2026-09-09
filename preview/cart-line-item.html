@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><link rel="stylesheet" href="../colors_and_type.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  body{margin:0;font-family:var(--font-sans);background:#fff;color:var(--ink)}
+  .wrap{padding:18px 20px}
+  .item{display:grid;grid-template-columns:56px 1fr auto auto auto;gap:14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-faint)}
+  .thumb{width:56px;height:56px;border-radius:8px;background:var(--surface-subtle);display:flex;align-items:center;justify-content:center;color:var(--gray-200)}
+  .thumb svg{width:24px;height:24px}
+  .name{font:var(--title-md)}
+  .attr{font:var(--body-sm);color:var(--text-secondary);margin-top:2px}
+  .step{display:flex;align-items:center;gap:8px}
+  .sb{width:24px;height:24px;border-radius:5px;background:var(--blue-500);color:#fff;display:flex;align-items:center;justify-content:center;border:none}
+  .sb svg{width:14px;height:14px}
+  .qty{font-family:var(--font-num);font-weight:700;width:18px;text-align:center}
+  .price{font-family:var(--font-num);font-weight:700}
+  .line{color:var(--blue-500)}
+  .sub{display:flex;align-items:center;gap:8px;padding:5px 0 5px 70px;font:var(--body-md);color:var(--text-secondary)}
+  .pill{font-size:12px;font-weight:600;padding:2px 8px;border-radius:5px}
+  .g{background:var(--success-50);color:var(--success-700)}
+  .o{background:var(--orange-50);color:var(--orange-700)}
+</style></head>
+<body><div class="wrap">
+  <div class="item">
+    <div class="thumb"><i data-lucide="image"></i></div>
+    <div><div class="name">Iphone 17 Promax</div><div class="attr">Chiếc · Kho mặc định · Bảo hành 12 tháng</div></div>
+    <div class="step"><button class="sb"><i data-lucide="minus"></i></button><span class="qty">1</span><button class="sb"><i data-lucide="plus"></i></button></div>
+    <div class="price">339.000</div>
+    <div class="price line">339.000</div>
+  </div>
+  <div class="sub"><span class="pill g">Quà tặng</span> Khăn quàng cổ nữ OWL <span style="margin-left:auto" class="price">1</span></div>
+  <div class="sub"><span class="pill o">Topping</span> Khăn quàng cổ nữ OWL <span style="margin-left:auto" class="price">1</span></div>
+</div>
+<script>lucide.createIcons();</script>
+</body></html>

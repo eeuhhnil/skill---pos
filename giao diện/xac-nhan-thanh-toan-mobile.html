@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Xác nhận thanh toán — Mobile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root{
+      --blue-500:#0074BD; --blue-100:#E6F1F8; --blue-50:#F0F7FB;
+      --ink:#151B33; --text-secondary:#455064; --text-placeholder:#B0B0B0;
+      --surface:#FFFFFF; --surface-page:#F4F6F8; --surface-subtle:#F7F7F7;
+      --border:#E6E6E6; --border-faint:#EEEEEE; --gray-100:#B5B3C8;
+      --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-full:999px;
+      --font-sans:'Noto Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      --font-display:'Be Vietnam Pro','Noto Sans',sans-serif;
+      --font-num:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#e5e5ea;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;padding:32px 0;font-family:var(--font-sans);color:var(--ink);}
+
+    .phone{width:390px;background:var(--surface-page);border-radius:40px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative;height:844px;display:flex;flex-direction:column;}
+    .num{font-family:var(--font-num);font-variant-numeric:tabular-nums;}
+
+    .status-bar{background:#fff;display:flex;justify-content:space-between;align-items:center;padding:12px 22px 4px;font-size:13px;font-weight:600;}
+
+    .nav-header{background:#fff;padding:10px 14px;display:flex;align-items:center;gap:8px;}
+    .nav-icon{color:var(--ink);display:flex;align-items:center;cursor:pointer;}
+    .nav-title{font-family:var(--font-display);font-size:18px;font-weight:700;flex:1;}
+
+    .content{overflow-y:auto;flex:1;padding-bottom:16px;}
+    .content::-webkit-scrollbar{width:0;}
+
+    .card{background:#fff;padding:4px 16px;margin-top:10px;}
+    .line{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border-faint);}
+    .line:last-child{border-bottom:none;}
+    .line-label{font-size:15px;color:var(--ink);}
+    .line-val{font-size:17px;font-weight:700;color:var(--ink);}
+    .line-val.blue{color:var(--blue-500);}
+    .pay-input{font-size:17px;font-weight:700;text-align:right;border:none;border-bottom:1.5px solid var(--border);padding:4px 0;outline:none;width:150px;color:var(--ink);font-family:var(--font-num);}
+    .pay-input:focus{border-bottom-color:var(--blue-500);}
+
+    /* Toggle */
+    .switch{position:relative;width:44px;height:26px;flex-shrink:0;}
+    .switch input{opacity:0;width:0;height:0;}
+    .track{position:absolute;inset:0;background:var(--gray-100);border-radius:var(--radius-full);transition:background .18s;cursor:pointer;}
+    .track::before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .18s;}
+    .switch input:checked + .track{background:var(--blue-500);}
+    .switch input:checked + .track::before{transform:translateX(18px);}
+    .toggle-row{display:flex;align-items:center;gap:12px;padding:14px 0;}
+    .toggle-row span{font-size:15px;}
+
+    /* Section title */
+    .sec-title{font-family:var(--font-display);font-size:17px;font-weight:700;padding:14px 0 4px;}
+
+    /* Dropdown */
+    .dropdown{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-radius:var(--radius-md);padding:13px 14px;cursor:pointer;margin:6px 0 14px;}
+    .dropdown .dd-val{font-size:15px;font-weight:500;}
+    .dropdown i{width:20px;height:20px;color:var(--text-secondary);}
+
+    /* Invoice method label */
+    .inv-label{font-size:14.5px;color:var(--text-secondary);padding:14px 0 0;}
+
+    /* Footer */
+    .footer{padding:12px 16px 24px;background:#fff;border-top:1px solid var(--border);}
+    .btn-pay{width:100%;background:var(--blue-500);color:#fff;border:none;border-radius:var(--radius-md);padding:15px;font-size:17px;font-weight:600;cursor:pointer;font-family:var(--font-display);}
+
+    /* Bottom sheet */
+    .overlay{display:none;position:absolute;inset:0;background:rgba(16,24,40,.48);z-index:50;align-items:flex-end;border-radius:40px;overflow:hidden;}
+    .overlay.show{display:flex;}
+    .sheet{background:#fff;border-radius:20px 20px 0 0;width:100%;animation:slideUp .24s ease;padding-bottom:22px;}
+    @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+    .sheet-handle{width:38px;height:4px;background:#d8d8de;border-radius:3px;margin:10px auto 2px;}
+    .sheet-header{padding:10px 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-faint);}
+    .sheet-title{font-family:var(--font-display);font-size:16px;font-weight:600;}
+    .sheet-close{background:var(--surface-subtle);border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-secondary);}
+    .sheet-close i{width:17px;height:17px;}
+    .opt{display:flex;align-items:center;gap:12px;padding:15px 18px;cursor:pointer;border-bottom:1px solid var(--border-faint);}
+    .opt:last-child{border-bottom:none;}
+    .opt .radio{width:22px;height:22px;border-radius:50%;border:1.5px solid #C5CAD3;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .opt.sel .radio{border-color:var(--blue-500);}
+    .opt.sel .radio::after{content:'';width:12px;height:12px;border-radius:50%;background:var(--blue-500);}
+    .opt .opt-text{font-size:15.5px;}
+    .opt.sel .opt-text{font-weight:600;color:var(--blue-500);}
+
+    .home-ind{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:130px;height:5px;border-radius:3px;background:#000;opacity:.25;}
+  </style>
+</head>
+<body>
+<div class="phone">
+
+  <div class="status-bar">
+    <span>9:41</span>
+    <span style="display:flex;gap:6px;align-items:center;font-size:12px;">●●●  Wifi  🔋</span>
+  </div>
+
+  <div class="nav-header">
+    <span class="nav-icon"><i data-lucide="chevron-left" style="width:24px;height:24px;"></i></span>
+    <span class="nav-title">Xác nhận thanh toán</span>
+  </div>
+
+  <div class="content">
+
+    <!-- Tổng tiền + Khách trả -->
+    <div class="card">
+      <div class="line">
+        <span class="line-label">Tổng tiền cần thanh toán</span>
+        <span class="line-val blue num">100.000</span>
+      </div>
+      <div class="line">
+        <span class="line-label">Khách trả</span>
+        <input class="pay-input" type="text" value="100.000" />
+      </div>
+    </div>
+
+    <!-- Khách cần thanh toán + Ghi nợ -->
+    <div class="card">
+      <div class="line">
+        <span class="line-label">Khách cần thanh toán</span>
+        <span class="line-val num">100.000</span>
+      </div>
+      <div class="toggle-row">
+        <label class="switch"><input type="checkbox" /><span class="track"></span></label>
+        <span>Ghi nợ</span>
+      </div>
+    </div>
+
+    <!-- Phương thức thanh toán: DROPDOWN -->
+    <div class="card">
+      <div class="sec-title">Phương thức thanh toán</div>
+      <div class="dropdown" onclick="openMethodSheet()">
+        <span class="dd-val" id="ddMethod">Tiền mặt</span>
+        <i data-lucide="chevron-down"></i>
+      </div>
+    </div>
+
+    <!-- Phương thức thanh toán hoá đơn -->
+    <div class="card">
+      <div class="inv-label">Phương thức thanh toán hoá đơn</div>
+      <div class="dropdown" onclick="openInvSheet()">
+        <span class="dd-val" id="invMethod">Tiền mặt</span>
+        <i data-lucide="chevron-down"></i>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <button class="btn-pay">Thanh toán</button>
+  </div>
+
+  <!-- ── Bottom sheet: chọn phương thức ── -->
+  <div class="overlay" id="methodOverlay" onclick="closeMethodSheet()">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <span class="sheet-title">Phương thức thanh toán</span>
+        <button class="sheet-close" onclick="closeMethodSheet()"><i data-lucide="x"></i></button>
+      </div>
+      <div id="methodOpts">
+        <div class="opt sel" onclick="pickMethod(this,'Tiền mặt')"><span class="radio"></span><span class="opt-text">Tiền mặt</span></div>
+        <div class="opt" onclick="pickMethod(this,'Chuyển khoản')"><span class="radio"></span><span class="opt-text">Chuyển khoản</span></div>
+        <div class="opt" onclick="pickMethod(this,'TM/CK')"><span class="radio"></span><span class="opt-text">TM/CK</span></div>
+        <div class="opt" onclick="pickMethod(this,'Cổng thanh toán')"><span class="radio"></span><span class="opt-text">Cổng thanh toán</span></div>
+        <div class="opt" onclick="pickMethod(this,'Khác')"><span class="radio"></span><span class="opt-text">Khác</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Bottom sheet: chọn phương thức TT hoá đơn ── -->
+  <div class="overlay" id="invOverlay" onclick="closeInvSheet()">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <span class="sheet-title">Phương thức thanh toán hoá đơn</span>
+        <button class="sheet-close" onclick="closeInvSheet()"><i data-lucide="x"></i></button>
+      </div>
+      <div id="invOpts">
+        <div class="opt sel" onclick="pickInv(this,'Tiền mặt')"><span class="radio"></span><span class="opt-text">Tiền mặt</span></div>
+        <div class="opt" onclick="pickInv(this,'Chuyển khoản')"><span class="radio"></span><span class="opt-text">Chuyển khoản</span></div>
+        <div class="opt" onclick="pickInv(this,'Thẻ tín dụng')"><span class="radio"></span><span class="opt-text">Thẻ tín dụng</span></div>
+        <div class="opt" onclick="pickInv(this,'Ví điện tử')"><span class="radio"></span><span class="opt-text">Ví điện tử</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="home-ind"></div>
+
+</div>
+
+<script>
+  function openMethodSheet(){ document.getElementById('methodOverlay').classList.add('show'); lucide.createIcons(); }
+  function closeMethodSheet(){ document.getElementById('methodOverlay').classList.remove('show'); }
+  function pickMethod(el, name){
+    document.querySelectorAll('#methodOpts .opt').forEach(o=>o.classList.remove('sel'));
+    el.classList.add('sel');
+    document.getElementById('ddMethod').textContent = name;
+    setTimeout(closeMethodSheet, 130);
+  }
+
+  function openInvSheet(){ document.getElementById('invOverlay').classList.add('show'); lucide.createIcons(); }
+  function closeInvSheet(){ document.getElementById('invOverlay').classList.remove('show'); }
+  function pickInv(el, name){
+    document.querySelectorAll('#invOpts .opt').forEach(o=>o.classList.remove('sel'));
+    el.classList.add('sel');
+    document.getElementById('invMethod').textContent = name;
+    setTimeout(closeInvSheet, 130);
+  }
+  lucide.createIcons();
+</script>
+</body>
+</html>

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đồng bộ tồn kho — Sàn TMĐT — EasyPOS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../colors_and_type.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); background: var(--surface-page); color: var(--ink);
+         -webkit-font-smoothing: antialiased; }
+  .tnum { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
+
+  /* ======================= TOP BAR ======================= */
+  .topbar { height: 64px; background: var(--blue-500); display: flex; align-items: center;
+            padding: 0 20px; gap: 12px; color: #fff; }
+  .brand { display: flex; align-items: center; gap: 9px; background: #fff; height: 44px;
+           padding: 0 16px; border-radius: 10px; }
+  .brand .mark { width: 26px; height: 26px; color: var(--blue-500); }
+  .brand b { font-family: var(--font-display); font-weight: 700; font-size: 19px; color: var(--ink); }
+  .brand b span { color: var(--blue-500); }
+  .topbar .spacer { flex: 1; }
+  .top-btn { display: flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px;
+             border-radius: var(--radius-md); font-family: var(--font-sans); font-size: 14px;
+             font-weight: 600; color: #fff; cursor: pointer; background: transparent; border: none; }
+  .top-btn.sell { background: #fff; color: var(--blue-500); }
+  .top-btn.company { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.35); }
+  .top-btn:hover:not(.sell):not(.company) { background: rgba(255,255,255,.12); }
+  .bell { position: relative; }
+  .bell .badge { position: absolute; top: -2px; right: 0; background: var(--error-500); color: #fff;
+                 font-size: 10px; font-weight: 700; border-radius: var(--radius-full); min-width: 16px;
+                 height: 16px; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+
+  /* ======================= SHELL ======================= */
+  .shell { display: flex; height: calc(100vh - 64px); }
+
+  /* ---- Left rail ---- */
+  .rail { width: 210px; background: var(--surface); border-right: 1px solid var(--border);
+          padding: 12px 10px; overflow-y: auto; flex: none; }
+  .nav-item { display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px;
+              border-radius: var(--radius-md); font-size: 14px; font-weight: 500;
+              color: var(--text-secondary); cursor: pointer; }
+  .nav-item i[data-lucide] { width: 20px; height: 20px; flex: none; }
+  .nav-item .chev { margin-left: auto; width: 16px; height: 16px; opacity: .6; }
+  .nav-item:hover { background: var(--surface-subtle); }
+  .nav-item.active { background: var(--blue-100); color: var(--blue-700); font-weight: 600; }
+  .sub-item { display: flex; align-items: center; height: 36px; padding: 0 12px 0 44px;
+              border-radius: var(--radius-md); font-size: 13.5px; color: var(--text-secondary); cursor: pointer; }
+  .sub-item:hover { background: var(--surface-subtle); }
+  .sub-item.active { color: var(--blue-500); font-weight: 600; }
+
+  /* ---- Work area ---- */
+  .work { flex: 1; overflow-y: auto; padding: 18px 24px 28px; }
+  .crumbs { display: flex; align-items: center; gap: 6px; font-size: 13.5px; margin-bottom: 10px; }
+  .crumb { color: var(--blue-500); font-weight: 600; cursor: pointer; padding: 2px 6px;
+           border-radius: var(--radius-sm); }
+  .crumb:hover { background: var(--blue-50); }
+  .crumb.current { color: var(--text-secondary); cursor: default; }
+  .crumb.current:hover { background: none; }
+  .crumb-sep { width: 15px; height: 15px; color: var(--text-placeholder); }
+  .page-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .page-head h1 { font-family: var(--font-display); font-weight: 600; font-size: 24px; color: var(--ink); }
+  .page-head .hint { font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
+  .page-head .hint i { width: 15px; height: 15px; color: var(--blue-500); }
+
+  /* ---- Card ---- */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl);
+          box-shadow: var(--shadow-sm); overflow: hidden; }
+
+  /* ---- Toolbar ---- */
+  .toolbar { display: flex; align-items: center; gap: 12px; padding: 16px 20px; flex-wrap: wrap; }
+  .search { position: relative; width: 340px; }
+  .search i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+              width: 18px; height: 18px; color: var(--text-placeholder); }
+  .search input { width: 100%; height: 40px; padding: 0 14px 0 38px; border: 1px solid var(--border);
+                  border-radius: var(--radius-md); font-family: var(--font-sans); font-size: 14px;
+                  color: var(--ink); background: var(--surface); outline: none; }
+  .search input::placeholder { color: var(--text-placeholder); }
+  .search input:focus { border-color: var(--blue-500); box-shadow: 0 0 0 3px var(--blue-50); }
+  .select { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px;
+            border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface);
+            font-size: 14px; color: var(--text-secondary); cursor: pointer; white-space: nowrap; }
+  .select b { color: var(--ink); font-weight: 600; }
+  .select i { width: 16px; height: 16px; color: var(--text-secondary); }
+  .select:hover { border-color: var(--blue-300); }
+  .toolbar .spacer { flex: 1; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 18px;
+         border-radius: var(--radius-md); font-family: var(--font-sans); font-size: 14px;
+         font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .btn i { width: 18px; height: 18px; }
+  .btn-secondary { background: var(--surface); border: 1.2px solid var(--blue-500); color: var(--blue-500); }
+  .btn-secondary:hover { background: var(--blue-50); }
+  .btn-primary { background: var(--blue-500); border: 1.2px solid var(--blue-500); color: var(--text-on-primary);
+                 box-shadow: var(--shadow-sm); }
+  .btn-primary:hover { background: var(--blue-600); border-color: var(--blue-600); }
+
+  /* ---- Table ---- */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1180px; }
+  thead th { background: var(--surface-subtle); color: var(--text-secondary); font-size: 12px;
+             font-weight: 600; letter-spacing: .04em; text-transform: uppercase; text-align: left;
+             padding: 11px 14px; white-space: nowrap; border-top: 1px solid var(--border);
+             border-bottom: 1px solid var(--border); }
+  thead th.r { text-align: right; }
+  tbody td { padding: 12px 14px; font-size: 14px; color: var(--ink); vertical-align: middle;
+             border-bottom: 1px solid var(--border-faint); }
+  tbody td.r { text-align: right; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr.plain:hover td { background: var(--blue-50); }
+  tbody tr.row-warn td { background: var(--warning-50); }
+  tbody tr.row-new  td { background: var(--blue-50); }
+  tbody tr.row-err  td { background: var(--error-50); }
+  td.sel, th.sel { width: 48px; padding-left: 20px; padding-right: 0; }
+  input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--blue-500); cursor: pointer;
+                         margin: 0; display: block; }
+
+  /* product cell */
+  .prod { display: flex; align-items: flex-start; gap: 12px; min-width: 300px; }
+  .thumb { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--surface-subtle);
+           border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
+           flex: none; }
+  .thumb i { width: 20px; height: 20px; color: var(--text-placeholder); }
+  .prod .name { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .prod .sku { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
+  .low-stock { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px;
+               font-size: 12px; font-weight: 600; color: var(--warning-700); }
+  .low-stock i { width: 14px; height: 14px; }
+
+  /* channel cell */
+  .chan { display: inline-flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 500;
+          color: var(--ink); white-space: nowrap; }
+  .chan .logo { width: 24px; height: 24px; border-radius: var(--radius-sm); display: flex;
+                align-items: center; justify-content: center; color: #fff; font-family: var(--font-display);
+                font-weight: 700; font-size: 13px; flex: none; }
+  .logo.shopee { background: #EE4D2D; }
+  .logo.tiktok { background: #151B33; }
+  .logo.lazada { background: #6A2CB0; }
+
+  /* numbers */
+  .num { font-family: var(--font-num); font-weight: 600; font-variant-numeric: tabular-nums;
+         font-feature-settings: 'tnum'; font-size: 14px; }
+  .diff-pos { color: var(--success-700); }
+  .diff-neg { color: var(--error-500); }
+  .muted { color: var(--text-secondary); font-weight: 500; }
+  .dash { color: var(--text-placeholder); }
+  .when { font-size: 13.5px; color: var(--text-secondary); white-space: nowrap; }
+
+  /* status tags */
+  .tag { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px;
+         border-radius: var(--radius-full); font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+  .tag i { width: 13px; height: 13px; }
+  .tag-ok  { background: var(--success-50); color: var(--success-700); }
+  .tag-err { background: var(--error-50);   color: var(--error-700); }
+  .btn-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border: none;
+             border-radius: var(--radius-full); background: var(--blue-100); color: var(--blue-700);
+             font-family: var(--font-sans); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+  .btn-tag i { width: 13px; height: 13px; }
+  .btn-tag:hover { background: var(--blue-200); }
+
+  /* footer */
+  .card-foot { display: flex; align-items: center; gap: 12px; padding: 14px 20px;
+               border-top: 1px solid var(--border); font-size: 13.5px; color: var(--text-secondary); }
+  .card-foot .spacer { flex: 1; }
+  .pager { display: flex; align-items: center; gap: 6px; }
+  .pg { min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid var(--border);
+        background: var(--surface); border-radius: var(--radius-sm); font-family: var(--font-sans);
+        font-size: 13px; font-weight: 600; color: var(--text-secondary); cursor: pointer;
+        display: inline-flex; align-items: center; justify-content: center; }
+  .pg:hover { border-color: var(--blue-300); color: var(--blue-500); }
+  .pg.active { background: var(--blue-500); border-color: var(--blue-500); color: #fff; }
+  .pg i { width: 15px; height: 15px; }
+</style>
+</head>
+<body>
+
+<!-- ======================= TOP BAR ======================= -->
+<header class="topbar">
+  <div class="brand">
+    <i data-lucide="calculator" class="mark"></i>
+    <b>Easy<span>POS</span></b>
+  </div>
+  <div class="spacer"></div>
+  <button class="top-btn sell"><i data-lucide="shopping-cart" style="width:18px;height:18px"></i> Bán hàng</button>
+  <button class="top-btn"><i data-lucide="headphones" style="width:18px;height:18px"></i> Hỗ trợ</button>
+  <button class="top-btn bell"><i data-lucide="bell" style="width:20px;height:20px"></i><span class="badge">5</span></button>
+  <button class="top-btn company"><i data-lucide="store" style="width:18px;height:18px"></i> Công ty TNHH SDS <i data-lucide="chevron-down" style="width:16px;height:16px"></i></button>
+  <button class="top-btn"><i data-lucide="user" style="width:18px;height:18px"></i> Nguyễn Văn A</button>
+</header>
+
+<div class="shell">
+  <!-- ======================= LEFT RAIL ======================= -->
+  <nav class="rail">
+    <div class="nav-item"><i data-lucide="layout-grid"></i> Tổng quan</div>
+    <div class="nav-item"><i data-lucide="package"></i> Hàng hóa <i data-lucide="chevron-down" class="chev"></i></div>
+    <div class="nav-item"><i data-lucide="arrow-left-right"></i> Giao dịch <i data-lucide="chevron-down" class="chev"></i></div>
+    <div class="nav-item active"><i data-lucide="store"></i> Sàn TMĐT <i data-lucide="chevron-up" class="chev"></i></div>
+    <div class="sub-item">Kết nối gian hàng</div>
+    <div class="sub-item">Đơn hàng sàn</div>
+    <div class="sub-item active">Kho hàng sàn</div>
+    <div class="nav-item"><i data-lucide="bar-chart-3"></i> Báo cáo <i data-lucide="chevron-down" class="chev"></i></div>
+    <div class="nav-item"><i data-lucide="settings"></i> Thiết lập <i data-lucide="chevron-down" class="chev"></i></div>
+  </nav>
+
+  <!-- ======================= WORK AREA ======================= -->
+  <main class="work">
+    <div class="crumbs">
+      <span class="crumb">Sàn TMĐT</span>
+      <i data-lucide="chevron-right" class="crumb-sep"></i>
+      <span class="crumb">Kho hàng sàn</span>
+      <i data-lucide="chevron-right" class="crumb-sep"></i>
+      <span class="crumb current">Đồng bộ tồn kho</span>
+    </div>
+
+    <div class="page-head">
+      <h1>Đồng bộ tồn kho</h1>
+      <span class="hint"><i data-lucide="refresh-cw"></i> Cập nhật gần nhất: 20/08/2026 09:42</span>
+    </div>
+
+    <section class="card">
+      <!-- ---- Toolbar ---- -->
+      <div class="toolbar">
+        <div class="search">
+          <i data-lucide="search"></i>
+          <input type="text" placeholder="Tìm theo tên hoặc SKU...">
+        </div>
+        <div class="select">Sàn: <b>Tất cả</b> <i data-lucide="chevron-down"></i></div>
+        <div class="select">Trạng thái: <b>Tất cả</b> <i data-lucide="chevron-down"></i></div>
+        <div class="spacer"></div>
+        <button class="btn btn-secondary"><i data-lucide="download"></i> Xuất Excel</button>
+        <button class="btn btn-primary"><i data-lucide="refresh-cw"></i> Đồng bộ đã chọn (4)</button>
+      </div>
+
+      <!-- ---- Table ---- -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sel"><input type="checkbox" checked aria-label="Chọn tất cả"></th>
+              <th>Sản phẩm</th>
+              <th>Sàn</th>
+              <th class="r">Tồn POS</th>
+              <th class="r">Chênh lệch</th>
+              <th class="r">Tồn sàn</th>
+              <th>Đồng bộ gần nhất</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 1 -->
+            <tr class="plain">
+              <td class="sel"><input type="checkbox" checked></td>
+              <td>
+                <div class="prod">
+                  <div class="thumb"><i data-lucide="package"></i></div>
+                  <div>
+                    <div class="name">Tai nghe Bluetooth Baseus WM01</div>
+                    <div class="sku">SKU: TNB-BASEUS-WM01-BK</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="chan"><span class="logo shopee">S</span> Shopee</span></td>
+              <td class="r"><span class="num">120</span></td>
+              <td class="r"><span class="num diff-pos">+22</span></td>
+              <td class="r"><span class="num">98</span></td>
+              <td><span class="when">3 phút trước</span></td>
+              <td><span class="tag tag-ok"><i data-lucide="check"></i> Đã đồng bộ</span></td>
+            </tr>
+            <!-- 2 -->
+            <tr class="plain">
+              <td class="sel"><input type="checkbox" checked></td>
+              <td>
+                <div class="prod">
+                  <div class="thumb"><i data-lucide="package"></i></div>
+                  <div>
+                    <div class="name">Ly giữ nhiệt Lock&amp;Lock 500ml</div>
+                    <div class="sku">SKU: LY-LOCK500-GRN</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="chan"><span class="logo tiktok">T</span> TikTok Shop</span></td>
+              <td class="r"><span class="num">85</span></td>
+              <td class="r"><span class="num diff-neg">−15</span></td>
+              <td class="r"><span class="num">100</span></td>
+              <td><span class="when">Hôm qua 14:30</span></td>
+              <td><span class="tag tag-ok"><i data-lucide="check"></i> Đã đồng bộ</span></td>
+            </tr>
+            <!-- 3 -->
+            <tr class="plain">
+              <td class="sel"><input type="checkbox" checked></td>
+              <td>
+                <div class="prod">
+                  <div class="thumb"><i data-lucide="package"></i></div>
+                  <div>
+                    <div class="name">Chuột không dây Logitech M240</div>
+                    <div class="sku">SKU: CHUOT-LOGI-M240-WH</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="chan"><span class="logo lazada">L</span> Lazada</span></td>
+              <td class="r"><span class="num">110</span></td>
+              <td class="r"><span class="num muted">0</span></td>
+              <td class="r"><span class="num">110</span></td>
+              <td><span class="when">2 giờ trước</span></td>
+              <td><span class="tag tag-ok"><i data-lucide="check"></i> Đã đồng bộ</span></td>
+            </tr>
+            <!-- 4 -->
+            <tr class="row-warn">
+              <td class="sel"><input type="checkbox" checked></td>
+              <td>
+                <div class="prod">
+                  <div class="thumb"><i data-lucide="package"></i></div>
+                  <div>
+                    <div class="name">Kem chống nắng SPF 50+</div>
+                    <div class="sku">SKU: KCN-006</div>
+                    <div class="low-stock"><i data-lucide="alert-triangle"></i> Còn 2 — chạm mức tối thiểu 10</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="chan"><span class="logo shopee">S</span> Shopee</span></td>
+              <td class="r"><span class="num">2</span></td>
+              <td class="r"><span class="num muted">0</span></td>
+              <td class="r"><span class="num">2</span></td>
+              <td><span class="when">1 giờ trước</span></td>
+              <td><span class="tag tag-ok"><i data-lucide="check"></i> Đã đồng bộ</span></td>
+            </tr>
+            <!-- 5 -->
+            <tr class="row-warn">
+              <td class="sel"><input type="checkbox"></td>
+              <td>
+                <div class="prod">
+                  <div class="thumb"><i data-lucide="package"></i></div>
+                  <div>
+                    <div class="name">Váy hoa nữ mùa hè</div>
+                    <div class="sku">SKU: VH-003</div>
+                    <div class="low-stock"><i data-lucide="alert-triangle"></i> Còn 3 — chạm mức tối thiểu 5</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="chan"><span class="logo tiktok">T</span> TikTok Shop</span></td>
+              <td class="r"><span class="num">3</span></td>
+              <td class="r"><span class="num muted">0</span></td>
+              <td class="r"><span class="num">3</span></td>
+              <td><span class="when">30 phút trước</span></td>
+              <td><span class="tag tag-ok"><i data-lucide="check"></i> Đã đồng bộ</span></td>
+            </tr>
+            <!-- 6 -->
+            <tr class="row-new">
+              <td class="sel"><input type="checkbox"></td>
+              <td>
+                <div class="prod">
+                  <div class="thumb"><i data-lucide="package"></i></div>
+                  <div>
+                    <div class="name">Quạt mini để bàn USB</div>
+                    <div class="sku">SKU: FAN-MINI-USB-WT</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="chan"><span class="logo lazada">L</span> Lazada</span></td>
+              <td class="r"><span class="num">60</span></td>
+              <td class="r"><span class="dash">—</span></td>
+              <td class="r"><span class="dash">—</span></td>
+              <td><span class="dash">—</span></td>
+              <td><button class="btn-tag"><i data-lucide="plus"></i> Tạo mới</button></td>
+            </tr>
+            <!-- 7 -->
+            <tr class="row-err">
+              <td class="sel"><input type="checkbox"></td>
+              <td>
+                <div class="prod">
+                  <div class="thumb"><i data-lucide="package"></i></div>
+                  <div>
+                    <div class="name">Ốp lưng iPhone 14 Pro Max</div>
+                    <div class="sku">SKU: OPL-IP14PM-CLR</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="chan"><span class="logo shopee">S</span> Shopee</span></td>
+              <td class="r"><span class="num">200</span></td>
+              <td class="r"><span class="dash">—</span></td>
+              <td class="r"><span class="dash">—</span></td>
+              <td><span class="dash">—</span></td>
+              <td><span class="tag tag-err"><i data-lucide="alert-triangle"></i> Thiếu ĐVT, Giá</span></td>
+            </tr>
+            <!-- 8 -->
+            <tr class="row-err">
+              <td class="sel"><input type="checkbox"></td>
+              <td>
+                <div class="prod">
+                  <div class="thumb"><i data-lucide="package"></i></div>
+                  <div>
+                    <div class="name">Đèn học LED chống cận thị</div>
+                    <div class="sku">SKU: DEN-LED-CC-01</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="chan"><span class="logo tiktok">T</span> TikTok Shop</span></td>
+              <td class="r"><span class="num">40</span></td>
+              <td class="r"><span class="dash">—</span></td>
+              <td class="r"><span class="dash">—</span></td>
+              <td><span class="dash">—</span></td>
+              <td><span class="tag tag-err"><i data-lucide="alert-triangle"></i> Thiếu ĐVT, Giá</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ---- Footer ---- -->
+      <div class="card-foot">
+        <span>Đã chọn <b class="tnum" style="color:var(--ink)">4</b> / <b class="tnum" style="color:var(--ink)">128</b> sản phẩm</span>
+        <div class="spacer"></div>
+        <div class="pager">
+          <button class="pg"><i data-lucide="chevron-left"></i></button>
+          <button class="pg active">1</button>
+          <button class="pg">2</button>
+          <button class="pg">3</button>
+          <button class="pg">…</button>
+          <button class="pg">16</button>
+          <button class="pg"><i data-lucide="chevron-right"></i></button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

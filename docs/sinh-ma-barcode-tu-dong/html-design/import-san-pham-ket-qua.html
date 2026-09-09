@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, initial-scale=1" />
+<title>EasyPOS · Nhập sản phẩm từ excel — kết quả sinh mã barcode (xử lý ngầm)</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+<style>
+:root{
+  --blue-900:#00314F; --blue-800:#004671; --blue-700:#005C96; --blue-600:#0068AA;
+  --blue-500:#0074BD; --blue-400:#3392CB; --blue-300:#66ADD9; --blue-200:#B0D4EB;
+  --blue-100:#E6F1F8; --blue-50:#F0F7FB;
+  --ink:#151B33; --gray-100:#B5B3C8; --gray-50:#E7E7ED;
+  --text-primary:#151B33; --text-secondary:#455064; --text-tertiary:#545454; --text-placeholder:#B0B0B0;
+  --surface:#FFFFFF; --surface-page:#F4F6F8; --surface-subtle:#F7F7F7;
+  --border:#E6E6E6; --border-strong:#DEE0E2; --border-faint:#EEEEEE;
+  --success-700:#1E7D45; --success-500:#2BA45C; --success-100:#C8F2D7; --success-50:#E0FFEB;
+  --warning-700:#B7791F; --warning-500:#F0A92A; --warning-100:#FDEFC8; --warning-50:#FFFAE7;
+  --error-700:#BE211C; --error-500:#EB5146; --error-100:#FED9D5; --error-50:#FEF3F2;
+  --thead:#EAF3FA;
+  --font-sans:'Noto Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --font-display:'Be Vietnam Pro','Noto Sans',sans-serif;
+  --font-num:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',sans-serif;
+  --radius-xs:4px; --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-xl:16px; --radius-full:999px;
+  --shadow-sm:0 1px 2px rgba(16,24,40,.08);
+  --shadow-md:0 4px 12px rgba(16,24,40,.15);
+  --shadow-lg:0 12px 32px rgba(16,24,40,.16);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:40px;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{font-family:var(--font-sans); color:var(--text-primary); background:var(--surface-page); font-size:14px;}
+button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+.num{font-family:var(--font-num); font-weight:600; font-variant-numeric:tabular-nums;}
+
+.canvas{width:1560px; margin:0 auto; padding:var(--s7) var(--s5) 90px;}
+
+/* ---- page heading ---- */
+.page-head{margin-bottom:var(--s6);}
+.page-head h1{font-family:var(--font-display); font-weight:600; font-size:24px; color:var(--ink);}
+.page-head p{font-size:14px; color:var(--text-secondary); margin-top:8px; max-width:1050px; line-height:1.6;}
+.page-head .src{font-size:12px; color:var(--text-tertiary); margin-top:10px;}
+
+/* ---- section block ---- */
+.blk{margin-bottom:var(--s7);}
+.blk-tag{display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:13px;
+  padding:4px 12px; border-radius:var(--radius-full); margin-bottom:var(--s3);
+  background:var(--blue-100); color:var(--blue-700);}
+.blk-tag.new{background:var(--warning-50); color:var(--warning-700);}
+.blk-note{font-size:13px; color:var(--text-secondary); margin:0 0 var(--s4) 2px; max-width:1050px; line-height:1.6;}
+
+/* ---- modal shell ---- */
+.modal{background:var(--surface); border-radius:var(--radius-md); box-shadow:var(--shadow-lg); overflow:hidden;}
+.modal-head{height:48px; background:var(--blue-500); display:flex; align-items:center;
+  justify-content:space-between; padding:0 var(--s4); color:#fff;}
+.modal-head .t{font-weight:600; font-size:15px;}
+.modal-head .x{width:28px; height:28px; display:flex; align-items:center; justify-content:center; color:#fff;}
+.modal-body{padding:var(--s6) var(--s7) var(--s5);}
+.modal-foot{display:flex; justify-content:flex-end; gap:var(--s3);
+  padding:var(--s4) var(--s6); border-top:1px solid var(--border);}
+
+/* ---- stepper ---- */
+.stepper{display:flex; align-items:center; justify-content:center; padding-bottom:var(--s5);
+  border-bottom:1px solid var(--border); margin-bottom:var(--s6);}
+.step{display:flex; align-items:center; gap:10px;}
+.step .dot{width:26px; height:26px; border-radius:var(--radius-full); background:var(--blue-500);
+  color:#fff; font-weight:600; font-size:13px; display:flex; align-items:center; justify-content:center;}
+.step .lb{font-weight:600; font-size:14px; color:var(--ink);}
+.step.todo .dot{background:var(--gray-100);}
+.step.todo .lb{color:var(--text-placeholder); font-weight:400;}
+.bar{width:200px; height:2px; background:var(--blue-500); margin:0 var(--s4);}
+.bar.todo{background:var(--border);}
+
+/* ---- result centre ---- */
+.result{display:flex; flex-direction:column; align-items:center; text-align:center;}
+.badge{width:84px; height:84px; border-radius:var(--radius-full); display:flex;
+  align-items:center; justify-content:center; color:#fff; margin-bottom:var(--s4);}
+.badge.blue{background:var(--blue-500); box-shadow:0 0 0 12px rgba(0,116,189,.13);}
+.badge.warn{background:var(--warning-500); box-shadow:0 0 0 12px rgba(240,169,42,.14);}
+.result h2{font-family:var(--font-display); font-weight:600; font-size:19px; color:var(--ink);}
+.result .sub{font-size:14px; color:var(--text-secondary); margin-top:8px; max-width:660px; line-height:1.6;}
+.result .sub b{color:var(--ink); font-weight:600;}
+.result a.link{display:inline-block; margin-top:10px; color:var(--blue-500); font-size:14px; text-decoration:underline;}
+
+/* ---- banner ---- */
+.banner{display:flex; gap:10px; align-items:flex-start; padding:12px var(--s4);
+  border-radius:var(--radius-md); font-size:13.5px; line-height:1.6; text-align:left; width:100%;}
+.banner.warn{background:var(--warning-50); border:1px solid var(--warning-100); color:var(--warning-700);}
+.banner.err{background:var(--error-50); border:1px solid var(--error-100); color:var(--error-700);}
+.banner.info{background:var(--blue-50); border:1px solid var(--blue-200); color:var(--blue-700);}
+.banner i{flex:none; margin-top:1px;}
+.banner b{font-weight:700;}
+
+/* ---- generic table ---- */
+.card{background:var(--surface); border-radius:var(--radius-md); box-shadow:var(--shadow-sm); padding:var(--s5);}
+.card-title{font-family:var(--font-display); font-weight:700; font-size:18px; color:var(--blue-500); margin-bottom:var(--s4);}
+.toolbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--s4);}
+.datepill{display:inline-flex; align-items:center; gap:10px; border:1px solid var(--border-strong);
+  border-radius:var(--radius-sm); padding:8px 14px; color:var(--blue-500); font-size:14px;}
+.iconbtns{display:flex; gap:10px;}
+.iconbtn{width:34px; height:34px; border:1px solid var(--border-strong); border-radius:var(--radius-sm);
+  display:flex; align-items:center; justify-content:center; color:var(--blue-500);}
+
+.tbl-wrap{border:1px solid var(--border-strong); border-radius:var(--radius-sm); overflow:hidden;}
+.tbl-scroll{max-height:260px; overflow-y:auto;}
+table{width:100%; border-collapse:collapse; font-size:14px;}
+thead th{position:sticky; top:0; background:var(--thead); color:var(--ink);
+  font-weight:600; font-size:13.5px; text-align:left; padding:12px var(--s4);
+  border-bottom:1px solid var(--border-strong); white-space:nowrap;}
+tbody td{padding:12px var(--s4); border-bottom:1px solid var(--border-faint); color:var(--ink); vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:nth-child(even){background:var(--surface-subtle);}
+.ctr{text-align:center;}
+.acts{display:flex; gap:14px; color:var(--blue-500);}
+
+.chip{display:inline-block; font-size:12.5px; font-weight:600; padding:3px 10px; border-radius:var(--radius-full);}
+.chip.ok{background:var(--success-50); color:var(--success-700);}
+.chip.warn{background:var(--warning-50); color:var(--warning-700);}
+.chip.err{background:var(--error-50); color:var(--error-700);}
+
+/* ---- chi tiết tiến trình ---- */
+.detail{display:flex; gap:var(--s7); padding:var(--s6) var(--s7);}
+.detail-left{width:270px; flex:none; border-right:1px solid var(--border); padding-right:var(--s6);}
+.dl-item{margin-bottom:var(--s5);}
+.dl-item .k{font-size:13px; color:var(--text-secondary); margin-bottom:6px;}
+.dl-item .v{font-size:15px; font-weight:600; color:var(--ink);}
+.dl-item .v.ok{color:var(--success-500);}
+.dl-item .v.warn{color:var(--warning-700);}
+
+.detail-right{flex:1;}
+.dr-title{display:flex; align-items:center; gap:10px; color:var(--blue-500); font-weight:600;
+  font-size:16px; padding-bottom:var(--s3); border-bottom:1px solid var(--border); margin-bottom:var(--s5);}
+
+.timeline{position:relative; padding-left:52px;}
+.timeline::before{content:''; position:absolute; left:19px; top:8px; bottom:8px; width:2px; background:var(--blue-500);}
+.tl-item{position:relative; margin-bottom:var(--s5);}
+.tl-item:last-child{margin-bottom:0;}
+.tl-dot{position:absolute; left:-52px; top:14px; width:38px; height:38px; border-radius:var(--radius-full);
+  background:var(--blue-100); color:var(--blue-500); display:flex; align-items:center; justify-content:center;
+  border:3px solid var(--surface);}
+.tl-dot.done{background:var(--success-500); color:#fff;}
+.tl-dot.warn{background:var(--warning-500); color:#fff;}
+.tl-card{border:1px solid var(--border-strong); border-radius:var(--radius-md); padding:var(--s4); background:var(--surface);}
+.tl-card.active{border-color:var(--blue-300);}
+.tl-card .h{font-weight:600; font-size:14.5px; color:var(--ink);}
+.tl-card .h.ok{color:var(--success-500);}
+.tl-card .h.warn{color:var(--warning-700);}
+.tl-card .ts{display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-placeholder); margin-top:6px;}
+.tl-box{display:flex; gap:8px; align-items:flex-start; margin-top:var(--s3); padding:10px 12px;
+  border:1px solid var(--error-100); border-radius:var(--radius-sm); font-size:13px; color:var(--text-primary);}
+.tl-box.warn{border-color:var(--warning-100); background:var(--warning-50); color:var(--warning-700);}
+.tl-box i{flex:none; margin-top:1px;}
+
+/* ---- buttons ---- */
+.btn{display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:14px;
+  padding:9px 22px; border-radius:var(--radius-md); white-space:nowrap;}
+.btn-primary{background:var(--blue-500); color:#fff;}
+.btn-secondary{background:var(--surface); border:1.2px solid var(--blue-500); color:var(--blue-500);}
+.btn-tertiary{background:var(--blue-100); color:var(--blue-700);}
+.btn-sm{font-size:13px; padding:7px 16px;}
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <div class="page-head">
+    <h1>Nhập sản phẩm từ excel — kết quả sinh mã barcode tự động</h1>
+    <p>Nhập hàng chạy <b>ngầm bất đồng bộ</b>: modal đóng ngay ở bước 3, việc ghi sản phẩm và sinh mã vạch diễn ra ở tiến trình nền. Vì vậy kết quả “sản phẩm nào chưa sinh được mã vạch” <b>không nằm trong modal nhập hàng</b> mà bám vào ba màn tiến trình sẵn có. Các phần tô nhãn vàng là nội dung bổ sung.</p>
+    <p class="src">Tham chiếu: SRS-BARCODE-001 Mục 3.2.3 (luồng Import và Import cập nhật), BR-barcode-015, BR-barcode-016, BR-barcode-017.</p>
+  </div>
+
+  <!-- ══════════ 1. BƯỚC 2 — KIỂM TRA DỮ LIỆU, CHẶN SỚM ══════════ -->
+  <section class="blk">
+    <span class="blk-tag new"><i data-lucide="alert-triangle" style="width:15px;height:15px"></i> Bổ sung — Bước 2 Kiểm tra dữ liệu: chặn sớm khi dải số không đủ</span>
+    <p class="blk-note">Đây là cơ hội cuối để người dùng sửa trước khi mọi thứ chạy ngầm. Hệ thống chỉ <b>đọc</b> bộ đếm để đối chiếu, <b>không lấy số</b> nên không tiêu tốn dải mã. Trường hợp thiếu dải số là dự đoán được nên chặn luôn, không cho sang bước 3.</p>
+
+    <div class="modal" style="width:1300px">
+      <div class="modal-head">
+        <span class="t">Nhập sản phẩm từ excel</span>
+        <button class="x"><i data-lucide="x" style="width:18px;height:18px"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="stepper">
+          <div class="step"><span class="dot">1</span><span class="lb">Chọn tệp nguồn</span></div>
+          <div class="bar"></div>
+          <div class="step"><span class="dot">2</span><span class="lb">Kiểm tra dữ liệu</span></div>
+          <div class="bar todo"></div>
+          <div class="step todo"><span class="dot">3</span><span class="lb">Hoàn thành</span></div>
+        </div>
+
+        <div class="result">
+          <div class="badge warn"><i data-lucide="alert-triangle" style="width:42px;height:42px"></i></div>
+          <h2>Không thể nhập hàng</h2>
+          <p class="sub">Dữ liệu trong tệp hợp lệ, nhưng dải số mã vạch của chi nhánh không đủ cho lần nhập này.</p>
+
+          <div style="width:100%; max-width:900px; margin-top:var(--s5); display:flex; flex-direction:column; gap:var(--s3)">
+            <div class="banner warn">
+              <i data-lucide="alert-triangle" style="width:18px;height:18px"></i>
+              <span>Dải số của tiền tố <b>SP</b> chỉ còn <b>120 mã</b>, không đủ cho <b>500 sản phẩm</b> cần sinh mã vạch. Vui lòng tăng độ dài mã vạch trong <b>Cấu hình &gt; Sản phẩm</b> rồi nhập lại.</span>
+            </div>
+            <div class="banner info">
+              <i data-lucide="info" style="width:18px;height:18px"></i>
+              <span>Tệp có <b>500 sản phẩm</b>, trong đó <b>500 sản phẩm</b> để trống cột Mã vạch và sẽ được hệ thống sinh mã tự động.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-secondary"><i data-lucide="arrow-left" style="width:18px;height:18px"></i> Quay lại</button>
+        <button class="btn btn-tertiary">Thoát</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 2. BƯỚC 3 — GIỮ NGUYÊN ══════════ -->
+  <section class="blk">
+    <span class="blk-tag"><i data-lucide="check" style="width:15px;height:15px"></i> Giữ nguyên — Bước 3 Hoàn thành</span>
+    <p class="blk-note">Không đổi gì. Modal chỉ báo đã nhận việc, kết quả xem ở màn tiến trình.</p>
+
+    <div class="modal" style="width:1300px">
+      <div class="modal-head">
+        <span class="t">Nhập sản phẩm từ excel</span>
+        <button class="x"><i data-lucide="x" style="width:18px;height:18px"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="stepper">
+          <div class="step"><span class="dot">1</span><span class="lb">Chọn tệp nguồn</span></div>
+          <div class="bar"></div>
+          <div class="step"><span class="dot">2</span><span class="lb">Kiểm tra dữ liệu</span></div>
+          <div class="bar"></div>
+          <div class="step"><span class="dot">3</span><span class="lb">Hoàn thành</span></div>
+        </div>
+        <div class="result" style="padding:var(--s5) 0 var(--s6)">
+          <div class="badge blue"><i data-lucide="check" style="width:46px;height:46px"></i></div>
+          <h2 style="font-weight:400; font-size:15px; color:var(--text-primary)">Hệ thống đang xử lý dữ liệu của bạn</h2>
+          <a class="link" href="#">Ấn vào để xem tiến trình xử lý</a>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-tertiary">Thoát</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 3. LỊCH SỬ ĐỒNG BỘ ══════════ -->
+  <section class="blk">
+    <span class="blk-tag new"><i data-lucide="alert-triangle" style="width:15px;height:15px"></i> Bổ sung — Lịch sử đồng bộ: trạng thái “Thành công một phần”</span>
+    <p class="blk-note">Thêm một giá trị trạng thái thứ ba, chip vàng, dùng khi tiến trình chạy xong nhưng có sản phẩm chưa sinh được mã vạch. Cột Số lượng vẫn là tổng sản phẩm đã nhập. Nút tải xuống ở cột Thao tác tải về danh sách sản phẩm thiếu mã vạch.</p>
+
+    <div class="card">
+      <div class="card-title">Lịch sử đồng bộ</div>
+      <div class="toolbar">
+        <div class="datepill"><i data-lucide="calendar" style="width:18px;height:18px"></i> 17/07/2026 &nbsp;-&nbsp; 17/08/2026</div>
+        <div class="iconbtns">
+          <button class="iconbtn"><i data-lucide="list-checks" style="width:18px;height:18px"></i></button>
+          <button class="iconbtn"><i data-lucide="refresh-cw" style="width:18px;height:18px"></i></button>
+          <button class="iconbtn"><i data-lucide="filter" style="width:18px;height:18px"></i></button>
+        </div>
+      </div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="ctr" style="width:70px">STT</th>
+              <th style="width:220px">Ngày tạo</th>
+              <th>Loại tiến trình</th>
+              <th style="width:190px">Người tạo</th>
+              <th class="ctr" style="width:120px">Số lượng</th>
+              <th style="width:190px">Trạng thái</th>
+              <th style="width:120px">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="ctr num">1</td>
+              <td class="num">2026-08-17 11:42:52</td>
+              <td>Nhập sản phẩm từ excel</td>
+              <td>Quản Lý Dịch Vụ</td>
+              <td class="ctr num">500</td>
+              <td><span class="chip warn">Thành công một phần</span></td>
+              <td><span class="acts"><i data-lucide="download" style="width:19px;height:19px"></i><i data-lucide="eye" style="width:19px;height:19px"></i></span></td>
+            </tr>
+            <tr>
+              <td class="ctr num">2</td>
+              <td class="num">2026-08-17 09:15:03</td>
+              <td>Nhập sản phẩm từ excel</td>
+              <td>Quản Lý Dịch Vụ</td>
+              <td class="ctr num">120</td>
+              <td><span class="chip ok">Thành công</span></td>
+              <td><span class="acts"><i data-lucide="download" style="width:19px;height:19px"></i><i data-lucide="eye" style="width:19px;height:19px"></i></span></td>
+            </tr>
+            <tr>
+              <td class="ctr num">3</td>
+              <td class="num">2026-08-13 15:50:32</td>
+              <td>Báo cáo xuất nhập tồn chi tiết</td>
+              <td>Quản Lý Dịch Vụ</td>
+              <td class="ctr num">224</td>
+              <td><span class="chip ok">Thành công</span></td>
+              <td><span class="acts"><i data-lucide="download" style="width:19px;height:19px"></i><i data-lucide="eye" style="width:19px;height:19px"></i></span></td>
+            </tr>
+            <tr>
+              <td class="ctr num">4</td>
+              <td class="num">2026-08-05 14:49:02</td>
+              <td>Nhập sản phẩm từ excel</td>
+              <td>Quản Lý Dịch Vụ</td>
+              <td class="ctr num">0</td>
+              <td><span class="chip err">Thất bại</span></td>
+              <td><span class="acts"><i data-lucide="download" style="width:19px;height:19px"></i><i data-lucide="eye" style="width:19px;height:19px"></i></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 4. CHI TIẾT TIẾN TRÌNH ══════════ -->
+  <section class="blk">
+    <span class="blk-tag new"><i data-lucide="alert-triangle" style="width:15px;height:15px"></i> Bổ sung — Chi tiết tiến trình: mốc kết thúc kèm danh sách sản phẩm thiếu mã vạch</span>
+    <p class="blk-note">Giữ nguyên bố cục hai cột và dòng thời gian thực thi. Mốc cuối đổi nhãn thành “Thành công một phần” màu vàng, kèm hộp cảnh báo, bảng danh sách cuộn trong khung và nút tải danh sách.</p>
+
+    <div class="modal" style="width:1300px">
+      <div class="modal-head">
+        <span class="t">Chi tiết tiến trình</span>
+        <button class="x"><i data-lucide="x" style="width:18px;height:18px"></i></button>
+      </div>
+
+      <div class="detail">
+        <div class="detail-left">
+          <div class="dl-item"><div class="k">Trạng Thái</div><div class="v warn">Thành công một phần</div></div>
+          <div class="dl-item"><div class="k">Ngày Tạo</div><div class="v num">2026-08-17 11:42:52</div></div>
+          <div class="dl-item"><div class="k">Người Thực Hiện</div><div class="v">Quản Lý Dịch Vụ</div></div>
+          <div class="dl-item"><div class="k">Loại Tiến Trình</div><div class="v">Nhập sản phẩm từ excel</div></div>
+          <div class="dl-item" style="margin-bottom:0"><div class="k">Kết Quả</div><div class="v">500 sản phẩm đã nhập<br><span style="font-weight:400; font-size:13.5px; color:var(--warning-700)">3 sản phẩm chưa có mã vạch</span></div></div>
+        </div>
+
+        <div class="detail-right">
+          <div class="dr-title"><i data-lucide="history" style="width:20px;height:20px"></i> Lịch sử thực thi</div>
+
+          <div class="timeline">
+            <div class="tl-item">
+              <div class="tl-dot"><i data-lucide="flag" style="width:18px;height:18px"></i></div>
+              <div class="tl-card">
+                <div class="h">Tiến trình được khởi tạo</div>
+                <div class="ts"><i data-lucide="clock" style="width:14px;height:14px"></i> 2026-08-17 11:42:52</div>
+              </div>
+            </div>
+
+            <div class="tl-item">
+              <div class="tl-dot"><i data-lucide="play" style="width:18px;height:18px"></i></div>
+              <div class="tl-card">
+                <div class="h" style="color:var(--blue-500)">Bắt đầu xử lý</div>
+                <div class="ts"><i data-lucide="clock" style="width:14px;height:14px"></i> Sau 28 ms</div>
+              </div>
+            </div>
+
+            <div class="tl-item">
+              <div class="tl-dot warn"><i data-lucide="alert-triangle" style="width:18px;height:18px"></i></div>
+              <div class="tl-card active">
+                <div class="h warn">Thành công một phần</div>
+                <div class="ts"><i data-lucide="clock" style="width:14px;height:14px"></i> 2026-08-17 11:43:21</div>
+
+                <div class="tl-box"><i data-lucide="info" style="width:15px;height:15px"></i> Thời gian xử lý: 28.8 giây</div>
+
+                <div class="tl-box warn">
+                  <i data-lucide="alert-triangle" style="width:15px;height:15px"></i>
+                  <span>Đã nhập <b>500 sản phẩm</b>. Có <b>3 sản phẩm</b> chưa sinh được mã vạch tự động vì mã sinh ra bị trùng sau 5 lượt thử — các sản phẩm này đã được lưu nhưng ô Mã vạch còn trống, vui lòng bổ sung thủ công.</span>
+                </div>
+
+                <div class="tbl-wrap" style="margin-top:var(--s3)">
+                  <div class="tbl-scroll" style="max-height:180px">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th class="ctr" style="width:80px">Dòng</th>
+                          <th style="width:160px">Mã sản phẩm</th>
+                          <th>Tên sản phẩm</th>
+                          <th style="width:280px">Lý do</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr><td class="ctr num">128</td><td style="font-weight:600">SPAVC01</td><td>Áo thun nam</td><td style="color:var(--text-secondary)">Mã vạch sinh ra bị trùng, đã thử 5 lần</td></tr>
+                        <tr><td class="ctr num">301</td><td style="font-weight:600">SPAVC55</td><td>Quần jean nữ</td><td style="color:var(--text-secondary)">Mã vạch sinh ra bị trùng, đã thử 5 lần</td></tr>
+                        <tr><td class="ctr num">477</td><td style="font-weight:600">SPAVC90</td><td>Áo khoác gió</td><td style="color:var(--text-secondary)">Mã vạch sinh ra bị trùng, đã thử 5 lần</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; margin-top:var(--s3)">
+                  <button class="btn btn-secondary btn-sm"><i data-lucide="download" style="width:16px;height:16px"></i> Tải danh sách</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn btn-primary">Đóng</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+<script>lucide.createIcons();</script>
+</body>
+</html>

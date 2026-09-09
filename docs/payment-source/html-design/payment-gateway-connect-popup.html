@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phương thức thanh toán — EasyPOS</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #333; font-size: 14px; }
+
+    .sidebar { width: 210px; background: #fff; border-right: 1px solid #e8e8e8; position: fixed; top: 0; left: 0; height: 100vh; padding: 12px 0; overflow-y: auto; }
+    .sidebar-item { padding: 9px 18px; cursor: pointer; font-size: 13px; color: #555; }
+    .sidebar-item:hover { background: #f5f5f5; }
+    .sidebar-item.active { color: #1890ff; font-weight: 600; background: #e6f7ff; border-right: 3px solid #1890ff; }
+
+    .main { margin-left: 210px; padding: 24px 28px; }
+    .page-title { font-size: 17px; font-weight: 700; margin-bottom: 20px; color: #1a1a1a; }
+
+    .card { background: #fff; border-radius: 8px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+    .card-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; color: #1a1a1a; }
+
+    /* Gateway list */
+    .gateway-item { display: flex; align-items: center; padding: 13px 0; border-bottom: 1px solid #f0f0f0; gap: 12px; }
+    .gateway-item:last-child { border-bottom: none; }
+    .bank-logo { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 10px; color: #fff; flex-shrink: 0; }
+    .logo-tcb  { background: #e31f26; }
+    .logo-bidv { background: #005baa; }
+    .logo-vcb  { background: #007a3d; }
+    .bank-name { flex: 1; font-size: 13px; color: #333; line-height: 1.4; }
+    .gateway-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .connected-badge { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #52c41a; font-weight: 500; }
+    .btn-connect { background: #1890ff; color: #fff; border: none; padding: 7px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; }
+    .btn-connect:hover { background: #096dd9; }
+    .btn-detail  { background: #fff; color: #1890ff; border: 1px solid #1890ff; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; }
+    .btn-detail:hover { background: #e6f7ff; }
+
+    /* Table */
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .btn-add { background: #1890ff; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; }
+    .search-wrap { display: flex; align-items: center; border: 1px solid #d9d9d9; border-radius: 6px; padding: 7px 12px; width: 260px; margin-bottom: 14px; gap: 6px; }
+    .search-wrap input { border: none; outline: none; font-size: 13px; width: 100%; color: #333; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #fafafa; text-align: left; padding: 10px 14px; border-bottom: 1px solid #e8e8e8; color: #666; font-weight: 600; font-size: 12px; }
+    td { padding: 11px 14px; border-bottom: 1px solid #f5f5f5; color: #333; }
+    tr:last-child td { border-bottom: none; }
+    .badge-on  { color: #52c41a; font-size: 12px; }
+    .badge-off { color: #ff4d4f; font-size: 12px; }
+    .tag    { display: inline-block; background: #f5f5f5; padding: 2px 8px; border-radius: 4px; font-size: 11px; color: #666; }
+    .tag-qr { background: #e6f7ff; color: #1890ff; }
+    .icon-btn { background: none; border: none; cursor: pointer; color: #bbb; font-size: 15px; padding: 2px 4px; }
+    .icon-btn:hover { color: #1890ff; }
+    .pagination { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
+    .page-size select { border: 1px solid #d9d9d9; border-radius: 4px; padding: 3px 6px; font-size: 12px; }
+    .pages { display: flex; gap: 4px; }
+    .page-btn { width: 28px; height: 28px; border: 1px solid #d9d9d9; background: #fff; border-radius: 4px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+    .page-btn.active { background: #1890ff; color: #fff; border-color: #1890ff; }
+    .page-btn:hover:not(.active) { border-color: #1890ff; color: #1890ff; }
+
+    /* Default setting */
+    .default-desc { font-size: 12px; color: #999; margin-bottom: 14px; }
+    .default-row { display: flex; align-items: center; gap: 16px; }
+    .select-box { border: 1px solid #d9d9d9; border-radius: 6px; padding: 7px 12px; font-size: 13px; width: 220px; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: space-between; color: #333; }
+
+    /* Modal overlay */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; align-items: center; justify-content: center; }
+    .overlay.show { display: flex; }
+
+    /* Modal */
+    .modal { background: #fff; border-radius: 10px; width: 500px; max-height: 92vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.18); animation: pop .15s ease; }
+    @keyframes pop { from { opacity:0; transform: scale(.97); } to { opacity:1; transform: scale(1); } }
+    .modal-header { display: flex; align-items: center; padding: 16px 22px; border-bottom: 1px solid #f0f0f0; gap: 12px; }
+    .modal-logo { width: 34px; height: 34px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 10px; color: #fff; flex-shrink: 0; }
+    .modal-title { font-size: 15px; font-weight: 700; color: #1a1a1a; flex: 1; }
+    .modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: #aaa; }
+    .modal-close:hover { color: #333; }
+    .modal-body { padding: 20px 22px; }
+
+    /* Form */
+    .form-row { margin-bottom: 15px; }
+    .form-label { font-size: 13px; color: #333; margin-bottom: 5px; display: block; }
+    .required { color: #ff4d4f; margin-left: 2px; }
+    .hint-tag { font-size: 11px; color: #999; font-weight: 400; margin-left: 4px; }
+    .form-input { width: 100%; border: 1px solid #d9d9d9; border-radius: 6px; padding: 8px 11px; font-size: 13px; outline: none; color: #333; transition: border-color .2s; background: #fff; }
+    .form-input:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.12); }
+    .form-input[readonly] { background: #fafafa; color: #555; cursor: default; }
+    .form-hint { font-size: 11px; color: #aaa; margin-top: 4px; }
+    .form-input[readonly]:focus { border-color: #d9d9d9; box-shadow: none; }
+
+    /* QR block */
+    .qr-block { display: flex; flex-direction: column; align-items: center; margin: 4px 0 8px 0; }
+    .qr-block canvas { border: 1px solid #eee; border-radius: 6px; padding: 8px; background: #fff; }
+    .qr-code-label { font-size: 12px; color: #555; margin-top: 8px; font-weight: 500; letter-spacing: .5px; }
+
+    /* Success state */
+    .success-banner { display: flex; align-items: center; gap: 10px; background: #f6ffed; border: 1px solid #b7eb8f; border-radius: 8px; padding: 12px 16px; margin-bottom: 18px; }
+    .success-icon { font-size: 20px; }
+    .success-text { font-size: 14px; color: #389e0d; font-weight: 600; }
+
+    /* Field group in view mode */
+    .field-row { display: flex; gap: 12px; margin-bottom: 12px; }
+    .field-group { flex: 1; }
+    .field-label { font-size: 11px; color: #999; margin-bottom: 3px; }
+    .field-value { font-size: 13px; color: #222; font-weight: 500; }
+    .field-sub { font-size: 11px; color: #aaa; margin-top: 2px; }
+    hr.divider { border: none; border-top: 1px solid #f0f0f0; margin: 14px 0; }
+
+    /* Modal footer */
+    .modal-footer { padding: 13px 22px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 10px; }
+    .btn-cancel { background: #fff; color: #555; border: 1px solid #d9d9d9; padding: 7px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .btn-cancel:hover { border-color: #1890ff; color: #1890ff; }
+    .btn-primary { background: #1890ff; color: #fff; border: none; padding: 7px 24px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+    .btn-primary:hover { background: #096dd9; }
+    .btn-danger { background: #fff; color: #ff4d4f; border: 1px solid #ff4d4f; padding: 7px 18px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .btn-danger:hover { background: #fff1f0; }
+
+    /* Hidden utility */
+    .hidden { display: none !important; }
+
+    /* Toggle switch */
+    .toggle-wrap { display: flex; align-items: center; gap: 10px; }
+    .toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; inset: 0; background: #d9d9d9; border-radius: 22px; cursor: pointer; transition: .2s; }
+    .toggle-slider:before { content:''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; }
+    input:checked + .toggle-slider { background: #52c41a; }
+    input:checked + .toggle-slider:before { transform: translateX(18px); }
+    .toggle-label { font-size: 13px; color: #555; }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-item">Sản phẩm</div>
+  <div class="sidebar-item active">Phương thức thanh toán</div>
+  <div class="sidebar-item">Font chữ</div>
+  <div class="sidebar-item">QRcode phiếu mua hàng</div>
+  <div class="sidebar-item">Thiết lập vận chuyển</div>
+  <div class="sidebar-item">Hóa đơn điện tử</div>
+  <div class="sidebar-item">Bán hàng</div>
+  <div class="sidebar-item">Thiết lập in</div>
+  <div class="sidebar-item">Thông tin cửa hàng</div>
+  <div class="sidebar-item">Định dạng số</div>
+  <div class="sidebar-item">Cấu hình phụ thu</div>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <div class="page-title">Phương thức thanh toán</div>
+
+  <!-- Cổng TT -->
+  <div class="card">
+    <div class="card-title">Cổng thanh toán điện tử</div>
+
+    <!-- VCB: chưa kết nối -->
+    <div class="gateway-item">
+      <div class="bank-logo logo-vcb">VCB</div>
+      <div class="bank-name">Ngân hàng Thương mại cổ phần Ngoại thương Việt Nam</div>
+      <div class="gateway-actions">
+        <button class="btn-connect" onclick="openConnectModal('vcb')">Kết nối</button>
+      </div>
+    </div>
+
+    <!-- TCB: đã kết nối -->
+    <div class="gateway-item">
+      <div class="bank-logo logo-tcb">TCB</div>
+      <div class="bank-name">Ngân hàng Thương mại cổ phần Kỹ Thương Việt Nam</div>
+      <div class="gateway-actions">
+        <div class="connected-badge">✓ Đã kết nối</div>
+        <button class="btn-detail" onclick="openDetailModal('tcb')">Chi tiết</button>
+      </div>
+    </div>
+
+    <!-- BIDV: chưa kết nối -->
+    <div class="gateway-item">
+      <div class="bank-logo logo-bidv">BIDV</div>
+      <div class="bank-name">Ngân hàng Thương mại cổ phần Đầu tư và Phát triển Việt Nam</div>
+      <div class="gateway-actions">
+        <button class="btn-connect" onclick="openConnectModal('bidv')">Kết nối</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Danh sách PTTT -->
+  <div class="card">
+    <div class="section-header">
+      <span class="card-title" style="margin-bottom:0">Danh sách phương thức thanh toán</span>
+      <button class="btn-add">+ Thêm mới</button>
+    </div>
+    <div class="search-wrap">
+      <span style="color:#bbb;font-size:15px">🔍</span>
+      <input type="text" placeholder="Nhập tên thẻ" />
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>STT</th><th>Tên phương thức</th><th>Phân loại</th>
+          <th>Trạng thái hoạt động</th><th>Trạng thái kết nối</th><th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>Tiền mặt</td><td><span class="tag">Cơ bản</span></td><td><span class="badge-on">● Đang hoạt động</span></td><td>—</td><td><button class="icon-btn" onclick="openEditSourceModal({name:'Tiền mặt',active:true,isDefault:true})">✏️</button><button class="icon-btn">🗑️</button></td></tr>
+        <tr><td>2</td><td>VietQR MB Bank</td><td><span class="tag tag-qr">VietQR</span></td><td><span class="badge-on">● Đang hoạt động</span></td><td>Thành công</td><td><button class="icon-btn" onclick="openEditSourceModal({name:'VietQR MB Bank',active:true,isDefault:false})">✏️</button><button class="icon-btn">🗑️</button></td></tr>
+        <tr><td>3</td><td>Chuyển khoản</td><td><span class="tag">Cơ bản</span></td><td><span class="badge-off">● Ngưng hoạt động</span></td><td>—</td><td><button class="icon-btn" onclick="openEditSourceModal({name:'Chuyển khoản',active:false,isDefault:false})">✏️</button><button class="icon-btn">🗑️</button></td></tr>
+        <tr><td>4</td><td>TM/CK</td><td><span class="tag">Cơ bản</span></td><td><span class="badge-on">● Đang hoạt động</span></td><td>—</td><td><button class="icon-btn" onclick="openEditSourceModal({name:'TM/CK',active:true,isDefault:false})">✏️</button><button class="icon-btn">🗑️</button></td></tr>
+      </tbody>
+    </table>
+    <div class="pagination">
+      <div class="page-size"><select><option>15 bản ghi</option><option>30 bản ghi</option></select></div>
+      <div class="pages">
+        <button class="page-btn">‹</button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">2</button>
+        <button class="page-btn">›</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mặc định -->
+  <div class="card">
+    <div class="card-title">Cài đặt phương thức thanh toán mặc định</div>
+    <div class="default-desc">Phương thức thanh toán được ưu tiên sử dụng khi xác nhận thanh toán đơn hàng</div>
+    <div class="default-row">
+      <span style="font-size:13px;color:#555">Phương thức mặc định</span>
+      <div class="select-box">Tiền mặt <span style="color:#aaa">▾</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL A: Kết nối (chưa kết nối)
+     Trạng thái: form | success
+════════════════════════════════════════════ -->
+<div class="overlay" id="connectOverlay" onclick="closeOutside(event,'connectOverlay')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-logo" id="cLogo">TCB</div>
+      <div class="modal-title" id="cTitle">Kết nối Techcombank</div>
+      <button class="modal-close" onclick="closeModal('connectOverlay')">✕</button>
+    </div>
+
+    <!-- State: form -->
+    <div id="stateForm">
+      <div class="modal-body">
+        <div class="form-row">
+          <label class="form-label">Tên cửa hàng <span class="required">*</span></label>
+          <input class="form-input" type="text" value="QLDV EASYPOS" />
+          <div class="form-hint">ID: 062512597925686</div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Hộ kinh doanh <span class="required">*</span></label>
+          <input class="form-input" type="text" value="QLDV EASYPOS" />
+          <div class="form-hint">ID: 062535736324119</div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Chủ tài khoản <span class="required">*</span></label>
+          <input class="form-input" id="cPlaceholder" type="text" placeholder="Nhập chủ tài khoản" />
+        </div>
+        <div class="form-row">
+          <label class="form-label">Số CCCD <span class="required">*</span><span class="hint-tag">(Đã đăng ký với ngân hàng)</span></label>
+          <input class="form-input" type="text" placeholder="Nhập số CCCD" />
+        </div>
+        <div class="form-row">
+          <label class="form-label">Địa chỉ</label>
+          <input class="form-input" type="text" value="Số 8, ATS, Phạm Hùng, Hà Nội" />
+        </div>
+        <div class="form-row" style="margin-bottom:0">
+          <label class="form-label">Mã giới thiệu</label>
+          <input class="form-input" type="text" placeholder="Nhập mã giới thiệu" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal('connectOverlay')">Hủy bỏ</button>
+        <button class="btn-primary" onclick="showSuccess()">Kết nối</button>
+      </div>
+    </div>
+
+    <!-- State: success -->
+    <div id="stateSuccess" class="hidden">
+      <div class="modal-body">
+        <div class="success-banner">
+          <span class="success-icon">✅</span>
+          <span class="success-text">Kết nối thành công!</span>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label">Tên cửa hàng</div>
+            <div class="field-value">QLDV EASYPOS</div>
+            <div class="field-sub">ID: 062512597925686</div>
+          </div>
+          <div class="field-group">
+            <div class="field-label">Hộ kinh doanh</div>
+            <div class="field-value">QLDV EASYPOS</div>
+            <div class="field-sub">ID: 062535736324119</div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label">Chủ tài khoản</div>
+            <div class="field-value">Nguyễn Văn A</div>
+          </div>
+          <div class="field-group">
+            <div class="field-label">Số CCCD</div>
+            <div class="field-value">035120004566</div>
+          </div>
+        </div>
+        <hr class="divider">
+        <div class="field-label" style="margin-bottom:10px;font-size:13px;color:#333;font-weight:600">Mã QR cửa hàng</div>
+        <div class="qr-block">
+          <canvas id="qrSuccess" width="160" height="160"></canvas>
+          <div class="qr-code-label">MS012152326066</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" onclick="closeModal('connectOverlay')">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL B: Chi tiết (đã kết nối — TCB)
+     Trạng thái: view | edit
+════════════════════════════════════════════ -->
+<div class="overlay" id="detailOverlay" onclick="closeOutside(event,'detailOverlay')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-logo logo-tcb">TCB</div>
+      <div class="modal-title">Chi tiết — Techcombank</div>
+      <button class="modal-close" onclick="closeModal('detailOverlay')">✕</button>
+    </div>
+
+    <!-- State: view -->
+    <div id="stateView">
+      <div class="modal-body">
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label">Tên cửa hàng</div>
+            <div class="field-value">Cửa hàng Hạnh Phúc</div>
+            <div class="field-sub">ID: 0123456789</div>
+          </div>
+          <div class="field-group">
+            <div class="field-label">Hộ kinh doanh</div>
+            <div class="field-value">Cửa hàng Hạnh Phúc</div>
+            <div class="field-sub">ID: 0123456789</div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label">Chủ tài khoản</div>
+            <div class="field-value">Nguyễn Văn A</div>
+          </div>
+          <div class="field-group">
+            <div class="field-label">Số CCCD</div>
+            <div class="field-value">035120004566</div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label">Địa chỉ</div>
+            <div class="field-value">Số 8, ATS, Phạm Hùng, Hà Nội</div>
+          </div>
+          <div class="field-group">
+            <div class="field-label">Mã giới thiệu</div>
+            <div class="field-value">—</div>
+          </div>
+        </div>
+        <hr class="divider">
+        <div class="field-label" style="margin-bottom:10px;font-size:13px;color:#333;font-weight:600">Mã QR cửa hàng</div>
+        <div class="qr-block">
+          <canvas id="qrDetail" width="160" height="160"></canvas>
+          <div class="qr-code-label">MS012152326066</div>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content:space-between">
+        <button class="btn-danger">Ngắt kết nối</button>
+        <div style="display:flex;gap:10px">
+          <button class="btn-cancel" onclick="closeModal('detailOverlay')">Đóng</button>
+          <button class="btn-primary" onclick="switchToEdit()">Sửa</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- State: edit -->
+    <div id="stateEdit" class="hidden">
+      <div class="modal-body">
+        <div class="form-row">
+          <label class="form-label">Tên cửa hàng <span class="required">*</span></label>
+          <input class="form-input" type="text" value="Cửa hàng Hạnh Phúc" />
+          <div class="form-hint">ID: 0123456789</div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Hộ kinh doanh <span class="required">*</span></label>
+          <input class="form-input" type="text" value="Cửa hàng Hạnh Phúc" />
+          <div class="form-hint">ID: 0123456789</div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Chủ tài khoản <span class="required">*</span></label>
+          <input class="form-input" type="text" value="Nguyễn Văn A" />
+        </div>
+        <div class="form-row">
+          <label class="form-label">Số CCCD <span class="required">*</span><span class="hint-tag">(Đã đăng ký với ngân hàng)</span></label>
+          <input class="form-input" type="text" value="035120004566" />
+        </div>
+        <div class="form-row">
+          <label class="form-label">Địa chỉ</label>
+          <input class="form-input" type="text" value="Số 8, ATS, Phạm Hùng, Hà Nội" />
+        </div>
+        <div class="form-row" style="margin-bottom:0">
+          <label class="form-label">Mã giới thiệu</label>
+          <input class="form-input" type="text" placeholder="Nhập mã giới thiệu" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="switchToView()">Hủy</button>
+        <button class="btn-primary" onclick="switchToView()">Cập nhật</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL C: Sửa nguồn tiền (nghiệp vụ)
+     Không có thông tin gateway / QR
+════════════════════════════════════════════ -->
+<div class="overlay" id="editSourceOverlay" onclick="closeOutside(event,'editSourceOverlay')">
+  <div class="modal" style="width:420px">
+    <div class="modal-header">
+      <div class="modal-title">Sửa phương thức thanh toán</div>
+      <button class="modal-close" onclick="closeModal('editSourceOverlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="form-label">Tên hiển thị <span class="required">*</span></label>
+        <input class="form-input" id="esName" type="text" />
+      </div>
+      <div class="form-row">
+        <label class="form-label">Trạng thái hoạt động</label>
+        <div class="toggle-wrap">
+          <label class="toggle"><input type="checkbox" id="esActive" /><span class="toggle-slider"></span></label>
+          <span class="toggle-label" id="esActiveLabel">Đang hoạt động</span>
+        </div>
+      </div>
+      <div class="form-row" style="margin-bottom:0">
+        <label class="form-label">Đặt làm mặc định</label>
+        <div class="toggle-wrap">
+          <label class="toggle"><input type="checkbox" id="esDefault" /><span class="toggle-slider"></span></label>
+          <span class="toggle-label" id="esDefaultLabel">Không đặt làm mặc định</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('editSourceOverlay')">Hủy</button>
+      <button class="btn-primary" onclick="closeModal('editSourceOverlay')">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ── Bank data ── */
+  const banks = {
+    tcb:  { abbr:'TCB',  color:'#e31f26', title:'Kết nối Techcombank', ph:'Nhập chủ tài khoản TCB'  },
+    bidv: { abbr:'BIDV', color:'#005baa', title:'Kết nối BIDV',        ph:'Nhập chủ tài khoản BIDV' },
+    vcb:  { abbr:'VCB',  color:'#007a3d', title:'Kết nối Vietcombank', ph:'Nhập chủ tài khoản VCB'  },
+  };
+
+  /* ── Modal helpers ── */
+  function openConnectModal(key) {
+    const b = banks[key];
+    document.getElementById('cLogo').textContent = b.abbr;
+    document.getElementById('cLogo').style.background = b.color;
+    document.getElementById('cTitle').textContent = b.title;
+    document.getElementById('cPlaceholder').placeholder = b.ph;
+    document.getElementById('stateForm').classList.remove('hidden');
+    document.getElementById('stateSuccess').classList.add('hidden');
+    document.getElementById('connectOverlay').classList.add('show');
+  }
+
+  function openDetailModal() {
+    document.getElementById('stateView').classList.remove('hidden');
+    document.getElementById('stateEdit').classList.add('hidden');
+    document.getElementById('detailOverlay').classList.add('show');
+    drawQR('qrDetail');
+  }
+
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+  function closeOutside(e, id) { if (e.target.id === id) closeModal(id); }
+
+  /* ── State transitions ── */
+  function showSuccess() {
+    document.getElementById('stateForm').classList.add('hidden');
+    document.getElementById('stateSuccess').classList.remove('hidden');
+    drawQR('qrSuccess');
+  }
+  function switchToEdit() {
+    document.getElementById('stateView').classList.add('hidden');
+    document.getElementById('stateEdit').classList.remove('hidden');
+  }
+  function switchToView() {
+    document.getElementById('stateEdit').classList.add('hidden');
+    document.getElementById('stateView').classList.remove('hidden');
+  }
+
+  /* ── Modal C: Sửa nguồn tiền ── */
+  function openEditSourceModal(data) {
+    document.getElementById('esName').value = data.name;
+
+    const activeChk = document.getElementById('esActive');
+    activeChk.checked = data.active;
+    document.getElementById('esActiveLabel').textContent = data.active ? 'Đang hoạt động' : 'Ngưng hoạt động';
+    activeChk.onchange = function() {
+      document.getElementById('esActiveLabel').textContent = this.checked ? 'Đang hoạt động' : 'Ngưng hoạt động';
+    };
+
+    const defaultChk = document.getElementById('esDefault');
+    defaultChk.checked = data.isDefault;
+    document.getElementById('esDefaultLabel').textContent = data.isDefault ? 'Đang là mặc định' : 'Không đặt làm mặc định';
+    defaultChk.onchange = function() {
+      document.getElementById('esDefaultLabel').textContent = this.checked ? 'Đang là mặc định' : 'Không đặt làm mặc định';
+    };
+
+    document.getElementById('editSourceOverlay').classList.add('show');
+  }
+
+  /* ── QR code renderer ── */
+  function drawQR(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const N = 25;
+    const cell = canvas.width / N;
+
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Seeded pseudo-random for consistent pattern
+    let s = 0x1234;
+    function rand() { s ^= s << 13; s ^= s >> 17; s ^= s << 5; return ((s >>> 0) / 0xFFFFFFFF); }
+
+    const grid = [];
+    for (let y = 0; y < N; y++) { grid[y] = []; for (let x = 0; x < N; x++) grid[y][x] = rand() > 0.5; }
+
+    // Finder patterns (7x7) at 3 corners — overwrite random
+    function finder(ox, oy) {
+      for (let y = 0; y < 7; y++) for (let x = 0; x < 7; x++) {
+        grid[oy+y][ox+x] =
+          (x===0||x===6||y===0||y===6) ? true :
+          (x>=2&&x<=4&&y>=2&&y<=4)     ? true : false;
+      }
+    }
+    finder(0, 0); finder(N-7, 0); finder(0, N-7);
+
+    // Quiet zone (1 cell border around finders)
+    [[0,7],[N-8,7],[0,N-8]].forEach(([ox,oy])=>{
+      for(let i=-1;i<=7;i++){
+        if(grid[oy]   && grid[oy][ox+i]   !== undefined) grid[oy][ox+i]   = (i>=0&&i<7);
+        if(grid[oy-1] && grid[oy-1][ox+i] !== undefined) grid[oy-1][ox+i] = false;
+        if(grid[oy+i] && grid[oy+i][ox]   !== undefined) grid[oy+i][ox]   = (i>=0&&i<7);
+        if(grid[oy+i] && grid[oy+i][ox-1] !== undefined) grid[oy+i][ox-1] = false;
+      }
+    });
+
+    // Draw
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      ctx.fillStyle = grid[y][x] ? '#111' : '#fff';
+      ctx.fillRect(x*cell, y*cell, cell, cell);
+    }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;font-family:var(--font-sans);background:#fff;color:var(--ink)}
+  .wrap{padding:20px}
+  .ramp{display:grid;grid-template-columns:repeat(9,1fr);border-radius:10px;overflow:hidden;box-shadow:var(--shadow-sm);margin-bottom:16px}
+  .sw{height:64px;display:flex;flex-direction:column;justify-content:flex-end;padding:7px}
+  .sw b{font:var(--caption);font-weight:700}.sw span{font-size:9px;opacity:.85}
+  .lbl{font:var(--title-md);margin:0 0 10px}
+  .fn{display:flex;gap:10px;flex-wrap:wrap}
+  .chip{display:flex;align-items:center;gap:8px;font:var(--caption);color:var(--text-secondary)}
+  .dot{width:30px;height:30px;border-radius:7px;border:1px solid var(--border)}
+</style></head>
+<body><div class="wrap">
+  <div class="lbl">Neutrals · Navy Grayscale</div>
+  <div class="ramp" id="r"></div>
+  <div class="fn" id="fn"></div>
+</div>
+<script>
+const g=[["800","#08062A"],["700","#0B0737"],["600","#0E0946"],["500","#0F0A4D"],["400","#3F3B71"],["300","#5E5B88"],["200","#918EAD"],["100","#B5B3C8"],["50","#E7E7ED"]];
+document.getElementById('r').innerHTML=g.map(([k,v],i)=>{const col=i>=7?'#151B33':'#fff';
+  return `<div class="sw" style="background:${v};color:${col}"><b>${k}</b><span>${v}</span></div>`;}).join('');
+const fn=[["Ink / Text",'#151B33'],["Text 2",'#455064'],["Text 3",'#545454'],["Placeholder",'#B0B0B0'],["Page bg",'#F4F6F8'],["Subtle",'#F7F7F7'],["Border",'#E6E6E6'],["Border strong",'#DEE0E2']];
+document.getElementById('fn').innerHTML=fn.map(([n,v])=>`<div class="chip"><div class="dot" style="background:${v}"></div><div>${n}<br><b style="color:var(--ink)">${v}</b></div></div>`).join('');
+</script>
+</body></html>

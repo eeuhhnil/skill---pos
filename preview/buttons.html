@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;font-family:var(--font-sans);background:#fff;color:var(--ink)}
+  .wrap{padding:22px 24px;display:flex;flex-direction:column;gap:16px}
+  .grp{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .tag{font:var(--caption);color:var(--text-secondary);width:90px;flex:none}
+  .btn{font-family:var(--font-sans);font-weight:700;font-size:16px;border-radius:8px;padding:8px 24px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;line-height:24px}
+  .primary{background:var(--blue-500);color:#fff}
+  .secondary{background:#fff;color:var(--blue-500);border:1.2px solid var(--blue-500)}
+  .tertiary{background:var(--blue-100);color:var(--blue-500)}
+  .ghost{background:transparent;color:var(--blue-500)}
+  .destructive{background:var(--error-500);color:#fff}
+  .disabled{background:var(--gray-50);color:var(--text-placeholder)}
+  .sm{font-size:14px;padding:6px 16px;line-height:20px}
+  .xs{font-size:13px;padding:4px 12px;line-height:18px;border-radius:6px}
+</style></head>
+<body><div class="wrap">
+  <div class="grp"><span class="tag">Hierarchy</span>
+    <button class="btn primary">Thanh toán</button>
+    <button class="btn secondary">Lưu đơn</button>
+    <button class="btn tertiary">Chọn lô</button>
+    <button class="btn ghost">Ghi chú</button>
+    <button class="btn destructive">Xóa đơn</button>
+    <button class="btn disabled">Disabled</button>
+  </div>
+  <div class="grp"><span class="tag">Sizes</span>
+    <button class="btn primary">Large</button>
+    <button class="btn primary sm">Medium</button>
+    <button class="btn primary xs">Small</button>
+  </div>
+</div>
+</body></html>

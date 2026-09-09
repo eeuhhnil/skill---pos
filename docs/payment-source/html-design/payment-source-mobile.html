@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phương thức thanh toán — Mobile</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #e5e5ea; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 32px 0; font-family: -apple-system, 'SF Pro Text', 'Segoe UI', Arial, sans-serif; }
+
+    /* Phone frame */
+    .phone { width: 375px; background: #f2f2f7; border-radius: 44px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3); position: relative; min-height: 812px; }
+
+    /* Status bar */
+    .status-bar { background: #fff; display: flex; justify-content: space-between; align-items: center; padding: 14px 20px 6px; font-size: 12px; font-weight: 600; color: #000; }
+    .status-time { font-size: 15px; font-weight: 700; }
+    .status-icons { display: flex; gap: 5px; align-items: center; font-size: 12px; }
+
+    /* Nav header */
+    .nav-header { background: #fff; padding: 12px 16px; display: flex; align-items: center; border-bottom: 1px solid #e5e5ea; }
+    .nav-back { color: #007aff; font-size: 16px; cursor: pointer; }
+    .nav-title { font-size: 17px; font-weight: 600; color: #000; flex: 1; text-align: center; margin-right: 40px; }
+
+    /* Scroll content */
+    .content { overflow-y: auto; height: calc(812px - 90px); padding-bottom: 90px; }
+
+    /* Section */
+    .section { margin-top: 24px; }
+    .section-label { font-size: 12px; color: #6c6c70; font-weight: 500; padding: 0 16px 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .section-card { background: #fff; border-radius: 12px; margin: 0 16px; overflow: hidden; }
+
+    /* Gateway item */
+    .gateway-item { display: flex; align-items: center; padding: 12px 16px; gap: 12px; border-bottom: 1px solid #f2f2f7; }
+    .gateway-item:last-child { border-bottom: none; }
+    .bank-logo { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 9px; color: #fff; flex-shrink: 0; }
+    .logo-vcb  { background: #007a3d; }
+    .logo-tcb  { background: #e31f26; }
+    .logo-bidv { background: #005baa; }
+    .bank-info { flex: 1; min-width: 0; }
+    .bank-name { font-size: 14px; font-weight: 500; color: #000; }
+    .bank-sub  { font-size: 12px; color: #8e8e93; margin-top: 2px; }
+    .btn-connect { background: #007aff; color: #fff; border: none; padding: 6px 14px; border-radius: 14px; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+    .btn-detail-sm { background: #fff; color: #007aff; border: 1px solid #007aff; padding: 5px 12px; border-radius: 14px; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+
+    /* Search */
+    .source-search { margin: 10px 16px 8px; }
+    .search-input-wrap { display: flex; align-items: center; background: #e5e5ea; border-radius: 10px; padding: 8px 12px; gap: 6px; }
+    .search-input-wrap input { background: none; border: none; outline: none; font-size: 14px; color: #000; flex: 1; }
+    .search-icon { color: #8e8e93; font-size: 14px; }
+
+    /* Source item */
+    .source-item { display: flex; align-items: center; padding: 12px 16px; gap: 12px; border-bottom: 1px solid #f2f2f7; }
+    .source-item:last-child { border-bottom: none; }
+    .source-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .dot-on  { background: #34c759; }
+    .dot-off { background: #ff3b30; }
+    .source-info { flex: 1; min-width: 0; }
+    .source-name { font-size: 14px; font-weight: 500; color: #000; }
+    .source-meta { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+    .source-tag { font-size: 11px; color: #8e8e93; background: #f2f2f7; padding: 2px 7px; border-radius: 4px; }
+    .source-tag-qr { background: #e5f0ff; color: #007aff; }
+    .source-status { font-size: 12px; color: #8e8e93; }
+    .source-actions { display: flex; gap: 2px; flex-shrink: 0; }
+    .icon-btn { background: none; border: none; cursor: pointer; padding: 5px; font-size: 16px; }
+
+    /* Default row */
+    .default-item { display: flex; align-items: center; padding: 14px 16px; }
+    .default-label { flex: 1; font-size: 15px; color: #000; }
+    .default-value { font-size: 15px; color: #8e8e93; display: flex; align-items: center; gap: 4px; }
+    .chevron { color: #c7c7cc; font-size: 16px; }
+
+    /* FAB */
+    .fab { position: absolute; bottom: 24px; right: 20px; width: 50px; height: 50px; background: #007aff; border-radius: 25px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 14px rgba(0,122,255,0.45); font-size: 26px; color: #fff; border: none; line-height: 1; }
+
+    /* Overlay */
+    .overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.48); z-index: 100; align-items: flex-end; border-radius: 44px; overflow: hidden; }
+    .overlay.show { display: flex; }
+
+    /* Bottom sheet */
+    .sheet { background: #fff; border-radius: 16px 16px 0 0; width: 100%; animation: slideUp .22s ease; max-height: 88%; overflow-y: auto; }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .sheet-handle { width: 36px; height: 4px; background: #d1d1d6; border-radius: 2px; margin: 10px auto 4px; }
+    .sheet-header { padding: 8px 16px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f2f2f7; }
+    .sheet-title { font-size: 16px; font-weight: 600; color: #000; }
+    .sheet-close { background: #f2f2f7; border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #8e8e93; font-size: 13px; }
+    .sheet-body { padding: 16px; }
+    .sheet-footer { padding: 10px 16px 20px; display: flex; gap: 10px; border-top: 1px solid #f2f2f7; }
+
+    /* Form */
+    .form-row { margin-bottom: 14px; }
+    .form-label { font-size: 13px; color: #6c6c70; margin-bottom: 6px; display: block; font-weight: 500; }
+    .required { color: #ff3b30; margin-left: 2px; }
+    .form-input { width: 100%; background: #f2f2f7; border: none; border-radius: 10px; padding: 12px 14px; font-size: 15px; outline: none; color: #000; }
+    .form-input:focus { background: #e5e5ea; }
+    .form-hint { font-size: 12px; color: #8e8e93; margin-top: 4px; }
+
+    /* iOS Toggle */
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 2px 0; }
+    .toggle-text { font-size: 15px; color: #000; }
+    .ios-toggle { position: relative; width: 50px; height: 30px; flex-shrink: 0; }
+    .ios-toggle input { opacity: 0; width: 0; height: 0; }
+    .ios-slider { position: absolute; inset: 0; background: #d1d1d6; border-radius: 30px; cursor: pointer; transition: .2s; }
+    .ios-slider:before { content:''; position:absolute; width:26px; height:26px; left:2px; top:2px; background:#fff; border-radius:50%; transition:.2s; box-shadow:0 1px 3px rgba(0,0,0,.25); }
+    input:checked + .ios-slider { background: #34c759; }
+    input:checked + .ios-slider:before { transform: translateX(20px); }
+
+    /* Success */
+    .success-banner { display: flex; align-items: center; gap: 10px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 12px; margin-bottom: 16px; }
+    .success-text { font-size: 14px; color: #166534; font-weight: 600; }
+
+    /* QR */
+    .qr-block { display: flex; flex-direction: column; align-items: center; padding: 4px 0 8px; }
+    .qr-block canvas { border-radius: 8px; border: 1px solid #e5e5ea; padding: 8px; }
+    .qr-label { font-size: 13px; color: #6c6c70; margin-top: 8px; font-weight: 500; }
+
+    /* Field view */
+    .field-group-row { display: flex; gap: 12px; margin-bottom: 12px; }
+    .field-g { flex: 1; }
+    .field-lbl { font-size: 12px; color: #8e8e93; margin-bottom: 3px; }
+    .field-val { font-size: 14px; color: #000; font-weight: 500; }
+    .field-sub { font-size: 11px; color: #c7c7cc; margin-top: 2px; }
+    hr.div { border: none; border-top: 1px solid #f2f2f7; margin: 12px 0; }
+
+    /* Buttons */
+    .btn-primary   { flex: 1; background: #007aff; color: #fff; border: none; padding: 13px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .btn-secondary { flex: 1; background: #f2f2f7; color: #007aff; border: none; padding: 13px; border-radius: 12px; font-size: 15px; font-weight: 500; cursor: pointer; }
+    .btn-danger-full { width: 100%; background: #fff5f5; color: #ff3b30; border: none; padding: 13px; border-radius: 12px; font-size: 15px; font-weight: 500; cursor: pointer; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span class="status-time">9:41</span>
+    <div class="status-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+  </div>
+
+  <!-- Nav -->
+  <div class="nav-header">
+    <div class="nav-back">‹ Cài đặt</div>
+    <div class="nav-title">Phương thức TT</div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- Cổng TT -->
+    <div class="section">
+      <div class="section-label">Cổng thanh toán điện tử</div>
+      <div class="section-card">
+        <div class="gateway-item">
+          <div class="bank-logo logo-vcb">VCB</div>
+          <div class="bank-info">
+            <div class="bank-name">Vietcombank</div>
+            <div class="bank-sub" style="color:#34c759">✓ Đã kết nối</div>
+          </div>
+          <button class="btn-detail-sm" onclick="openDetailSheet()">Chi tiết</button>
+        </div>
+        <div class="gateway-item">
+          <div class="bank-logo logo-tcb">TCB</div>
+          <div class="bank-info">
+            <div class="bank-name">Techcombank</div>
+            <div class="bank-sub">Chưa kết nối</div>
+          </div>
+          <button class="btn-connect" onclick="openConnectSheet('tcb')">Kết nối</button>
+        </div>
+        <div class="gateway-item">
+          <div class="bank-logo logo-bidv">BIDV</div>
+          <div class="bank-info">
+            <div class="bank-name">BIDV</div>
+            <div class="bank-sub">Chưa kết nối</div>
+          </div>
+          <button class="btn-connect" onclick="openConnectSheet('bidv')">Kết nối</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nguồn tiền -->
+    <div class="section">
+      <div class="section-label">Danh sách phương thức thanh toán</div>
+      <div class="source-search">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Nhập tên thẻ" />
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="source-item">
+          <div class="source-dot dot-on"></div>
+          <div class="source-info">
+            <div class="source-name">Tiền mặt</div>
+            <div class="source-meta"><span class="source-tag">Cơ bản</span><span class="source-status">Đang hoạt động</span></div>
+          </div>
+          <div class="source-actions">
+            <button class="icon-btn" onclick="openEditSheet({name:'Tiền mặt',active:true,isDefault:true})">✏️</button>
+            <button class="icon-btn">🗑️</button>
+          </div>
+        </div>
+        <div class="source-item">
+          <div class="source-dot dot-on"></div>
+          <div class="source-info">
+            <div class="source-name">VietQR MB Bank</div>
+            <div class="source-meta"><span class="source-tag source-tag-qr">VietQR</span><span class="source-status">Đang hoạt động</span></div>
+          </div>
+          <div class="source-actions">
+            <button class="icon-btn" onclick="openEditSheet({name:'VietQR MB Bank',active:true,isDefault:false})">✏️</button>
+            <button class="icon-btn">🗑️</button>
+          </div>
+        </div>
+        <div class="source-item">
+          <div class="source-dot dot-off"></div>
+          <div class="source-info">
+            <div class="source-name">Chuyển khoản</div>
+            <div class="source-meta"><span class="source-tag">Cơ bản</span><span class="source-status" style="color:#ff3b30">Ngưng hoạt động</span></div>
+          </div>
+          <div class="source-actions">
+            <button class="icon-btn" onclick="openEditSheet({name:'Chuyển khoản',active:false,isDefault:false})">✏️</button>
+            <button class="icon-btn">🗑️</button>
+          </div>
+        </div>
+        <div class="source-item">
+          <div class="source-dot dot-on"></div>
+          <div class="source-info">
+            <div class="source-name">TM/CK</div>
+            <div class="source-meta"><span class="source-tag">Cơ bản</span><span class="source-status">Đang hoạt động</span></div>
+          </div>
+          <div class="source-actions">
+            <button class="icon-btn" onclick="openEditSheet({name:'TM/CK',active:true,isDefault:false})">✏️</button>
+            <button class="icon-btn">🗑️</button>
+          </div>
+        </div>
+        <div class="source-item">
+          <div class="source-dot dot-on"></div>
+          <div class="source-info">
+            <div class="source-name">abc</div>
+            <div class="source-meta"><span class="source-tag">Cơ bản</span><span class="source-status">Đang hoạt động</span></div>
+          </div>
+          <div class="source-actions">
+            <button class="icon-btn" onclick="openEditSheet({name:'abc',active:true,isDefault:false})">✏️</button>
+            <button class="icon-btn">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mặc định -->
+    <div class="section">
+      <div class="section-label">Cài đặt mặc định</div>
+      <div class="section-card">
+        <div class="default-item">
+          <div class="default-label">Phương thức mặc định</div>
+          <div class="default-value">Tiền mặt <span class="chevron">›</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FAB -->
+  <button class="fab">+</button>
+
+  <!-- ── Sheet: Kết nối ── -->
+  <div class="overlay" id="connectOverlay" onclick="closeSheet('connectOverlay')">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title" id="sheetConnectTitle">Kết nối Techcombank</div>
+        <button class="sheet-close" onclick="closeSheet('connectOverlay')">✕</button>
+      </div>
+
+      <div id="sForm">
+        <div class="sheet-body">
+          <div class="form-row"><label class="form-label">Tên cửa hàng <span class="required">*</span></label><input class="form-input" type="text" value="QLDV EASYPOS" /><div class="form-hint">ID: 062512597925686</div></div>
+          <div class="form-row"><label class="form-label">Hộ kinh doanh <span class="required">*</span></label><input class="form-input" type="text" value="QLDV EASYPOS" /><div class="form-hint">ID: 062535736324119</div></div>
+          <div class="form-row"><label class="form-label">Chủ tài khoản <span class="required">*</span></label><input class="form-input" type="text" placeholder="Nhập chủ tài khoản" /></div>
+          <div class="form-row"><label class="form-label">Số CCCD <span class="required">*</span></label><input class="form-input" type="text" placeholder="Nhập số CCCD" /></div>
+          <div class="form-row"><label class="form-label">Địa chỉ</label><input class="form-input" type="text" value="Số 8, ATS, Phạm Hùng, Hà Nội" /></div>
+          <div class="form-row" style="margin-bottom:0"><label class="form-label">Mã giới thiệu</label><input class="form-input" type="text" placeholder="Nhập mã giới thiệu" /></div>
+        </div>
+        <div class="sheet-footer">
+          <button class="btn-secondary" onclick="closeSheet('connectOverlay')">Hủy</button>
+          <button class="btn-primary" onclick="showConnectSuccess()">Kết nối</button>
+        </div>
+      </div>
+
+      <div id="sSuccess" class="hidden">
+        <div class="sheet-body">
+          <div class="success-banner"><span>✅</span><span class="success-text">Kết nối thành công!</span></div>
+          <div class="field-group-row">
+            <div class="field-g"><div class="field-lbl">Tên cửa hàng</div><div class="field-val">QLDV EASYPOS</div><div class="field-sub">ID: 062512597925686</div></div>
+            <div class="field-g"><div class="field-lbl">Hộ kinh doanh</div><div class="field-val">QLDV EASYPOS</div><div class="field-sub">ID: 062535736324119</div></div>
+          </div>
+          <div class="field-group-row">
+            <div class="field-g"><div class="field-lbl">Chủ tài khoản</div><div class="field-val">Nguyễn Văn A</div></div>
+            <div class="field-g"><div class="field-lbl">Số CCCD</div><div class="field-val">035120004566</div></div>
+          </div>
+          <hr class="div">
+          <div class="field-lbl" style="font-size:13px;color:#000;font-weight:600;margin-bottom:10px">Mã QR cửa hàng</div>
+          <div class="qr-block"><canvas id="qrConnect" width="150" height="150"></canvas><div class="qr-label">MS012152326066</div></div>
+        </div>
+        <div class="sheet-footer"><button class="btn-primary" onclick="closeSheet('connectOverlay')">Đóng</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Sheet: Chi tiết kết nối ── -->
+  <div class="overlay" id="detailOverlay" onclick="closeSheet('detailOverlay')">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title">Chi tiết — Vietcombank</div>
+        <button class="sheet-close" onclick="closeSheet('detailOverlay')">✕</button>
+      </div>
+
+      <div id="dView">
+        <div class="sheet-body">
+          <div class="field-group-row">
+            <div class="field-g"><div class="field-lbl">Tên cửa hàng</div><div class="field-val">Cửa hàng Hạnh Phúc</div><div class="field-sub">ID: 0123456789</div></div>
+            <div class="field-g"><div class="field-lbl">Hộ kinh doanh</div><div class="field-val">Cửa hàng Hạnh Phúc</div><div class="field-sub">ID: 0123456789</div></div>
+          </div>
+          <div class="field-group-row">
+            <div class="field-g"><div class="field-lbl">Chủ tài khoản</div><div class="field-val">Nguyễn Văn A</div></div>
+            <div class="field-g"><div class="field-lbl">Số CCCD</div><div class="field-val">035120004566</div></div>
+          </div>
+          <hr class="div">
+          <div class="field-lbl" style="font-size:13px;color:#000;font-weight:600;margin-bottom:10px">Mã QR cửa hàng</div>
+          <div class="qr-block"><canvas id="qrDetail" width="150" height="150"></canvas><div class="qr-label">MS012152326066</div></div>
+        </div>
+        <div class="sheet-footer" style="flex-direction:column;gap:8px">
+          <div style="display:flex;gap:10px;width:100%">
+            <button class="btn-secondary" onclick="switchToEdit()">Sửa</button>
+            <button class="btn-primary" onclick="closeSheet('detailOverlay')">Đóng</button>
+          </div>
+          <button class="btn-danger-full">Ngắt kết nối</button>
+        </div>
+      </div>
+
+      <div id="dEdit" class="hidden">
+        <div class="sheet-body">
+          <div class="form-row"><label class="form-label">Tên cửa hàng <span class="required">*</span></label><input class="form-input" type="text" value="Cửa hàng Hạnh Phúc" /><div class="form-hint">ID: 0123456789</div></div>
+          <div class="form-row"><label class="form-label">Hộ kinh doanh <span class="required">*</span></label><input class="form-input" type="text" value="Cửa hàng Hạnh Phúc" /><div class="form-hint">ID: 0123456789</div></div>
+          <div class="form-row"><label class="form-label">Chủ tài khoản <span class="required">*</span></label><input class="form-input" type="text" value="Nguyễn Văn A" /></div>
+          <div class="form-row"><label class="form-label">Số CCCD <span class="required">*</span></label><input class="form-input" type="text" value="035120004566" /></div>
+          <div class="form-row"><label class="form-label">Địa chỉ</label><input class="form-input" type="text" value="Số 8, ATS, Phạm Hùng, Hà Nội" /></div>
+          <div class="form-row" style="margin-bottom:0"><label class="form-label">Mã giới thiệu</label><input class="form-input" type="text" placeholder="Nhập mã giới thiệu" /></div>
+        </div>
+        <div class="sheet-footer">
+          <button class="btn-secondary" onclick="switchToView()">Hủy</button>
+          <button class="btn-primary" onclick="switchToView()">Cập nhật</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Sheet: Sửa nguồn tiền ── -->
+  <div class="overlay" id="editOverlay" onclick="closeSheet('editOverlay')">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title">Sửa phương thức thanh toán</div>
+        <button class="sheet-close" onclick="closeSheet('editOverlay')">✕</button>
+      </div>
+      <div class="sheet-body">
+        <div class="form-row">
+          <label class="form-label">Tên hiển thị <span class="required">*</span></label>
+          <input class="form-input" id="esName" type="text" />
+        </div>
+        <div class="form-row">
+          <label class="form-label" style="margin-bottom:10px">Trạng thái hoạt động</label>
+          <div class="toggle-row">
+            <span class="toggle-text" id="esActiveLabel">Đang hoạt động</span>
+            <label class="ios-toggle"><input type="checkbox" id="esActive" /><span class="ios-slider"></span></label>
+          </div>
+        </div>
+        <div class="form-row" style="margin-bottom:0">
+          <label class="form-label" style="margin-bottom:10px">Đặt làm mặc định</label>
+          <div class="toggle-row">
+            <span class="toggle-text" id="esDefaultLabel">Không đặt làm mặc định</span>
+            <label class="ios-toggle"><input type="checkbox" id="esDefault" /><span class="ios-slider"></span></label>
+          </div>
+        </div>
+      </div>
+      <div class="sheet-footer">
+        <button class="btn-secondary" onclick="closeSheet('editOverlay')">Hủy</button>
+        <button class="btn-primary" onclick="closeSheet('editOverlay')">Lưu</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const banks = {
+    tcb:  { title: 'Kết nối Techcombank' },
+    bidv: { title: 'Kết nối BIDV' },
+    vcb:  { title: 'Kết nối Vietcombank' },
+  };
+
+  function openConnectSheet(key) {
+    document.getElementById('sheetConnectTitle').textContent = banks[key].title;
+    document.getElementById('sForm').classList.remove('hidden');
+    document.getElementById('sSuccess').classList.add('hidden');
+    document.getElementById('connectOverlay').classList.add('show');
+  }
+
+  function openDetailSheet() {
+    document.getElementById('dView').classList.remove('hidden');
+    document.getElementById('dEdit').classList.add('hidden');
+    document.getElementById('detailOverlay').classList.add('show');
+    drawQR('qrDetail');
+  }
+
+  function openEditSheet(data) {
+    document.getElementById('esName').value = data.name;
+    const ac = document.getElementById('esActive');
+    ac.checked = data.active;
+    document.getElementById('esActiveLabel').textContent = data.active ? 'Đang hoạt động' : 'Ngưng hoạt động';
+    ac.onchange = function() { document.getElementById('esActiveLabel').textContent = this.checked ? 'Đang hoạt động' : 'Ngưng hoạt động'; };
+    const dc = document.getElementById('esDefault');
+    dc.checked = data.isDefault;
+    document.getElementById('esDefaultLabel').textContent = data.isDefault ? 'Đang là mặc định' : 'Không đặt làm mặc định';
+    dc.onchange = function() { document.getElementById('esDefaultLabel').textContent = this.checked ? 'Đang là mặc định' : 'Không đặt làm mặc định'; };
+    document.getElementById('editOverlay').classList.add('show');
+  }
+
+  function closeSheet(id) { document.getElementById(id).classList.remove('show'); }
+
+  function showConnectSuccess() {
+    document.getElementById('sForm').classList.add('hidden');
+    document.getElementById('sSuccess').classList.remove('hidden');
+    drawQR('qrConnect');
+  }
+
+  function switchToEdit() {
+    document.getElementById('dView').classList.add('hidden');
+    document.getElementById('dEdit').classList.remove('hidden');
+  }
+  function switchToView() {
+    document.getElementById('dEdit').classList.add('hidden');
+    document.getElementById('dView').classList.remove('hidden');
+  }
+
+  function drawQR(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const N = 25, cell = canvas.width / N;
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    let s = 0x1234;
+    function rand() { s ^= s << 13; s ^= s >> 17; s ^= s << 5; return ((s >>> 0) / 0xFFFFFFFF); }
+    const grid = [];
+    for (let y = 0; y < N; y++) { grid[y] = []; for (let x = 0; x < N; x++) grid[y][x] = rand() > 0.5; }
+    function finder(ox, oy) {
+      for (let y = 0; y < 7; y++) for (let x = 0; x < 7; x++)
+        grid[oy+y][ox+x] = (x===0||x===6||y===0||y===6) ? true : (x>=2&&x<=4&&y>=2&&y<=4) ? true : false;
+    }
+    finder(0,0); finder(N-7,0); finder(0,N-7);
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      ctx.fillStyle = grid[y][x] ? '#111' : '#fff';
+      ctx.fillRect(x*cell, y*cell, cell, cell);
+    }
+  }
+</script>
+</body>
+</html>

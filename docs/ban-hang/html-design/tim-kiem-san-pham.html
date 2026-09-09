@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, initial-scale=1" />
+<title>EasyPOS · Bán hàng — Tìm kiếm sản phẩm (dropdown)</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+<style>
+:root{
+  --blue-900:#00314F; --blue-800:#004671; --blue-700:#005C96; --blue-600:#0068AA;
+  --blue-500:#0074BD; --blue-400:#3392CB; --blue-300:#66ADD9; --blue-200:#B0D4EB;
+  --blue-100:#E6F1F8; --blue-50:#F0F7FB;
+  --orange-700:#A15926; --orange-500:#E37E36; --orange-50:#FCF2EB;
+  --ink:#151B33; --gray-100:#B5B3C8; --gray-50:#E7E7ED;
+  --text-primary:#151B33; --text-secondary:#455064; --text-tertiary:#545454; --text-placeholder:#B0B0B0;
+  --surface:#FFFFFF; --surface-page:#F4F6F8; --surface-subtle:#F7F7F7;
+  --border:#E6E6E6; --border-strong:#DEE0E2; --border-faint:#EEEEEE;
+  --success-700:#1E7D45; --success-500:#2BA45C; --success-100:#C8F2D7; --success-50:#E0FFEB;
+  --warning-700:#B7791F; --warning-500:#F0A92A; --warning-100:#FDEFC8; --warning-50:#FFFAE7;
+  --error-700:#BE211C; --error-500:#EB5146; --error-100:#FED9D5; --error-50:#FEF3F2;
+  --font-sans:'Noto Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --font-display:'Be Vietnam Pro','Noto Sans',sans-serif;
+  --font-num:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',sans-serif;
+  --radius-xs:4px; --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-xl:16px; --radius-full:999px;
+  --shadow-sm:0 1px 2px rgba(16,24,40,.08);
+  --shadow-md:0 4px 12px rgba(16,24,40,.15);
+  --shadow-lg:0 12px 32px rgba(16,24,40,.16);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{width:100%; min-width:1280px; height:100vh; overflow:hidden;}
+body{font-family:var(--font-sans); color:var(--text-primary); background:var(--surface-page); font-size:14px;}
+button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+input{font-family:inherit;}
+.num{font-family:var(--font-num); font-weight:700; font-variant-numeric:tabular-nums;}
+.app{display:flex; flex-direction:column; height:100vh;}
+
+/* ============ TOP BAR ============ */
+.topbar{height:70px; background:var(--blue-500); display:flex; align-items:center; gap:var(--s4); padding:0 var(--s5); color:#fff; flex:none; position:relative; z-index:40;}
+.brand{display:flex; align-items:center; gap:var(--s2); font-family:var(--font-display); font-weight:700; font-size:22px; letter-spacing:.2px;}
+.brand .mark{width:30px; height:30px; border-radius:8px; background:#fff; display:flex; align-items:center; justify-content:center; color:var(--blue-500);}
+
+/* search wrapper (anchor for dropdown) */
+.search-wrap{position:relative; z-index:50;}
+.search-top{display:flex; align-items:center; gap:var(--s2); background:#fff; border-radius:var(--radius-md); padding:9px 14px; width:360px; color:var(--ink); box-shadow:0 0 0 3px rgba(255,255,255,.25);}
+.search-top i[data-lucide]{color:var(--text-secondary);}
+.search-top input{background:none; border:none; outline:none; color:var(--ink); width:100%; font-size:14px; font-weight:500;}
+.search-top input::placeholder{color:var(--text-placeholder);}
+.search-clear{width:28px; height:28px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; color:var(--text-placeholder); flex:none;}
+.search-clear:hover{background:var(--surface-subtle); color:var(--text-secondary);}
+
+.inv-tabs{display:flex; align-items:center; gap:var(--s2);}
+.inv-tab{display:flex; align-items:center; gap:6px; background:#fff; color:var(--blue-700); font-weight:600; padding:7px 14px; border-radius:var(--radius-md); font-size:14px;}
+.inv-add{width:34px; height:34px; border-radius:var(--radius-md); background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; color:#fff;}
+.qr{display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.16); color:#fff; padding:8px 14px; border-radius:var(--radius-md); font-weight:500;}
+.qr-count{background:var(--warning-500); color:var(--ink); font-weight:700; font-size:12px; border-radius:var(--radius-full); padding:1px 7px;}
+.spacer{flex:1;}
+.mode{display:flex; align-items:center; gap:8px; background:#fff; color:var(--blue-700); padding:8px 14px; border-radius:var(--radius-md); font-weight:600;}
+.account{display:flex; align-items:center; gap:8px; font-weight:600;}
+.account img{width:36px; height:36px; border-radius:var(--radius-full); object-fit:cover;}
+.burger{width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:var(--radius-md);}
+
+/* ============ SEARCH DROPDOWN ============ */
+.dropdown{position:absolute; top:calc(100% + 10px); left:0; width:560px; background:#fff; border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); overflow:hidden; color:var(--text-primary);}
+/* little caret pointing up to the search field */
+.dropdown::before{content:""; position:absolute; top:-7px; left:26px; width:14px; height:14px; background:#fff; border-left:1px solid var(--border); border-top:1px solid var(--border); transform:rotate(45deg);}
+
+.dd-head{display:flex; align-items:center; justify-content:space-between; padding:13px var(--s4) 11px; border-bottom:1px solid var(--border-faint);}
+.dd-head .title{font-size:12px; font-weight:700; letter-spacing:.04em; color:var(--text-secondary); text-transform:uppercase;}
+.dd-head .count{font-size:13px; color:var(--text-secondary);}
+.dd-head .count b{color:var(--blue-500); font-weight:700;}
+.dd-head .count .q{color:var(--ink); font-weight:700;}
+
+.dd-list{max-height:436px; overflow-y:auto;}
+.dd-list::-webkit-scrollbar{width:8px;} .dd-list::-webkit-scrollbar-thumb{background:#d9dde2; border-radius:4px;}
+
+.dd-row{display:flex; align-items:center; gap:var(--s3); padding:11px var(--s4); border-bottom:1px solid var(--border-faint); cursor:pointer; transition:background .1s;}
+.dd-row:last-child{border-bottom:none;}
+.dd-row:hover{background:var(--surface-subtle);}
+.dd-row.active{background:var(--blue-100); box-shadow:inset 3px 0 0 var(--blue-500);}
+
+.dd-thumb{width:44px; height:44px; border-radius:var(--radius-md); background:var(--surface-subtle); border:1px solid var(--border); flex:none; display:flex; align-items:center; justify-content:center; color:var(--text-placeholder);}
+.dd-info{flex:1; min-width:0;}
+/* hàng 1: tên sản phẩm (trái) + đơn giá (phải) */
+.dd-line1{display:flex; align-items:baseline; gap:var(--s3); font-size:14px; line-height:1.35;}
+.pname{flex:1; min-width:0; font-weight:600; color:var(--text-primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.pname mark{background:var(--warning-100); color:var(--warning-700); font-weight:700; border-radius:3px; padding:0 1px;}
+.dd-price{flex:none; text-align:right;}
+.dd-price .v{font-family:var(--font-num); font-weight:700; font-size:15px; color:var(--ink); font-variant-numeric:tabular-nums;}
+.dd-price .v.zero{color:var(--text-placeholder);}
+/* hàng 2: mã SP + ĐVT + tồn */
+.dd-line2{display:flex; align-items:center; gap:var(--s4); margin-top:5px; font-size:12.5px; color:var(--text-secondary);}
+.dd-line2 .lab{color:var(--text-placeholder);}
+.sku{font-family:var(--font-num); font-weight:600; font-size:12.5px; color:var(--text-secondary); flex:none;}
+.stock-ok{color:var(--success-700); font-weight:700;}
+.stock-out{color:var(--error-500); font-weight:700;}
+
+.dd-empty-cell{padding:34px 16px; text-align:center; color:var(--text-secondary);}
+
+.dd-foot{display:flex; align-items:center; gap:var(--s4); padding:9px var(--s4); background:var(--surface-subtle); border-top:1px solid var(--border-faint); font-size:12.5px; color:var(--text-secondary);}
+.hint{display:flex; align-items:center; gap:7px;}
+.keycap{display:inline-flex; align-items:center; justify-content:center; min-width:22px; height:22px; padding:0 6px; background:#fff; border:1px solid var(--border-strong); border-bottom-width:2px; border-radius:var(--radius-xs); font-size:11.5px; font-weight:600; color:var(--text-secondary);}
+.dd-foot .right{margin-left:auto; color:var(--text-placeholder);}
+
+/* ============ BODY (dimmed POS shell behind dropdown) ============ */
+.scrim{position:fixed; inset:70px 0 0 0; background:rgba(21,27,51,.18); z-index:30;}
+.body{flex:1; display:flex; min-height:0;}
+.rail{width:72px; background:#fff; border-right:1px solid var(--border); display:flex; flex-direction:column; align-items:center; padding-top:var(--s3); gap:6px; flex:none;}
+.rail-item{width:52px; height:52px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; color:var(--text-secondary);}
+.rail-item.active{background:var(--blue-100); color:var(--blue-500);}
+.main{flex:1; display:flex; flex-direction:column; min-width:0; padding:var(--s4); gap:var(--s3);}
+.orderhead{display:flex; align-items:center; gap:var(--s4); flex:none; background:#fff; border:1px solid var(--border); border-radius:var(--radius-xl); padding:var(--s3) var(--s4); height:74px;}
+.customer{display:flex; align-items:center; gap:10px; height:48px; background:var(--surface-subtle); border:1px solid var(--border); border-radius:var(--radius-md); padding:0 14px;}
+.customer img{width:36px; height:36px; border-radius:var(--radius-full);}
+.cust-name{font-weight:700; font-size:15px;}
+.work{flex:1; display:flex; gap:var(--s3); min-height:0;}
+.panel{background:#fff; border-radius:var(--radius-xl); border:1px solid var(--border);}
+.cart-col{flex:1.25;}
+.rpanel{flex:1;}
+
+i[data-lucide]{width:24px; height:24px; stroke-width:1.5; flex:none;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand"><span class="mark"><i data-lucide="store" style="width:20px;height:20px"></i></span>EasyPOS</div>
+
+    <!-- SEARCH + DROPDOWN -->
+    <div class="search-wrap">
+      <div class="search-top">
+        <i data-lucide="search" style="width:20px;height:20px"></i>
+        <input id="searchInput" value="test" autofocus>
+        <button class="search-clear" title="Xóa"><i data-lucide="x" style="width:18px;height:18px"></i></button>
+      </div>
+
+      <div class="dropdown" id="dropdown">
+        <div class="dd-head">
+          <span class="title">Kết quả tìm kiếm</span>
+          <span class="count"><b id="resCount">5</b> sản phẩm khớp <span class="q">“test”</span></span>
+        </div>
+        <div class="dd-list" id="ddList"></div>
+        <div class="dd-foot">
+          <span class="hint"><span class="keycap">↑</span><span class="keycap">↓</span> Di chuyển</span>
+          <span class="hint"><span class="keycap">Enter</span> Thêm vào đơn</span>
+          <span class="hint"><span class="keycap">Esc</span> Đóng</span>
+          <span class="right">Gõ thêm để lọc nhanh</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="inv-tabs">
+      <button class="inv-tab"><i data-lucide="receipt-text" style="width:18px;height:18px"></i>HĐ 001</button>
+      <button class="inv-add"><i data-lucide="plus" style="width:20px;height:20px"></i></button>
+    </div>
+    <button class="qr"><i data-lucide="qr-code" style="width:20px;height:20px"></i>QR order<span class="qr-count">3</span></button>
+    <div class="spacer"></div>
+    <button class="mode"><i data-lucide="shopping-cart" style="width:18px;height:18px"></i>Bán thường<i data-lucide="chevron-down" style="width:18px;height:18px"></i></button>
+    <div class="account"><img src="https://i.pravatar.cc/64?img=47" alt="">Công ty Cổ phần SDS</div>
+    <button class="burger"><i data-lucide="menu"></i></button>
+  </header>
+
+  <!-- dim scrim over the working area -->
+  <div class="scrim"></div>
+
+  <div class="body">
+    <nav class="rail">
+      <button class="rail-item active"><i data-lucide="layout-grid"></i></button>
+      <button class="rail-item"><i data-lucide="shopping-cart"></i></button>
+      <button class="rail-item"><i data-lucide="package"></i></button>
+      <button class="rail-item"><i data-lucide="bookmark"></i></button>
+      <button class="rail-item"><i data-lucide="ticket-percent"></i></button>
+      <button class="rail-item"><i data-lucide="users"></i></button>
+      <button class="rail-item"><i data-lucide="layers"></i></button>
+      <button class="rail-item"><i data-lucide="bar-chart-3"></i></button>
+      <button class="rail-item"><i data-lucide="settings"></i></button>
+    </nav>
+    <main class="main">
+      <div class="orderhead">
+        <div class="customer">
+          <img src="https://i.pravatar.cc/64?img=32" alt="">
+          <div class="cust-name">Khách lẻ</div>
+        </div>
+      </div>
+      <div class="work">
+        <div class="panel cart-col"></div>
+        <div class="panel rpanel"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+const fmt = n => n.toLocaleString('vi-VN');
+
+/* dữ liệu mẫu lấy theo screenshot — đã chuẩn hóa giá theo format đ */
+const RESULTS = [
+  {sku:'SP845',   name:'tuant...test 2',          stock:0,   unit:'12',   price:0},
+  {sku:'SP882',   name:'tuant...test 1',          stock:663, unit:'12',   price:133200},
+  {sku:'SP1080',  name:'tuant...test 33',         stock:0,   unit:'12',   price:0},
+  {sku:'SP164',   name:'test ba cốt',             stock:20,  unit:'12',   price:6000},
+  {sku:'SP22251', name:'Test processing area',    stock:0,   unit:'Cặp',  price:0}
+];
+const QUERY = 'test';
+
+/* highlight phần khớp query (không phân biệt hoa thường) */
+function highlight(name, q){
+  if(!q) return name;
+  const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+  return name.replace(re, '<mark>$1</mark>');
+}
+
+const list = document.getElementById('ddList');
+document.getElementById('resCount').textContent = RESULTS.length;
+
+RESULTS.forEach((p, i) => {
+  const row = document.createElement('div');
+  row.className = 'dd-row' + (i === 1 ? ' active' : '');   // dòng đang chọn (như screenshot)
+  const stockCls = p.stock > 0 ? 'stock-ok' : 'stock-out';
+  const priceCls = p.price > 0 ? '' : 'zero';
+  row.innerHTML = `
+    <div class="dd-thumb"><i data-lucide="image" style="width:22px;height:22px"></i></div>
+    <div class="dd-info">
+      <div class="dd-line1">
+        <span class="pname">${highlight(p.name, QUERY)}</span>
+        <span class="dd-price"><span class="v ${priceCls}">${fmt(p.price)}đ</span></span>
+      </div>
+      <div class="dd-line2">
+        <span class="sku">${p.sku}</span>
+        <span><span class="lab">ĐVT:</span> ${p.unit}</span>
+        <span><span class="lab">Tồn:</span> <span class="${stockCls}">${fmt(p.stock)}</span></span>
+      </div>
+    </div>`;
+  list.appendChild(row);
+});
+
+/* điều hướng bàn phím ↑ ↓ minh họa */
+let activeIdx = 1;
+const rows = () => [...list.querySelectorAll('.dd-row')];
+function setActive(i){
+  const r = rows(); if(!r.length) return;
+  activeIdx = (i + r.length) % r.length;
+  r.forEach((el,k)=> el.classList.toggle('active', k===activeIdx));
+  r[activeIdx].scrollIntoView({block:'nearest'});
+}
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowDown'){ e.preventDefault(); setActive(activeIdx+1); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); setActive(activeIdx-1); }
+});
+rows().forEach((el,k)=> el.addEventListener('mouseenter', ()=> setActive(k)));
+
+lucide.createIcons();
+</script>
+</body>
+</html>

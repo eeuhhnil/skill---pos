@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;font-family:var(--font-sans);background:#fff;color:var(--ink)}
+  .wrap{padding:20px}
+  .ramp{display:grid;grid-template-columns:repeat(10,1fr);border-radius:10px;overflow:hidden;box-shadow:var(--shadow-sm)}
+  .sw{height:88px;display:flex;flex-direction:column;justify-content:flex-end;padding:8px}
+  .sw b{font:var(--caption);font-weight:700}
+  .sw span{font:var(--caption);font-size:10px;opacity:.85}
+  .star{position:absolute;top:8px;right:8px;font-size:11px}
+  .lbl{font:var(--title-md);margin:0 0 12px}
+</style></head>
+<body><div class="wrap">
+  <div class="lbl">Primary · Brand Blue <span style="font:var(--caption);color:var(--text-secondary)">— top bar, primary actions, links</span></div>
+  <div class="ramp" id="r"></div>
+</div>
+<script>
+const blues=[["900","#00314F"],["800","#004671"],["700","#005C96"],["600","#0068AA"],["500","#0074BD"],["400","#3392CB"],["300","#66ADD9"],["200","#B0D4EB"],["100","#E6F1F8"],["50","#F0F7FB"]];
+document.getElementById('r').innerHTML=blues.map(([k,v],i)=>{
+  const light=i>=7; const col=light?'#151B33':'#fff';
+  return `<div class="sw" style="background:${v};color:${col};position:relative">${k==='500'?`<div class="star">★</div>`:''}<b>${k}</b><span>${v}</span></div>`;
+}).join('');
+</script>
+</body></html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><link rel="stylesheet" href="../colors_and_type.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  body{margin:0;font-family:var(--font-sans);background:#fff;color:var(--ink)}
+  .wrap{padding:22px 24px;display:flex;gap:40px;align-items:center;flex-wrap:wrap}
+  .col{display:flex;flex-direction:column;gap:14px}
+  .lab{font:var(--caption);color:var(--text-secondary);margin-bottom:2px}
+  .opt{display:flex;align-items:center;gap:9px;font:var(--body-lg)}
+  .cb{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--border-strong);display:inline-flex;align-items:center;justify-content:center;color:#fff}
+  .cb.on{background:var(--blue-500);border-color:var(--blue-500)}
+  .cb svg{width:14px;height:14px}
+  .radio{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border-strong);display:inline-flex;align-items:center;justify-content:center}
+  .radio.on{border-color:var(--blue-500)}
+  .radio.on::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--blue-500)}
+  .tg{width:40px;height:22px;border-radius:999px;background:var(--gray-100);position:relative;flex:none}
+  .tg.on{background:var(--blue-500)}
+  .tg::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:var(--shadow-sm);transition:.2s}
+  .tg.on::after{left:20px}
+</style></head>
+<body><div class="wrap">
+  <div class="col"><span class="lab">Checkbox</span>
+    <div class="opt"><span class="cb on"><i data-lucide="check"></i></span>Tìm theo barcode</div>
+    <div class="opt"><span class="cb"></span>Áp dụng khuyến mãi</div>
+  </div>
+  <div class="col"><span class="lab">Radio</span>
+    <div class="opt"><span class="radio on"></span>Mang về</div>
+    <div class="opt"><span class="radio"></span>Tại chỗ</div>
+  </div>
+  <div class="col"><span class="lab">Toggle</span>
+    <div class="opt"><span class="tg on"></span>Bật</div>
+    <div class="opt"><span class="tg"></span>Tắt</div>
+  </div>
+</div>
+<script>lucide.createIcons();</script>
+</body></html>

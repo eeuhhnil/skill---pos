@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EasyPOS — Trang chủ / Tổng quan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../colors_and_type.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); background: var(--surface-page); color: var(--ink); }
+
+  /* ---- Top bar ---- */
+  .topbar { height: 64px; background: var(--blue-500); display: flex; align-items: center;
+            padding: 0 20px; gap: 16px; color: #fff; }
+  .brand { display: flex; align-items: center; gap: 9px; background: #fff; height: 44px;
+           padding: 0 16px; border-radius: 10px; }
+  .brand .mark { width: 26px; height: 26px; color: var(--blue-500); }
+  .brand b { font-family: var(--font-display); font-weight: 700; font-size: 19px; color: var(--ink); }
+  .brand b span { color: var(--blue-500); }
+  .topbar .spacer { flex: 1; }
+  .top-btn { display: flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px;
+             border-radius: 8px; font-size: 14px; font-weight: 600; color: #fff; cursor: pointer;
+             background: transparent; border: none; }
+  .top-btn.sell { background: #fff; color: var(--blue-500); }
+  .top-btn.company { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.35); }
+  .top-btn:hover:not(.sell):not(.company) { background: rgba(255,255,255,.12); }
+  .bell { position: relative; }
+  .bell .badge { position: absolute; top: -4px; right: -4px; background: var(--error-500);
+                 color: #fff; font-size: 10px; font-weight: 700; border-radius: 999px;
+                 min-width: 16px; height: 16px; display: flex; align-items: center;
+                 justify-content: center; padding: 0 4px; }
+
+  /* ---- Shell ---- */
+  .shell { display: flex; height: calc(100vh - 64px); }
+
+  /* ---- Left rail ---- */
+  .rail { width: 210px; background: #fff; border-right: 1px solid var(--border);
+          padding: 12px 10px; overflow-y: auto; flex: none; }
+  .nav-item { display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px;
+              border-radius: var(--radius-md); font-size: 14px; color: var(--text-secondary);
+              cursor: pointer; font-weight: 500; }
+  .nav-item i[data-lucide] { width: 20px; height: 20px; }
+  .nav-item .chev { margin-left: auto; width: 16px; height: 16px; opacity: .6; }
+  .nav-item:hover { background: var(--surface-subtle); }
+  .nav-item.active { background: var(--blue-100); color: var(--blue-700); font-weight: 600; }
+
+  /* ---- Work area ---- */
+  .work { flex: 1; overflow-y: auto; padding: 18px 22px 28px; }
+  .page-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 4px; }
+  .page-head h1 { font-family: var(--font-display); font-weight: 600; font-size: 24px; }
+  .updated { display: flex; align-items: center; gap: 6px; font-size: 13px;
+             color: var(--text-secondary); margin-bottom: 16px; }
+  .updated i { width: 15px; height: 15px; color: var(--blue-500); cursor: pointer; }
+
+  /* ---- KPI row ---- */
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+  .kpi { background: #fff; border-radius: var(--radius-xl); border: 1px solid var(--border);
+         padding: 16px 18px; }
+  .kpi .lbl { display: flex; align-items: center; gap: 8px; font-size: 13px;
+              color: var(--text-secondary); margin-bottom: 10px; }
+  .kpi .lbl i { width: 18px; height: 18px; color: var(--blue-500); }
+  .kpi .val { font-family: var(--font-num); font-weight: 700; font-size: 26px;
+              font-variant-numeric: tabular-nums; display: flex; align-items: baseline; gap: 8px; }
+  .delta { font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 2px; }
+  .delta.up { color: var(--success-500); }
+  .delta.down { color: var(--error-500); }
+  .delta i { width: 13px; height: 13px; }
+
+  /* ---- Middle row ---- */
+  .mid-row { display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .card { background: #fff; border-radius: var(--radius-xl); border: 1px solid var(--border);
+          padding: 16px 18px; }
+  .card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .card-head .ttl { display: flex; align-items: center; gap: 8px; font: var(--title-lg); }
+  .card-head .ttl i { width: 20px; height: 20px; color: var(--blue-500); }
+  .card-head .spacer { flex: 1; }
+  .legend { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+  .legend .sw { width: 11px; height: 11px; border-radius: 3px; }
+  .mini-select { display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px;
+                 border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px;
+                 color: var(--text-secondary); cursor: pointer; }
+  .mini-select i { width: 14px; height: 14px; }
+
+  /* chart */
+  .chart { height: 230px; display: flex; align-items: flex-end; gap: 14px; padding: 8px 4px 0;
+           position: relative; }
+  .col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .bars { width: 100%; max-width: 30px; display: flex; flex-direction: column;
+          justify-content: flex-end; height: 190px; border-radius: 6px 6px 0 0; overflow: hidden;
+          background: var(--surface-subtle); }
+  .bars .profit { background: var(--orange-500); }
+  .bars .rev { background: var(--blue-500); }
+  .col.active .bars { box-shadow: 0 4px 10px rgba(0,116,189,.25); }
+  .col .m { font-size: 11px; color: var(--text-secondary); }
+
+  /* e-invoice card */
+  .einv-row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 6px 0; }
+  .einv-row .k { color: var(--text-secondary); }
+  .einv-row .v { font-weight: 600; }
+  .einv-div { height: 1px; background: var(--border); margin: 8px 0; }
+  .einv-stat { display: flex; align-items: center; gap: 8px; font-size: 13.5px; padding: 5px 0; }
+  .einv-stat .d { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .einv-stat .num { margin-left: auto; font-family: var(--font-num); font-weight: 700; }
+
+  /* ---- Bottom row ---- */
+  .bot-row { display: grid; grid-template-columns: 1fr 1fr 1.15fr; gap: 16px; }
+  .filt-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .prod { display: flex; align-items: center; gap: 12px; padding: 9px 0;
+          border-bottom: 1px solid var(--border-faint); }
+  .prod:last-child { border-bottom: none; }
+  .prod img, .prod .ph { width: 44px; height: 44px; border-radius: 8px; object-fit: cover;
+          background: #dfe6ec; flex: none; }
+  .prod .info { flex: 1; min-width: 0; }
+  .prod .info .n { font-size: 13.5px; font-weight: 600; }
+  .prod .info .sub { font-size: 12px; color: var(--text-secondary); }
+  .prod .price { font-family: var(--font-num); font-weight: 700; color: var(--blue-500); font-size: 14px; }
+  .prod .stock { text-align: right; min-width: 70px; }
+  .prod .stock .q { font-size: 13px; font-weight: 700; color: var(--error-500); }
+  .prod .stock .barbg { width: 64px; height: 4px; border-radius: 999px; background: var(--surface-subtle);
+          margin-top: 4px; overflow: hidden; margin-left: auto; }
+  .prod .stock .barfg { height: 100%; background: var(--error-500); border-radius: 999px; }
+
+  /* ===== Công việc cần làm — TASK LIST ===== */
+  .tasks { display: flex; flex-direction: column; gap: 10px; }
+  .task { display: flex; gap: 12px; padding: 12px; border-radius: var(--radius-lg);
+          border: 1px solid var(--border); background: #fff; }
+  .task:hover { box-shadow: var(--shadow-sm); }
+  .task .ic { width: 36px; height: 36px; border-radius: 9px; flex: none;
+              display: flex; align-items: center; justify-content: center; }
+  .task .ic i { width: 19px; height: 19px; }
+  .task.warn  .ic { background: var(--warning-50); }  .task.warn  .ic i { color: var(--warning-700); }
+  .task.err   .ic { background: var(--error-50); }    .task.err   .ic i { color: var(--error-500); }
+  .task.info  .ic { background: var(--blue-100); }    .task.info  .ic i { color: var(--blue-700); }
+  .task .body { flex: 1; min-width: 0; }
+  .task .top { display: flex; align-items: center; gap: 8px; }
+  .task .top .t { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .pill { font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 999px; }
+  .pill.warn { background: var(--warning-50); color: var(--warning-700); }
+  .pill.err  { background: var(--error-50);  color: var(--error-700); }
+  .pill.info { background: var(--blue-100);  color: var(--blue-700); }
+  .task .hint { font-size: 12.5px; color: var(--text-secondary); line-height: 1.45; margin-top: 3px; }
+  .task .act { display: inline-flex; align-items: center; gap: 3px; font-size: 12.5px;
+               font-weight: 600; color: var(--blue-500); margin-top: 6px; cursor: pointer; }
+  .task .act i { width: 13px; height: 13px; }
+  .task-count { background: var(--error-500); color: #fff; font-size: 11px; font-weight: 700;
+                border-radius: 999px; min-width: 18px; height: 18px; display: inline-flex;
+                align-items: center; justify-content: center; padding: 0 5px; margin-left: auto; }
+</style>
+</head>
+<body>
+
+<!-- ======================= TOP BAR ======================= -->
+<header class="topbar">
+  <div class="brand">
+    <i data-lucide="calculator" class="mark"></i>
+    <b>Easy<span>POS</span></b>
+  </div>
+  <div class="spacer"></div>
+  <button class="top-btn sell"><i data-lucide="shopping-cart" style="width:18px;height:18px"></i> Bán hàng</button>
+  <button class="top-btn"><i data-lucide="headphones" style="width:18px;height:18px"></i> Hỗ trợ</button>
+  <button class="top-btn bell"><i data-lucide="bell" style="width:20px;height:20px"></i><span class="badge">5</span></button>
+  <button class="top-btn company"><i data-lucide="store" style="width:18px;height:18px"></i> Công ty TNHH SDS <i data-lucide="chevron-down" style="width:16px;height:16px"></i></button>
+  <button class="top-btn"><i data-lucide="user" style="width:18px;height:18px"></i> Nguyễn Văn A</button>
+</header>
+
+<div class="shell">
+  <!-- ======================= LEFT RAIL ======================= -->
+  <nav class="rail">
+    <div class="nav-item active"><i data-lucide="home"></i> Trang chủ</div>
+    <div class="nav-item"><i data-lucide="shopping-bag"></i> Bán hàng</div>
+    <div class="nav-item"><i data-lucide="package"></i> Quản lý sản phẩm <i data-lucide="chevron-down" class="chev"></i></div>
+    <div class="nav-item"><i data-lucide="file-text"></i> Đơn hàng</div>
+    <div class="nav-item"><i data-lucide="receipt"></i> Hóa đơn <i data-lucide="chevron-down" class="chev"></i></div>
+    <div class="nav-item"><i data-lucide="store"></i> Sàn TMĐT <i data-lucide="chevron-down" class="chev"></i></div>
+    <div class="nav-item"><i data-lucide="git-branch"></i> Chi nhánh</div>
+    <div class="nav-item"><i data-lucide="ticket-percent"></i> Quản lý voucher <i data-lucide="chevron-down" class="chev"></i></div>
+    <div class="nav-item"><i data-lucide="map-pin"></i> Quản lý khu vực <i data-lucide="chevron-down" class="chev"></i></div>
+    <div class="nav-item"><i data-lucide="users"></i> Danh bạ <i data-lucide="chevron-down" class="chev"></i></div>
+    <div class="nav-item"><i data-lucide="box"></i> Kho <i data-lucide="chevron-down" class="chev"></i></div>
+    <div class="nav-item"><i data-lucide="settings"></i> Cài đặt <i data-lucide="chevron-down" class="chev"></i></div>
+    <div class="nav-item"><i data-lucide="bar-chart-3"></i> Báo cáo <i data-lucide="chevron-down" class="chev"></i></div>
+  </nav>
+
+  <!-- ======================= WORK AREA ======================= -->
+  <main class="work">
+    <div class="page-head"><h1>Tổng quan</h1></div>
+    <div class="updated">Dữ liệu tính đến 09:37 - 23/06/2026 <i data-lucide="refresh-cw"></i></div>
+
+    <!-- KPI ROW -->
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="lbl"><i data-lucide="bar-chart-3"></i> Doanh thu ước tính</div>
+        <div class="val">125.000.000đ <span class="delta up"><i data-lucide="trending-up"></i>25%</span></div>
+      </div>
+      <div class="kpi">
+        <div class="lbl"><i data-lucide="file-text"></i> Tổng số đơn hàng</div>
+        <div class="val">125.650 <span class="delta up"><i data-lucide="trending-up"></i>25%</span></div>
+      </div>
+      <div class="kpi">
+        <div class="lbl"><i data-lucide="clock"></i> Đơn hàng đang xử lý</div>
+        <div class="val">125.650 <span class="delta down"><i data-lucide="trending-down"></i>25%</span></div>
+      </div>
+      <div class="kpi">
+        <div class="lbl"><i data-lucide="wallet"></i> Lợi nhuận ước tính</div>
+        <div class="val">75.000.000đ <span class="delta up"><i data-lucide="trending-up"></i>25%</span></div>
+      </div>
+    </div>
+
+    <!-- MIDDLE ROW -->
+    <div class="mid-row">
+      <div class="card">
+        <div class="card-head">
+          <div class="ttl"><i data-lucide="bar-chart-3"></i> Doanh thu</div>
+          <span class="legend"><span class="sw" style="background:var(--blue-500)"></span>Doanh thu</span>
+          <span class="legend"><span class="sw" style="background:var(--orange-500)"></span>Lợi nhuận</span>
+          <div class="spacer"></div>
+          <div class="mini-select">Tháng này <i data-lucide="chevron-down"></i></div>
+        </div>
+        <div class="chart" id="chart"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div class="ttl"><i data-lucide="receipt"></i> Hóa đơn điện tử</div></div>
+        <div class="einv-row"><span class="k">Trạng thái tờ khai 01:</span><span class="v">CQT không tiếp nhận</span></div>
+        <div class="einv-row"><span class="k">Mẫu số:</span><span class="v">1C26MCC</span></div>
+        <div class="einv-row"><span class="k">Mã CQT:</span><span class="v">CWFFH</span></div>
+        <div class="einv-row"><span class="k">Số lượng còn lại:</span><span class="v">0 số</span></div>
+        <div class="einv-div"></div>
+        <div class="einv-stat"><span class="d" style="background:var(--success-500)"></span>HĐ phát hành thành công<span class="num">250</span></div>
+        <div class="einv-stat"><span class="d" style="background:var(--gray-100)"></span>HĐ chưa phát hành<span class="num">250</span></div>
+        <div class="einv-stat"><span class="d" style="background:var(--error-500)"></span>HĐ phát hành lỗi<span class="num">68</span></div>
+        <div class="einv-stat"><span class="d" style="background:var(--orange-500)"></span>HĐ phát hành không hợp lệ<span class="num">356</span></div>
+      </div>
+    </div>
+
+    <!-- BOTTOM ROW -->
+    <div class="bot-row">
+      <!-- Best sellers -->
+      <div class="card">
+        <div class="card-head"><div class="ttl" style="font-size:16px">Sản phẩm bán chạy</div></div>
+        <div class="filt-row">
+          <div class="mini-select">Hôm nay <i data-lucide="chevron-down"></i></div>
+          <div class="mini-select">Số lượng <i data-lucide="chevron-down"></i></div>
+        </div>
+        <div class="prod"><div class="ph"></div><div class="info"><div class="n">Áo thun nữ mini typo</div><div class="sub">SP001 · ĐVT: thùng</div></div><div class="price">125.000đ</div></div>
+        <div class="prod"><div class="ph"></div><div class="info"><div class="n">Áo thun nữ mini typo</div><div class="sub">SP001 · ĐVT: thùng</div></div><div class="price">125.000đ</div></div>
+        <div class="prod"><div class="ph"></div><div class="info"><div class="n">Áo thun nữ mini typo</div><div class="sub">SP001 · ĐVT: thùng</div></div><div class="price">125.000đ</div></div>
+      </div>
+
+      <!-- Low stock -->
+      <div class="card">
+        <div class="card-head"><div class="ttl" style="font-size:16px">Sản phẩm sắp hết hàng</div><div class="spacer"></div><i data-lucide="external-link" style="width:18px;height:18px;color:var(--blue-500)"></i></div>
+        <div class="prod"><div class="ph"></div><div class="info"><div class="n">Áo thun nữ mini typo</div><div class="sub">SP001 · ĐVT: thùng</div></div><div class="stock"><div class="q">3/10</div><div class="barbg"><div class="barfg" style="width:30%"></div></div></div></div>
+        <div class="prod"><div class="ph"></div><div class="info"><div class="n">Áo thun nữ mini typo</div><div class="sub">SP001 · ĐVT: thùng</div></div><div class="stock"><div class="q">3/10</div><div class="barbg"><div class="barfg" style="width:30%"></div></div></div></div>
+        <div class="prod"><div class="ph"></div><div class="info"><div class="n">Áo thun nữ mini typo</div><div class="sub">SP001 · ĐVT: thùng</div></div><div class="stock"><div class="q">3/10</div><div class="barbg"><div class="barfg" style="width:30%"></div></div></div></div>
+      </div>
+
+      <!-- ===== CÔNG VIỆC CẦN LÀM ===== -->
+      <div class="card">
+        <div class="card-head">
+          <div class="ttl" style="font-size:16px"><i data-lucide="list-checks" style="color:var(--blue-500)"></i> Công việc cần làm</div>
+          <span class="task-count">5</span>
+        </div>
+        <div class="tasks">
+
+          <!-- Lô sắp hết hạn -->
+          <div class="task warn">
+            <div class="ic"><i data-lucide="alert-triangle"></i></div>
+            <div class="body">
+              <div class="top"><span class="t">Có 8 lô hàng sắp hết hạn</span><span class="pill warn">Trong 7 ngày</span></div>
+              <div class="hint">LH-2406-015 (HSD 28/06), LH-2406-022 (HSD 30/06), LH-2406-031 (HSD 01/07) <b>+5 lô khác</b></div>
+              <span class="act">Xem chi tiết <i data-lucide="chevron-right"></i></span>
+            </div>
+          </div>
+
+          <!-- Hóa đơn chưa phát hành -->
+          <div class="task err">
+            <div class="ic"><i data-lucide="receipt"></i></div>
+            <div class="body">
+              <div class="top"><span class="t">250 hóa đơn chưa phát hành</span><span class="pill err">Cần xử lý</span></div>
+              <div class="hint">Hóa đơn đã lập nhưng chưa gửi lên CQT. Phát hành trước cuối kỳ kê khai.</div>
+              <span class="act">Phát hành ngay <i data-lucide="chevron-right"></i></span>
+            </div>
+          </div>
+
+          <!-- Hóa đơn phát hành lỗi -->
+          <div class="task err">
+            <div class="ic"><i data-lucide="file-x"></i></div>
+            <div class="body">
+              <div class="top"><span class="t">68 hóa đơn phát hành lỗi</span><span class="pill err">Lỗi CQT</span></div>
+              <div class="hint">Sai mã số thuế người mua, trùng số hóa đơn — cần kiểm tra và phát hành lại.</div>
+              <span class="act">Xử lý ngay <i data-lucide="chevron-right"></i></span>
+            </div>
+          </div>
+
+          <!-- Sản phẩm sắp hết hàng -->
+          <div class="task warn">
+            <div class="ic"><i data-lucide="package"></i></div>
+            <div class="body">
+              <div class="top"><span class="t">3 sản phẩm sắp hết hàng</span><span class="pill warn">Tồn thấp</span></div>
+              <div class="hint">Áo thun nữ mini typo (3/10), Quần jean nam (2/10), Váy hoa nhí (4/10)</div>
+              <span class="act">Tạo phiếu nhập kho <i data-lucide="chevron-right"></i></span>
+            </div>
+          </div>
+
+          <!-- Đơn hàng chờ xử lý -->
+          <div class="task info">
+            <div class="ic"><i data-lucide="clock"></i></div>
+            <div class="body">
+              <div class="top"><span class="t">12 đơn hàng quá hạn xử lý</span><span class="pill info">Chờ duyệt</span></div>
+              <div class="hint">Đơn đặt qua sàn TMĐT chưa xác nhận trên 24 giờ — nguy cơ bị hủy tự động.</div>
+              <span class="act">Xem danh sách đơn <i data-lucide="chevron-right"></i></span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Build revenue chart (12 months) — Tháng 6 active
+  const data = [
+    [55,30],[80,40],[95,55],[120,70],[150,90],[150,100],
+    [110,60],[125,70],[130,75],[115,62],[140,82],[135,78]
+  ];
+  const max = 160;
+  const chart = document.getElementById('chart');
+  data.forEach((d, i) => {
+    const [rev, profit] = d;
+    const active = i === 5;
+    const dim = active ? '' : 'opacity:.35';
+    chart.insertAdjacentHTML('beforeend', `
+      <div class="col ${active ? 'active' : ''}">
+        <div class="bars" style="${active ? '' : 'background:#EEF1F4'}">
+          <div class="profit" style="height:${profit/max*100}%;${dim}"></div>
+          <div class="rev" style="height:${(rev-profit)/max*100}%;${dim}"></div>
+        </div>
+        <div class="m">Tháng ${i+1}</div>
+      </div>`);
+  });
+  lucide.createIcons();
+</script>
+</body>
+</html>

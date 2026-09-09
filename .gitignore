@@ -1,0 +1,10 @@
+# Tool epos-confluence la git repo doc lap (co remote rieng de pip install).
+# Bo qua o repo Epos de tranh nham thanh submodule.
+tools/epos-confluence/
+
+# Cau hinh chua credential that - KHONG push len GitHub
+.vscode/mcp.json
+.claude/settings.json
+
+# Log ket noi DB (lo IP noi bo, user sa, lich su truy van)
+logs/

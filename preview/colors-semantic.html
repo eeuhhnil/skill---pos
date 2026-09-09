@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;font-family:var(--font-sans);background:#fff;color:var(--ink)}
+  .wrap{padding:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .col h4{font:var(--title-sm);margin:0 0 8px;display:flex;align-items:center;gap:6px}
+  .col h4 i{width:10px;height:10px;border-radius:50%}
+  .stack{display:flex;flex-direction:column;border-radius:8px;overflow:hidden;box-shadow:var(--shadow-sm)}
+  .s{height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;font:var(--caption);font-size:11px}
+</style></head>
+<body><div class="wrap">
+  <div class="col"><h4><i style="background:#2BA45C"></i>Success</h4><div class="stack">
+    <div class="s" style="background:#1E7D45;color:#fff">700<span>#1E7D45</span></div>
+    <div class="s" style="background:#2BA45C;color:#fff">500<span>#2BA45C</span></div>
+    <div class="s" style="background:#C8F2D7">100<span>#C8F2D7</span></div>
+    <div class="s" style="background:#E0FFEB">50<span>#E0FFEB</span></div></div></div>
+  <div class="col"><h4><i style="background:#F0A92A"></i>Warning</h4><div class="stack">
+    <div class="s" style="background:#B7791F;color:#fff">700<span>#B7791F</span></div>
+    <div class="s" style="background:#F0A92A;color:#fff">500<span>#F0A92A</span></div>
+    <div class="s" style="background:#FDEFC8">100<span>#FDEFC8</span></div>
+    <div class="s" style="background:#FFFAE7">50<span>#FFFAE7</span></div></div></div>
+  <div class="col"><h4><i style="background:#EB5146"></i>Error</h4><div class="stack">
+    <div class="s" style="background:#BE211C;color:#fff">700<span>#BE211C</span></div>
+    <div class="s" style="background:#EB5146;color:#fff">500<span>#EB5146</span></div>
+    <div class="s" style="background:#FED9D5">100<span>#FED9D5</span></div>
+    <div class="s" style="background:#FEF3F2">50<span>#FEF3F2</span></div></div></div>
+  <div class="col"><h4><i style="background:#0074BD"></i>Info</h4><div class="stack">
+    <div class="s" style="background:#005C96;color:#fff">700<span>#005C96</span></div>
+    <div class="s" style="background:#0074BD;color:#fff">500<span>#0074BD</span></div>
+    <div class="s" style="background:#B0D4EB">200<span>#B0D4EB</span></div>
+    <div class="s" style="background:#E6F1F8">50<span>#E6F1F8</span></div></div></div>
+</div>
+</body></html>

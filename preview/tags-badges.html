@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;font-family:var(--font-sans);background:#fff;color:var(--ink)}
+  .wrap{padding:22px 24px;display:flex;flex-direction:column;gap:16px}
+  .grp{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .tag{font:var(--caption);color:var(--text-secondary);width:84px;flex:none}
+  .pill{font-size:13px;font-weight:600;padding:3px 10px;border-radius:6px;line-height:18px}
+  .soft-green{background:var(--success-50);color:var(--success-700)}
+  .soft-orange{background:var(--orange-50);color:var(--orange-700)}
+  .soft-blue{background:var(--blue-100);color:var(--blue-700)}
+  .soft-red{background:var(--error-50);color:var(--error-700)}
+  .soft-amber{background:var(--warning-50);color:var(--warning-700)}
+  .dot{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary)}
+  .dot i{width:8px;height:8px;border-radius:50%}
+  .count{background:var(--error-500);color:#fff;font-size:12px;font-weight:700;border-radius:999px;min-width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;padding:0 5px}
+</style></head>
+<body><div class="wrap">
+  <div class="grp"><span class="tag">Tags</span>
+    <span class="pill soft-green">Quà tặng</span>
+    <span class="pill soft-orange">Topping</span>
+    <span class="pill soft-green">Mua 2 tặng 1</span>
+    <span class="pill soft-blue">Demopro</span>
+    <span class="pill soft-amber">Sắp hết</span>
+  </div>
+  <div class="grp"><span class="tag">Status</span>
+    <span class="dot"><i style="background:var(--success-500)"></i>Còn hàng</span>
+    <span class="dot"><i style="background:var(--warning-500)"></i>Sắp hết</span>
+    <span class="dot"><i style="background:var(--error-500)"></i>Hết hàng</span>
+    <span class="pill soft-red">Hủy</span>
+    <span class="pill soft-green">Hoàn thành</span>
+  </div>
+  <div class="grp"><span class="tag">Count</span>
+    <span class="count">3</span><span class="count">12</span><span class="count">99+</span>
+    <span style="font:var(--caption);color:var(--text-secondary)">— QR order &amp; notification badges</span>
+  </div>
+</div>
+</body></html>

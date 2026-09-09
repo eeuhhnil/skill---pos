@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Hàng hóa đặc trưng — Xe ô tô, xe mô tô</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../colors_and_type.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    width:1920px;height:1080px;overflow:hidden;
+    font-family:var(--font-sans);color:var(--ink);
+    background:var(--surface-page);
+  }
+
+  /* ---- backdrop ---------------------------------------------------------- */
+  .backdrop{
+    position:fixed;inset:0;background:rgba(21,27,51,.45);
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  /* ---- modal shell ------------------------------------------------------- */
+  .modal{
+    width:960px;max-height:92%;
+    background:var(--surface);border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-lg);
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .modal-head{
+    height:56px;flex:none;background:var(--blue-500);
+    display:flex;align-items:center;gap:var(--space-3);
+    padding:0 var(--space-4) 0 var(--space-5);
+  }
+  .modal-head h2{
+    margin:0;font:600 16px/1.4 var(--font-display);color:#fff;letter-spacing:.1px;
+  }
+  .head-chip{
+    font:600 12px/1.4 var(--font-sans);color:#fff;
+    background:rgba(255,255,255,.18);border-radius:var(--radius-full);
+    padding:3px 10px;
+  }
+  .head-close{
+    margin-left:auto;width:28px;height:28px;flex:none;
+    border:1.5px solid rgba(255,255,255,.7);border-radius:var(--radius-sm);
+    background:transparent;color:#fff;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .head-close:hover{background:rgba(255,255,255,.15)}
+  .head-close svg{width:16px;height:16px}
+
+  .modal-body{
+    flex:1;overflow-y:auto;padding:var(--space-5);
+    display:flex;flex-direction:column;gap:var(--space-5);
+  }
+  .modal-body::-webkit-scrollbar{width:10px}
+  .modal-body::-webkit-scrollbar-thumb{background:#D6DAE0;border-radius:999px;border:3px solid #fff}
+
+  .modal-foot{
+    flex:none;border-top:1px solid var(--border);
+    padding:var(--space-4) var(--space-5);
+    display:flex;align-items:center;gap:var(--space-3);
+    background:var(--surface);
+  }
+  .foot-note{font:var(--caption);color:var(--text-tertiary)}
+  .foot-note b{color:var(--error-500);font-weight:700}
+
+  /* ---- sections ---------------------------------------------------------- */
+  .sec-head{
+    display:flex;align-items:center;gap:var(--space-2);
+    padding-bottom:var(--space-2);margin-bottom:var(--space-4);
+    border-bottom:1px solid var(--border-faint);
+  }
+  .sec-head svg{width:18px;height:18px;color:var(--blue-500)}
+  .sec-head h3{margin:0;font:var(--title-md);color:var(--text-primary)}
+  .sec-head .sub{font:var(--caption);color:var(--text-tertiary);margin-left:auto}
+
+  /* ---- conditional card -------------------------------------------------- */
+  /* :not(.show) để quy tắc ẩn thắng .f{display:flex} khai báo phía dưới */
+  .cond:not(.show){display:none}
+  .cond.show{display:block;animation:reveal .18s ease-out}
+  .f.cond.show{display:flex}
+  @keyframes reveal{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .cond-card{
+    background:var(--blue-50);
+    border-radius:var(--radius-lg);padding:var(--space-5);
+  }
+  .cond-card .sec-head{border-bottom-color:var(--blue-200)}
+  .cond-tag{
+    font:600 11px/1.4 var(--font-sans);color:var(--blue-700);
+    background:#fff;border:1px solid var(--blue-200);
+    border-radius:var(--radius-full);padding:2px 9px;
+  }
+
+  /* ---- grid + fields ----------------------------------------------------- */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4) var(--space-5)}
+  .span2{grid-column:1 / -1}
+
+  /* mỗi lựa chọn chiếm trọn 1 dòng, trường phụ thuộc nằm ngay dưới lựa chọn */
+  .stack{display:flex;flex-direction:column;gap:var(--space-4)}
+  /* trường phụ thuộc dùng chung nền với khối "đã qua sử dụng" */
+  .sub-field{
+    margin-top:calc(var(--space-2) * -1);
+    background:var(--blue-50);
+    border-radius:var(--radius-lg);
+    padding:var(--space-4) var(--space-5);
+  }
+
+  .f{display:flex;flex-direction:column;min-width:0}
+  .f > label,.f > .lab{
+    font:var(--label);color:var(--text-secondary);
+    margin-bottom:6px;display:flex;align-items:center;gap:4px;
+  }
+  .req{color:var(--error-500);font-weight:700}
+  .hint{font:var(--caption);color:var(--text-tertiary);margin-top:5px}
+  .hint.err{color:var(--error-500)}
+
+  .inp{
+    height:40px;width:100%;
+    border:1px solid var(--border);border-radius:var(--radius-sm);
+    padding:0 14px;background:#fff;
+    font:var(--body-lg);color:var(--ink);font-family:var(--font-sans);
+    outline:none;transition:border-color .12s,box-shadow .12s;
+  }
+  .inp::placeholder{color:var(--text-placeholder)}
+  .inp:focus{border-color:var(--blue-500);box-shadow:0 0 0 3px var(--blue-100)}
+  .inp[readonly]{background:var(--surface-subtle);color:var(--text-tertiary);cursor:default}
+  .inp[readonly]:focus{border-color:var(--border);box-shadow:none}
+  .inp.num{font-variant-numeric:tabular-nums}
+
+  .inp-wrap{position:relative}
+  .inp-wrap .suffix{
+    position:absolute;right:14px;top:50%;transform:translateY(-50%);
+    font:var(--body-md);color:var(--text-tertiary);pointer-events:none;
+  }
+  .inp-wrap .suffix + .inp{padding-right:56px}
+  .inp-wrap .lock{
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+    width:16px;height:16px;color:var(--text-placeholder);pointer-events:none;
+  }
+
+  select.inp{appearance:none;padding-right:38px;cursor:pointer}
+  .sel-wrap{position:relative}
+  .sel-wrap .chev{
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+    width:18px;height:18px;color:var(--text-secondary);pointer-events:none;
+  }
+
+  /* ---- radio ------------------------------------------------------------- */
+  .radios{display:flex;gap:var(--space-5);align-items:center;height:40px;flex-wrap:wrap}
+  .opt{display:inline-flex;align-items:center;gap:9px;cursor:pointer;font:var(--body-lg)}
+  .opt input{position:absolute;opacity:0;width:0;height:0}
+  .dot{
+    width:20px;height:20px;border-radius:50%;flex:none;
+    border:1.5px solid var(--border-strong);background:#fff;
+    display:inline-flex;align-items:center;justify-content:center;transition:.12s;
+  }
+  .opt:hover .dot{border-color:var(--blue-400)}
+  .opt input:checked + .dot{border-color:var(--blue-500)}
+  .opt input:checked + .dot::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--blue-500)}
+  .opt input:focus-visible + .dot{box-shadow:0 0 0 3px var(--blue-100)}
+  .opt input:checked ~ .txt{color:var(--ink);font-weight:500}
+  .txt{color:var(--text-secondary)}
+
+  /* ---- buttons ----------------------------------------------------------- */
+  .btn{
+    display:inline-flex;align-items:center;gap:var(--space-2);
+    height:40px;padding:0 var(--space-5);border-radius:var(--radius-md);
+    font:600 14px/1 var(--font-sans);cursor:pointer;border:none;transition:.12s;
+  }
+  .btn svg{width:18px;height:18px}
+  .btn-primary{background:var(--blue-500);color:#fff}
+  .btn-primary:hover{background:var(--blue-600)}
+  .btn-primary:disabled{background:var(--surface-subtle);color:#B0B0B0;cursor:not-allowed}
+  .btn-secondary{background:#fff;border:1.2px solid var(--blue-500);color:var(--blue-500)}
+  .btn-secondary:hover{background:var(--blue-100)}
+  .ml-auto{margin-left:auto}
+</style>
+</head>
+<body>
+
+<div class="backdrop">
+  <div class="modal">
+
+    <!-- ================= HEADER ================= -->
+    <div class="modal-head">
+      <h2>Thông tin hàng hóa đặc trưng</h2>
+      <button class="head-close" title="Đóng"><i data-lucide="x"></i></button>
+    </div>
+
+    <!-- ================= BODY ================= -->
+    <div class="modal-body">
+
+      <!-- ---------- Section 1: Số khung / Số máy ---------- -->
+      <section>
+        <div class="grid">
+          <div class="f">
+            <label>Số khung <span class="req">*</span></label>
+            <input class="inp" id="sKhung" maxlength="50" placeholder="Nhập số khung" data-req>
+            <span class="hint">Tối đa 50 ký tự</span>
+          </div>
+
+          <div class="f">
+            <label>Số máy <span class="req">*</span></label>
+            <input class="inp" id="sMay" maxlength="50" placeholder="Nhập số máy" data-req>
+            <span class="hint">Tối đa 50 ký tự</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- Section 2: Các lựa chọn phân loại ---------- -->
+      <section>
+        <div class="stack">
+
+          <!-- Lựa chọn 1 — không kéo theo trường nào -->
+          <div class="f">
+            <span class="lab">Loại tài sản <span class="req">*</span></span>
+            <div class="radios">
+              <label class="opt"><input type="radio" name="ltsan" value="1" checked><span class="dot"></span><span class="txt">Ô tô</span></label>
+              <label class="opt"><input type="radio" name="ltsan" value="2"><span class="dot"></span><span class="txt">Mô tô, xe máy</span></label>
+            </div>
+          </div>
+
+          <!-- Lựa chọn 2 — kéo theo 1 ô chứng từ ngay bên dưới -->
+          <div class="f">
+            <span class="lab">Xuất xứ <span class="req">*</span></span>
+            <div class="radios">
+              <label class="opt"><input type="radio" name="xxu" value="0" checked><span class="dot"></span><span class="txt">Lắp ráp trong nước</span></label>
+              <label class="opt"><input type="radio" name="xxu" value="1"><span class="dot"></span><span class="txt">Nhập khẩu</span></label>
+            </div>
+          </div>
+
+          <!-- Xuất xứ = Lắp ráp trong nước -->
+          <div class="f cond show sub-field" id="blkLapRap">
+            <label>Số seri Phiếu kiểm tra chất lượng xuất xưởng <span class="req">*</span></label>
+            <input class="inp" id="sspkt" maxlength="200" placeholder="Nhập số seri phiếu kiểm tra" data-req>
+            <span class="hint">Bắt buộc với xe sản xuất, lắp ráp trong nước · tối đa 200 ký tự</span>
+          </div>
+
+          <!-- Xuất xứ = Nhập khẩu -->
+          <div class="f cond sub-field" id="blkNhapKhau">
+            <label>Số Giấy chứng nhận chất lượng an toàn kỹ thuật và bảo vệ môi trường (đối với xe nhập khẩu) <span class="req">*</span></label>
+            <input class="inp" id="sgcn" maxlength="200" placeholder="Nhập số giấy chứng nhận" data-req>
+            <span class="hint">Bắt buộc với xe nhập khẩu · tối đa 200 ký tự</span>
+          </div>
+
+          <!-- Lựa chọn 3 — kéo theo cả khối 14 trường ngay bên dưới -->
+          <div class="f">
+            <span class="lab">Tình trạng tài sản <span class="req">*</span></span>
+            <div class="radios">
+              <label class="opt"><input type="radio" name="tttsan" value="0" checked><span class="dot"></span><span class="txt">Chưa qua sử dụng</span></label>
+              <label class="opt"><input type="radio" name="tttsan" value="1"><span class="dot"></span><span class="txt">Đã qua sử dụng</span></label>
+            </div>
+          </div>
+
+      <!-- Tình trạng = Đã qua sử dụng -->
+      <div class="cond" id="blkDaSuDung">
+        <div class="cond-card">
+          <div class="sec-head">
+            <h3>Thông tin phương tiện đã qua sử dụng</h3>
+          </div>
+
+          <div class="grid">
+            <div class="f">
+              <label>Nước sản xuất <span class="req">*</span></label>
+              <div class="sel-wrap">
+                <select class="inp" id="mnsx" data-req>
+                  <option value="" selected disabled>Chọn nước sản xuất</option>
+                  <option value="VN">VN — Việt Nam</option>
+                  <option value="JP">JP — Nhật Bản</option>
+                  <option value="KR">KR — Hàn Quốc</option>
+                  <option value="TH">TH — Thái Lan</option>
+                  <option value="CN">CN — Trung Quốc</option>
+                  <option value="DE">DE — Đức</option>
+                  <option value="US">US — Hoa Kỳ</option>
+                </select>
+                <i data-lucide="chevron-down" class="chev"></i>
+              </div>
+            </div>
+
+            <div class="f">
+              <label>Năm sản xuất <span class="req">*</span></label>
+              <input class="inp num" id="nsx" maxlength="4" inputmode="numeric" placeholder="VD: 2019" data-req data-digits>
+              <span class="hint">4 chữ số</span>
+            </div>
+
+            <div class="f">
+              <label>Tên loại tài sản đăng ký <span class="req">*</span></label>
+              <div class="sel-wrap">
+                <select class="inp" id="tltsdk" data-req>
+                  <option value="" selected disabled>Chọn loại tài sản đăng ký</option>
+                  <option value="OTOCON">Ô tô con</option>
+                  <option value="OTOTAI">Ô tô tải</option>
+                  <option value="OTOKHACH">Ô tô khách</option>
+                  <option value="MOTO2B">Mô tô hai bánh</option>
+                </select>
+                <i data-lucide="chevron-down" class="chev"></i>
+              </div>
+            </div>
+
+            <div class="f">
+              <label>Tên nhãn hiệu <span class="req">*</span></label>
+              <div class="sel-wrap">
+                <select class="inp" id="tnhieu" data-req>
+                  <option value="" selected disabled>Chọn nhãn hiệu</option>
+                  <option value="TOYOTA">Toyota</option>
+                  <option value="HONDA">Honda</option>
+                  <option value="HYUNDAI">Hyundai</option>
+                  <option value="FORD">Ford</option>
+                  <option value="YAMAHA">Yamaha</option>
+                </select>
+                <i data-lucide="chevron-down" class="chev"></i>
+              </div>
+            </div>
+
+            <div class="f">
+              <label>Tên kiểu loại xe <span class="req">*</span></label>
+              <div class="sel-wrap">
+                <select class="inp" id="klxe" data-req>
+                  <option value="" selected disabled>Chọn kiểu loại xe</option>
+                  <option value="VIOS15G">Vios 1.5G</option>
+                  <option value="CAMRY25Q">Camry 2.5Q</option>
+                  <option value="CITYRS">City RS</option>
+                  <option value="ACCENT14AT">Accent 1.4 AT</option>
+                  <option value="EXCITER155">Exciter 155</option>
+                </select>
+                <i data-lucide="chevron-down" class="chev"></i>
+              </div>
+            </div>
+
+            <div class="f span2">
+              <label>Tên thương mại <span class="req">*</span></label>
+              <input class="inp" id="ttmai" maxlength="300" placeholder="VD: Toyota Vios 1.5G CVT" data-req>
+              <span class="hint">Tối đa 300 ký tự</span>
+            </div>
+
+            <div class="f">
+              <label>Thể tích làm việc hoặc công suất <span class="req">*</span></label>
+              <input class="inp" id="ttlvhcs" maxlength="10" placeholder="VD: 1496 cm3" data-req>
+              <span class="hint">Tối đa 10 ký tự — ghi kèm đơn vị (cm3 hoặc kW)</span>
+            </div>
+
+            <div class="f">
+              <label>Trọng tải <span class="req">*</span></label>
+              <div class="inp-wrap">
+                <span class="suffix">kg</span>
+                <input class="inp num" id="ttai" inputmode="decimal" placeholder="0,00" data-req data-dec="7,2">
+              </div>
+              <span class="hint">Tối đa 7 chữ số phần nguyên và 2 chữ số thập phân</span>
+            </div>
+
+            <div class="f">
+              <label>Số người cho phép chở <span class="req">*</span></label>
+              <div class="inp-wrap">
+                <span class="suffix">người</span>
+                <input class="inp num" id="scngoi" maxlength="4" inputmode="numeric" placeholder="VD: 5" data-req data-digits>
+              </div>
+              <span class="hint">Tối đa 4 chữ số</span>
+            </div>
+
+            <div class="f">
+              <label>Chất lượng tài sản <span class="req">*</span></label>
+              <div class="inp-wrap">
+                <span class="suffix">%</span>
+                <input class="inp num" id="cltsan" inputmode="decimal" placeholder="VD: 85,50" data-req data-dec="2,2">
+              </div>
+              <span class="hint">Giá trị từ 0 đến 99,99</span>
+            </div>
+
+            <div class="f">
+              <label>Số biển kiểm soát <span class="req">*</span></label>
+              <input class="inp" id="sbks" maxlength="20" placeholder="VD: 30A-123.45" data-req>
+              <span class="hint">Tối đa 20 ký tự</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+        </div><!-- /stack -->
+      </section>
+
+    </div><!-- /modal-body -->
+
+    <!-- ================= FOOTER ================= -->
+    <div class="modal-foot">
+      <button class="btn btn-secondary ml-auto">Hủy</button>
+      <button class="btn btn-primary" id="btnSave" disabled>
+        <i data-lucide="save"></i> Lưu sản phẩm
+      </button>
+    </div>
+
+  </div><!-- /modal -->
+</div><!-- /backdrop -->
+
+<script>
+  lucide.createIcons();
+
+  const $  = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+
+  /* ---- Ẩn/hiện theo Xuất xứ ---------------------------------------------- */
+  $$('input[name="xxu"]').forEach(r => r.addEventListener('change', () => {
+    const nhapKhau = $('input[name="xxu"]:checked').value === '1';
+    $('#blkNhapKhau').classList.toggle('show', nhapKhau);
+    $('#blkLapRap').classList.toggle('show', !nhapKhau);
+    // xoá giá trị của nhánh vừa bị ẩn để không gửi dữ liệu thừa
+    (nhapKhau ? $('#sspkt') : $('#sgcn')).value = '';
+    refresh();
+  }));
+
+  /* ---- Ẩn/hiện theo Tình trạng tài sản ------------------------------------ */
+  $$('input[name="tttsan"]').forEach(r => r.addEventListener('change', () => {
+    const daSuDung = $('input[name="tttsan"]:checked').value === '1';
+    $('#blkDaSuDung').classList.toggle('show', daSuDung);
+    if (!daSuDung) {
+      $$('#blkDaSuDung input').forEach(i => i.value = '');
+      $$('#blkDaSuDung select').forEach(s => s.selectedIndex = 0);
+    }
+    refresh();
+  }));
+
+  /* ---- Dropdown chọn theo tên, giá trị gửi đi là mã ----------------------- */
+  /* option value = mã (MLTSDKy / MNHieu / MKLXe), text hiển thị = tên         */
+  $$('#blkDaSuDung select').forEach(sel => sel.addEventListener('change', refresh));
+
+  /* ---- Ràng buộc kiểu số -------------------------------------------------- */
+  $$('[data-digits]').forEach(i => i.addEventListener('input', () => {
+    i.value = i.value.replace(/\D/g, '');
+    refresh();
+  }));
+
+  $$('[data-dec]').forEach(i => i.addEventListener('input', () => {
+    const [maxInt, maxDec] = i.dataset.dec.split(',').map(Number);
+    let v = i.value.replace(/[^\d,.]/g, '').replace('.', ',');
+    const parts = v.split(',');
+    parts[0] = parts[0].slice(0, maxInt);
+    i.value = parts.length > 1
+      ? parts[0] + ',' + parts.slice(1).join('').slice(0, maxDec)
+      : parts[0];
+    refresh();
+  }));
+
+  /* ---- Đếm trường bắt buộc còn trống + bật/tắt nút Lưu -------------------- */
+  function visibleRequired() {
+    return $$('[data-req]').filter(el => el.offsetParent !== null);
+  }
+  function refresh() {
+    const fields  = visibleRequired();
+    const missing = fields.filter(el => !el.value.trim()).length;
+    $('#counter').textContent = missing === 0
+      ? 'đã điền đủ ' + fields.length + ' trường bắt buộc'
+      : 'còn ' + missing + '/' + fields.length + ' trường chưa điền';
+    $('#btnSave').disabled = missing > 0;
+  }
+  $$('[data-req]').forEach(el => el.addEventListener('input', refresh));
+  refresh();
+</script>
+</body>
+</html>

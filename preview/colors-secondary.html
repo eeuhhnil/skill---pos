@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;font-family:var(--font-sans);background:#fff;color:var(--ink)}
+  .wrap{padding:20px}
+  .ramp{display:grid;grid-template-columns:repeat(9,1fr);border-radius:10px;overflow:hidden;box-shadow:var(--shadow-sm)}
+  .sw{height:88px;display:flex;flex-direction:column;justify-content:flex-end;padding:8px}
+  .sw b{font:var(--caption);font-weight:700}.sw span{font:var(--caption);font-size:10px;opacity:.85}
+  .star{position:absolute;top:8px;right:8px;font-size:11px}
+  .lbl{font:var(--title-md);margin:0 0 12px}
+</style></head>
+<body><div class="wrap">
+  <div class="lbl">Secondary · Orange <span style="font:var(--caption);color:var(--text-secondary)">— accents, "Topping" tags, highlights</span></div>
+  <div class="ramp" id="r"></div>
+</div>
+<script>
+const r=[["800","#7D451E"],["700","#A15926"],["600","#CF7331"],["500","#E37E36"],["400","#E9985E"],["300","#ECA978"],["200","#F2C4A3"],["100","#F6D7C1"],["50","#FCF2EB"]];
+document.getElementById('r').innerHTML=r.map(([k,v],i)=>{const light=i>=5;const col=light?'#7D451E':'#fff';
+  return `<div class="sw" style="background:${v};color:${col};position:relative">${k==='500'?`<div class="star">★</div>`:''}<b>${k}</b><span>${v}</span></div>`;}).join('');
+</script>
+</body></html>

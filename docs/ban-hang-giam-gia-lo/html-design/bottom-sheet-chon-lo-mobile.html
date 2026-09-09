@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=375, initial-scale=1.0" />
+  <title>Bán hàng — Bottom sheet giảm giá theo lô (Mobile)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --color-primary-700: #005286;
+      --color-primary-600: #006AAC;
+      --color-primary-500: #0074BD;
+      --color-primary-50:  #E6F1F8;
+
+      --color-neutral-800: #333333;
+      --color-neutral-700: #545454;
+      --color-neutral-600: #8A8A8A;
+      --color-neutral-500: #B0B0B0;
+      --color-neutral-400: #E6E6E6;
+      --color-neutral-300: #EBEBEB;
+      --color-neutral-200: #EEEEEE;
+      --color-neutral-50:  #F7F7F7;
+
+      --color-error: #EB5146;
+      --color-error-bg: #FEF3F2;
+
+      --font-primary: 'Inter', sans-serif;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-pill: 100px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-primary);
+      background: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 24px 0;
+    }
+
+    /* ── Phone shell ── */
+    .phone {
+      width: 375px;
+      height: 760px;
+      background: var(--color-neutral-50);
+      border-radius: 28px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 12px 40px rgba(0,0,0,.18);
+      position: relative;
+    }
+
+    /* ── Status bar ── */
+    .status-bar {
+      height: 44px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      flex-shrink: 0;
+    }
+    .status-time { font-size: 15px; font-weight: 600; color: var(--color-neutral-800); }
+    .status-icons { display: flex; align-items: center; gap: 6px; }
+    .status-icons svg { fill: var(--color-neutral-800); }
+
+    /* ── Nav header (màn chi tiết sản phẩm phía sau) ── */
+    .nav-header {
+      height: 52px;
+      background: var(--color-primary-500);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .nav-title { flex: 1; font-size: 16px; font-weight: 600; color: #fff; }
+    .nav-close { width: 30px; height: 30px; border: none; background: rgba(255,255,255,.18);
+      border-radius: var(--radius-sm); color: #fff; font-size: 15px; cursor: pointer; }
+
+    /* ── Backdrop product detail (mờ phía sau) ── */
+    .bg-detail {
+      flex: 1;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: #fff;
+      overflow: hidden;
+    }
+    .bg-prod {
+      display: flex; gap: 12px; align-items: center;
+    }
+    .bg-thumb {
+      width: 44px; height: 44px; border-radius: var(--radius-md);
+      background: var(--color-neutral-200); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--color-neutral-500);
+    }
+    .bg-prod-name { font-size: 15px; font-weight: 600; color: var(--color-neutral-800); }
+    .bg-prod-sub { font-size: 12px; color: var(--color-neutral-600); margin-top: 2px; }
+
+    .bg-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 0; border-bottom: 1px solid var(--color-neutral-200);
+      font-size: 14px;
+    }
+    .bg-row .lbl { color: var(--color-neutral-700); }
+    .bg-row .val { font-weight: 600; color: var(--color-neutral-800); }
+    /* Hàng giảm giá có arrow (≥ 2 lô) */
+    .bg-row.discount .val {
+      display: flex; align-items: center; gap: 8px;
+      color: var(--color-primary-600); cursor: pointer;
+    }
+    .bg-row.discount .seg {
+      display: inline-flex; border: 1px solid var(--color-primary-500);
+      border-radius: var(--radius-sm); overflow: hidden; font-size: 11px;
+    }
+    .bg-row.discount .seg span { padding: 2px 8px; font-weight: 600; }
+    .bg-row.discount .seg .on { background: var(--color-primary-500); color: #fff; }
+    .bg-row.discount .seg .off { color: var(--color-primary-600); }
+
+    /* ── Bottom sheet ── */
+    .sheet-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,.4);
+      display: flex; align-items: flex-end;
+      z-index: 50;
+    }
+    .sheet {
+      width: 100%;
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      display: flex; flex-direction: column;
+      max-height: 88%;
+      box-shadow: 0 -8px 30px rgba(0,0,0,.18);
+      animation: slideUp .25s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(100%);} to { transform: translateY(0);} }
+
+    .sheet-grabber {
+      width: 40px; height: 4px; border-radius: 2px;
+      background: var(--color-neutral-400);
+      margin: 10px auto 4px;
+    }
+    .sheet-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 16px 12px; border-bottom: 1px solid var(--color-neutral-300);
+    }
+    .sheet-title { font-size: 16px; font-weight: 600; color: var(--color-neutral-800); }
+
+    /* Toggle VND / % */
+    .type-toggle {
+      display: inline-flex; border: 1px solid var(--color-neutral-400);
+      border-radius: var(--radius-pill); overflow: hidden; height: 32px;
+    }
+    .type-toggle button {
+      border: none; background: #fff; cursor: pointer;
+      font-family: var(--font-primary); font-size: 13px; font-weight: 600;
+      color: var(--color-neutral-600); padding: 0 16px;
+      -webkit-tap-highlight-color: transparent; transition: background .15s;
+    }
+    .type-toggle button.active { background: var(--color-primary-500); color: #fff; }
+
+    /* Search */
+    .search-wrap { padding: 12px 16px; border-bottom: 1px solid var(--color-neutral-200); }
+    .search-inner {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--color-neutral-50);
+      border: 1px solid var(--color-neutral-400);
+      border-radius: var(--radius-pill); padding: 0 14px; height: 38px;
+    }
+    .search-inner svg { flex-shrink: 0; color: var(--color-neutral-500); }
+    .search-inner input {
+      flex: 1; border: none; background: none; font-family: var(--font-primary);
+      font-size: 14px; color: var(--color-neutral-800); outline: none;
+    }
+    .search-inner input::placeholder { color: var(--color-neutral-500); }
+
+    /* Lot list */
+    .lot-list { flex: 1; overflow-y: auto; }
+    .lot-item {
+      padding: 12px 16px; border-bottom: 1px solid var(--color-neutral-200);
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .lot-row1 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .lot-info { display: flex; align-items: baseline; flex: 1; min-width: 0; }
+    .lot-code { font-size: 14px; font-weight: 600; color: var(--color-primary-500); white-space: nowrap; }
+    .lot-sep { font-size: 13px; color: var(--color-neutral-400); margin: 0 6px; }
+    .lot-hsd { font-size: 13px; color: var(--color-neutral-600); white-space: nowrap; }
+
+    .stepper { display: inline-flex; align-items: center; height: 32px;
+      border: 1px solid var(--color-neutral-400); border-radius: var(--radius-md);
+      overflow: hidden; flex-shrink: 0; }
+    .stepper-btn { width: 32px; height: 100%; border: none; background: #fff; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+      color: var(--color-neutral-700); user-select: none; -webkit-tap-highlight-color: transparent; }
+    .stepper-btn.plus { background: var(--color-primary-500); color: #fff; }
+    .stepper-btn.plus:active { background: var(--color-primary-700); }
+    .stepper-divider { width: 1px; height: 18px; background: var(--color-neutral-400); flex-shrink: 0; }
+    .stepper-value { width: 32px; text-align: center; font-size: 13px; font-weight: 600;
+      color: var(--color-neutral-800); background: #fff; border: none; outline: none;
+      font-family: var(--font-primary); cursor: default; }
+
+    .lot-row2 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .lot-stock { font-size: 12px; color: var(--color-neutral-600); }
+    .lot-discount-wrap { display: flex; align-items: center; gap: 6px; }
+    .lot-discount-label { font-size: 12px; color: var(--color-neutral-600); white-space: nowrap; }
+    .lot-discount-input {
+      width: 96px; height: 30px; padding: 0 8px;
+      border: 1px solid var(--color-neutral-400); border-radius: var(--radius-sm);
+      font-family: var(--font-primary); font-size: 13px; font-weight: 500;
+      color: var(--color-neutral-800); text-align: right; background: #fff;
+      outline: none; -webkit-appearance: none;
+    }
+    .lot-discount-input:focus { border-color: var(--color-primary-500); box-shadow: 0 0 0 3px var(--color-primary-50); }
+    .lot-discount-input.error { border-color: var(--color-error); box-shadow: 0 0 0 3px var(--color-error-bg); }
+    .lot-discount-unit { font-size: 12px; color: var(--color-neutral-600); width: 12px; }
+    .lot-err { font-size: 11px; color: var(--color-error); text-align: right; min-height: 0; }
+
+    /* Sheet total */
+    .sheet-total {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; background: var(--color-neutral-50);
+      border-top: 1px solid var(--color-neutral-200); font-size: 14px;
+    }
+    .sheet-total .lbl { color: var(--color-neutral-700); }
+    .sheet-total .val { font-weight: 700; color: var(--color-primary-700); }
+
+    /* Footer */
+    .footer { background: #fff; border-top: 1px solid var(--color-neutral-300);
+      padding: 12px 16px 24px; display: flex; gap: 10px; flex-shrink: 0; }
+    .btn { flex: 1; height: 48px; border-radius: var(--radius-md);
+      font-family: var(--font-primary); font-size: 15px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; border: none;
+      -webkit-tap-highlight-color: transparent; transition: background .15s, opacity .15s; }
+    .btn:active { opacity: .85; }
+    .btn-outline { background: #fff; border: 1.5px solid var(--color-primary-500); color: var(--color-primary-500); }
+    .btn-primary { background: var(--color-primary-500); color: #fff; }
+    .btn-primary:active { background: var(--color-primary-700); }
+  </style>
+</head>
+<body>
+
+<div class="phone">
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span class="status-time">9:41</span>
+    <div class="status-icons">
+      <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="7" width="3" height="5" rx="0.5"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="0.5"/><rect x="9" y="2" width="3" height="10" rx="0.5"/><rect x="13.5" y="0" width="3" height="12" rx="0.5" opacity=".3"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 10.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/><path d="M3.5 7C5 5.2 6.4 4.5 8 4.5s3 .7 4.5 2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M1 4C3.2 1.5 5.5.5 8 .5s4.8 1 7 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="1"/><rect x="22" y="3.5" width="2.5" height="5" rx="1" opacity=".4"/><rect x="2" y="2" width="16" height="8" rx="1.5"/></svg>
+    </div>
+  </div>
+
+  <!-- Nav header -->
+  <div class="nav-header">
+    <span class="nav-title">Chi tiết sản phẩm</span>
+    <button class="nav-close" title="Đóng">✕</button>
+  </div>
+
+  <!-- Màn chi tiết sản phẩm phía sau (ô Giảm giá có arrow vì SP ≥ 2 lô) -->
+  <div class="bg-detail">
+    <div class="bg-prod">
+      <div class="bg-thumb">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4zM3 7v10l9 4 9-4V7" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </div>
+      <div>
+        <div class="bg-prod-name">Test lô</div>
+        <div class="bg-prod-sub">Bao · Kho bán hàng · Còn: 125</div>
+      </div>
+    </div>
+    <div class="bg-row"><span class="lbl">Đơn giá</span><span class="val">13.000</span></div>
+    <div class="bg-row"><span class="lbl">Số lượng</span><span class="val">3</span></div>
+    <div class="bg-row discount" onclick="openSheet()">
+      <span class="lbl">Giảm giá</span>
+      <span class="val">
+        <span class="seg"><span class="on">VNĐ</span><span class="off">%</span></span>
+        <span>3.000</span>
+        <svg width="18" height="18" fill="none" viewBox="0 0 20 20"><path d="M7 4l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </div>
+    <div class="bg-row"><span class="lbl">Tổng tiền thanh toán</span><span class="val">36.000</span></div>
+  </div>
+
+  <!-- Bottom sheet "Chọn lô hàng" -->
+  <div class="sheet-overlay" id="sheet-overlay">
+    <div class="sheet">
+      <div class="sheet-grabber"></div>
+      <div class="sheet-head">
+        <span class="sheet-title">Chọn lô hàng</span>
+        <div class="type-toggle">
+          <button id="t-vnd" class="active" onclick="setType('value')">VNĐ</button>
+          <button id="t-pct" onclick="setType('percent')">%</button>
+        </div>
+      </div>
+
+      <div class="search-wrap">
+        <div class="search-inner">
+          <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <input type="text" placeholder="Tìm kiếm lô" />
+        </div>
+      </div>
+
+      <div class="lot-list" id="lot-list"><!-- injected --></div>
+
+      <div class="sheet-total">
+        <span class="lbl">Tổng tiền giảm giá</span>
+        <span class="val" id="sheet-total-val">3.000 đ</span>
+      </div>
+
+      <div class="footer">
+        <button class="btn btn-outline" onclick="cancelSheet()">Hủy bỏ</button>
+        <button class="btn btn-primary" onclick="saveSheet()">Lưu</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const UNIT_PRICE = 13000;
+  let type = 'value'; // 'value' (VNĐ) | 'percent' (%)
+
+  const lots = [
+    { id: 'lh101', code: 'LH101', hsd: '30/9/2026',  stock: 50, qty: 2, discount: '2.000' },
+    { id: 'lh100', code: 'LH100', hsd: '31/10/2026', stock: 30, qty: 1, discount: '1.000' },
+    { id: 'lh090', code: 'LH090', hsd: '15/12/2026', stock: 80, qty: 0, discount: '' },
+  ];
+
+  function parseNum(s) { return parseFloat((s || '0').toString().replace(/\./g,'').replace(/,/g,'.')) || 0; }
+  function fmt(n) { return Math.round(n).toLocaleString('vi-VN'); }
+
+  function lotDiscountAmount(l) {
+    const num = parseNum(l.discount);
+    if (type === 'percent') return (l.qty * UNIT_PRICE) * num / 100;
+    return num;
+  }
+
+  function render() {
+    const unit = type === 'percent' ? '%' : 'đ';
+    document.getElementById('lot-list').innerHTML = lots.map(l => `
+      <div class="lot-item">
+        <div class="lot-row1">
+          <div class="lot-info">
+            <span class="lot-code">${l.code}</span>
+            <span class="lot-sep">|</span>
+            <span class="lot-hsd">HSD: ${l.hsd}</span>
+          </div>
+          <div class="stepper">
+            <button class="stepper-btn minus" onclick="step('${l.id}',-1)">−</button>
+            <div class="stepper-divider"></div>
+            <input class="stepper-value" id="q-${l.id}" type="text" value="${l.qty}" readonly />
+            <div class="stepper-divider"></div>
+            <button class="stepper-btn plus" onclick="step('${l.id}',1)">+</button>
+          </div>
+        </div>
+        <div class="lot-row2">
+          <span class="lot-stock">Tồn: ${l.stock.toLocaleString('vi-VN')}</span>
+          <div class="lot-discount-wrap">
+            <span class="lot-discount-label">Giảm giá:</span>
+            <input class="lot-discount-input" id="d-${l.id}" type="text"
+                   value="${l.discount}" placeholder="0"
+                   oninput="onDisc('${l.id}', this.value)" />
+            <span class="lot-discount-unit">${unit}</span>
+          </div>
+        </div>
+        <div class="lot-err" id="e-${l.id}"></div>
+      </div>
+    `).join('');
+    recalc();
+  }
+
+  function step(id, d) {
+    const l = lots.find(x => x.id === id);
+    l.qty = Math.max(0, Math.min(l.stock, l.qty + d)); // chặn theo tồn lô
+    document.getElementById('q-' + id).value = l.qty;
+    validate(id);
+    recalc();
+  }
+
+  function onDisc(id, val) {
+    lots.find(x => x.id === id).discount = val;
+    validate(id);
+    recalc();
+  }
+
+  function validate(id) {
+    const l = lots.find(x => x.id === id);
+    const inp = document.getElementById('d-' + id);
+    const err = document.getElementById('e-' + id);
+    const num = parseNum(l.discount);
+    let msg = '';
+    if (type === 'percent') { if (num > 100) msg = 'Tối đa 100%'; }
+    else { const lineAmt = l.qty * UNIT_PRICE; if (num > lineAmt) msg = 'Vượt thành tiền lô (' + fmt(lineAmt) + 'đ)'; }
+    if (msg) { inp.classList.add('error'); err.textContent = msg; }
+    else { inp.classList.remove('error'); err.textContent = ''; }
+  }
+
+  function recalc() {
+    const total = lots.reduce((s, l) => s + lotDiscountAmount(l), 0);
+    document.getElementById('sheet-total-val').textContent = fmt(total) + ' đ';
+  }
+
+  function setType(t) {
+    if (t === type) return;
+    type = t;
+    document.getElementById('t-vnd').classList.toggle('active', t === 'value');
+    document.getElementById('t-pct').classList.toggle('active', t === 'percent');
+    // Đổi kiểu → XÓA TRẮNG giảm giá tất cả lô
+    lots.forEach(l => l.discount = '');
+    render();
+  }
+
+  function openSheet()   { document.getElementById('sheet-overlay').style.display = 'flex'; }
+  function cancelSheet() { document.getElementById('sheet-overlay').style.display = 'none'; }
+  function saveSheet() {
+    const hasErr = lots.some(l => document.getElementById('e-' + l.id).textContent);
+    if (hasErr) { alert('Còn lô vượt giới hạn giảm giá.'); return; }
+    alert('Đã lưu giảm giá theo lô!');
+    cancelSheet();
+  }
+
+  render();
+</script>
+</body>
+</html>

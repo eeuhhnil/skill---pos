@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Báo cáo lợi nhuận tổng — EasyPOS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+:root{
+  --blue-900:#00314F;--blue-700:#005C96;--blue-600:#0068AA;--blue-500:#0074BD;
+  --blue-200:#B0D4EB;--blue-100:#E6F1F8;--blue-50:#F0F7FB;
+  --ink:#151B33;--text-secondary:#455064;--text-tertiary:#545454;--text-placeholder:#B0B0B0;
+  --surface:#FFFFFF;--surface-page:#F4F6F8;--surface-subtle:#F7F7F7;
+  --border:#E6E6E6;--border-strong:#DEE0E2;--border-faint:#EEEEEE;
+  --font-sans:'Noto Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --font-display:'Be Vietnam Pro','Noto Sans',sans-serif;
+  --font-num:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',sans-serif;
+  --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--radius-full:999px;
+  --shadow-sm:0 1px 2px rgba(16,24,40,.08);--shadow-md:0 4px 12px rgba(16,24,40,.15);
+  /* form-màu bảng (khớp mẫu) */
+  --tbl-header:#E6F1F8;--tbl-total:#0F74C4;--zebra:#F4F6F8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--surface-page);color:var(--ink);
+  -webkit-font-smoothing:antialiased;padding:24px 40px 40px;min-height:100vh}
+.tnum{font-variant-numeric:tabular-nums;font-feature-settings:'tnum'}
+.wrap{max-width:1560px;margin:0 auto}
+
+/* ---- Toolbar ---- */
+.toolbar{display:flex;justify-content:flex-end;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.tool-btn{height:42px;padding:0 18px;border:1.4px solid var(--blue-500);background:var(--blue-500);
+  border-radius:var(--radius-md);color:#fff;font-family:var(--font-sans);font-weight:600;
+  font-size:14px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;box-shadow:var(--shadow-sm)}
+.tool-btn:hover{background:var(--blue-600);border-color:var(--blue-600)}
+.tool-btn i{width:18px;height:18px}
+
+/* ---- Report card ---- */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);
+  box-shadow:var(--shadow-sm);padding:0 32px 32px}
+
+/* ---- Tabs ---- */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin:0 -32px 24px;padding:0 32px}
+.tab{padding:16px 4px 14px;margin-right:28px;font-size:15px;font-weight:600;color:var(--text-secondary);
+  cursor:pointer;border:none;background:none;font-family:var(--font-sans);border-bottom:2px solid transparent;
+  margin-bottom:-1px}
+.tab:hover{color:var(--blue-500)}
+.tab.active{color:var(--blue-500);border-bottom-color:var(--blue-500)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.chart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  min-height:340px;color:var(--text-placeholder);text-align:center}
+.chart-empty i{width:56px;height:56px;color:var(--blue-200)}
+.chart-empty .t{font-family:var(--font-display);font-weight:600;font-size:16px;color:var(--text-secondary)}
+.chart-empty .s{font-size:13px}
+/* ---- Chart ---- */
+.chart-legend{display:flex;justify-content:center;gap:28px;margin-bottom:8px}
+.chart-legend .lg{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--text-secondary)}
+.chart-legend .sw{display:inline-block}
+.chart-legend .sw-bar{width:14px;height:14px;border-radius:3px;background:#0074BD}
+.chart-legend .sw-line{width:20px;height:0;border-top:3px solid #E37E36;position:relative}
+.chart-legend .sw-line::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:8px;height:8px;border-radius:50%;background:#E37E36}
+.chart-box{width:100%;overflow-x:auto;position:relative}
+.chart-box svg{width:100%;height:auto;min-width:900px;display:block;font-family:var(--font-sans)}
+.chart-tip{position:absolute;pointer-events:none;z-index:5;min-width:216px;background:#fff;
+  border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-md);padding:11px 14px;
+  font-size:13px;opacity:0;transition:opacity .08s}
+.chart-tip.show{opacity:1}
+.tip-head{font-weight:600;font-size:13px;color:var(--ink);margin-bottom:9px}
+.tip-row{display:flex;justify-content:space-between;gap:24px;align-items:center;margin:5px 0;color:var(--text-secondary)}
+.tip-row .lbl{display:inline-flex;align-items:center}
+.tip-row .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:8px}
+.tip-row b{font-family:var(--font-num);font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.tip-rate{display:flex;justify-content:space-between;gap:24px;border-top:1px solid var(--border-faint);
+  margin-top:9px;padding-top:9px;font-weight:600;color:var(--ink)}
+.tip-rate b{color:var(--success-500,#2BA45C);font-family:var(--font-num);font-variant-numeric:tabular-nums}
+
+/* nav row (breadcrumb + back) */
+.nav-row{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:36px}
+.crumbs{display:flex;align-items:center;gap:8px;font-size:14px}
+.crumb{color:var(--blue-500);font-weight:600;cursor:pointer;background:none;border:none;
+  font-family:var(--font-sans);font-size:14px;padding:2px 6px;border-radius:var(--radius-sm)}
+.crumb:hover{background:var(--blue-50)}
+.crumb.current{color:var(--text-secondary);cursor:default}
+.crumb.current:hover{background:none}
+.crumb-sep{width:16px;height:16px;color:var(--text-placeholder)}
+.back-btn{border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-md);
+  height:36px;padding:0 14px;font-family:var(--font-sans);font-size:13px;font-weight:600;color:var(--text-secondary);
+  display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.back-btn:hover{background:var(--surface-subtle)}
+.back-btn i{width:16px;height:16px}
+
+/* centered title block */
+.rp-title{font-family:var(--font-display);font-weight:700;font-size:24px;color:var(--ink);
+  text-align:center;text-transform:uppercase;letter-spacing:.01em;margin-top:8px}
+.rp-period{text-align:center;font-size:13px;color:var(--text-secondary);margin:6px 0 20px}
+
+/* ---- Table ---- */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:separate;border-spacing:0;min-width:820px;
+  border:1px solid var(--border-strong);border-radius:var(--radius-md);overflow:hidden}
+thead th{background:var(--tbl-header);color:var(--blue-900);font-weight:600;font-size:13.5px;
+  text-align:right;padding:13px 16px;white-space:nowrap;border-right:1px solid #fff}
+thead th:first-child,thead th.txt{text-align:left}
+thead th:last-child{border-right:none}
+tbody td{text-align:right;padding:12px 16px;font-size:14px;color:var(--ink);white-space:nowrap;
+  border-bottom:1px solid var(--border-faint)}
+tbody td:first-child,tbody td.txt{text-align:left}
+tbody tr:not(.total-row){background:#fff}
+tbody tr:nth-child(even):not(.total-row){background:var(--zebra)}
+tbody tr:not(.total-row):hover{background:var(--blue-100)}
+.money{font-family:var(--font-num);font-weight:500;font-variant-numeric:tabular-nums}
+.link{color:var(--blue-500);font-weight:600;cursor:pointer;text-decoration:none}
+.link:hover{text-decoration:underline}
+.rate{color:var(--text-secondary);font-weight:500}
+.neg{color:var(--error-500,#EB5146)}
+/* dòng Tổng nền xanh đậm ngay dưới header */
+tr.total-row td{background:var(--tbl-total);color:#fff;font-weight:700;font-size:14px;
+  border-bottom:1px solid rgba(255,255,255,.16)}
+tr.total-row td .money{color:#fff}
+.stt{color:var(--text-secondary);text-align:center!important}
+thead th.stt-h{text-align:center}
+.leaf td.txt{color:var(--text-secondary)}
+
+/* ---- Guide ---- */
+.guide{background:var(--blue-50);border:1px solid var(--blue-100);border-radius:var(--radius-xl);
+  padding:18px 24px;margin-top:20px}
+.guide-title{font-family:var(--font-display);font-weight:600;font-size:13px;color:var(--blue-700);
+  letter-spacing:.04em;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.guide-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.guide-item{display:flex;gap:10px;font-size:13px;color:var(--text-secondary);line-height:1.5}
+.guide-item i{width:20px;height:20px;color:var(--blue-500);flex:none;margin-top:1px}
+.guide-item b{color:var(--ink)}
+.level{display:none}.level.active{display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <button class="tool-btn"><i data-lucide="sliders-horizontal"></i>Chọn tham số</button>
+    <button class="tool-btn"><i data-lucide="refresh-cw"></i>Làm mới dữ liệu</button>
+    <button class="tool-btn" onclick="exportPDF()"><i data-lucide="file-text"></i>Kết xuất PDF</button>
+    <button class="tool-btn" onclick="exportExcel()"><i data-lucide="file-spreadsheet"></i>Kết xuất excel</button>
+  </div>
+
+  <div class="card">
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('report')">Báo cáo</button>
+      <button class="tab" onclick="showTab('chart')">Biểu đồ</button>
+    </div>
+
+    <!-- ===== TAB: BÁO CÁO ===== -->
+    <div class="tab-panel active" id="tab-report">
+
+    <!-- ===== CẤP 1 — theo tháng ===== -->
+    <div class="level active" id="lv1">
+      <div class="nav-row"><span></span></div>
+      <div class="rp-title">Báo cáo lợi nhuận</div>
+      <div class="rp-period">Kỳ báo cáo : Từ ngày 01/01/2026 đến ngày 31/12/2026</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th class="txt">Thời gian</th><th>Doanh thu</th>
+            <th>Tổng giá vốn</th><th>Lợi nhuận gộp</th><th>Tỷ suất LN (%)</th>
+          </tr></thead>
+          <tbody id="lv1-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== CẤP 2 — theo ngày ===== -->
+    <div class="level" id="lv2">
+      <div class="nav-row">
+        <div class="crumbs">
+          <button class="crumb" onclick="go(1)">Năm 2026</button>
+          <i data-lucide="chevron-right" class="crumb-sep"></i>
+          <span class="crumb current" id="lv2-crumb">Tháng 06/2026</span>
+        </div>
+        <button class="back-btn" onclick="go(1)"><i data-lucide="arrow-left"></i>Quay lại</button>
+      </div>
+      <div class="rp-title" id="lv2-title">Báo cáo lợi nhuận theo ngày — Tháng 06/2026</div>
+      <div class="rp-period" id="lv2-period">Kỳ báo cáo : Từ ngày 01/06/2026 đến ngày 30/06/2026 &nbsp;·&nbsp; Chi nhánh trung tâm</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th class="txt">Thời gian</th><th>Doanh thu</th>
+            <th>Tổng giá vốn</th><th>Lợi nhuận gộp</th><th>Tỷ suất LN (%)</th>
+          </tr></thead>
+          <tbody id="lv2-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== CẤP 3 — theo hóa đơn ===== -->
+    <div class="level" id="lv3">
+      <div class="nav-row">
+        <div class="crumbs">
+          <button class="crumb" onclick="go(1)">Năm 2026</button>
+          <i data-lucide="chevron-right" class="crumb-sep"></i>
+          <button class="crumb" id="lv3-cm" onclick="go(2)">Tháng 06/2026</button>
+          <i data-lucide="chevron-right" class="crumb-sep"></i>
+          <span class="crumb current" id="lv3-cd">Ngày 18/06/2026</span>
+        </div>
+        <button class="back-btn" onclick="go(2)"><i data-lucide="arrow-left"></i>Quay lại</button>
+      </div>
+      <div class="rp-title" id="lv3-title">Chi tiết lợi nhuận theo hóa đơn — Ngày 18/06/2026</div>
+      <div class="rp-period" id="lv3-period">Kỳ báo cáo : Ngày 18/06/2026 &nbsp;·&nbsp; Chi nhánh trung tâm</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th class="txt">Mã hóa đơn</th><th class="txt">Thời gian giao dịch</th>
+            <th>Doanh thu</th><th>Tổng giá vốn</th><th>Lợi nhuận gộp</th><th>Tỷ suất LN (%)</th>
+          </tr></thead>
+          <tbody id="lv3-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    </div><!-- /tab-report -->
+
+    <!-- ===== TAB: BIỂU ĐỒ ===== -->
+    <div class="tab-panel" id="tab-chart">
+      <div class="rp-title">Biểu đồ doanh thu &amp; lợi nhuận</div>
+      <div class="rp-period">Năm 2026</div>
+      <div class="chart-legend">
+        <span class="lg"><span class="sw sw-bar"></span>Doanh thu (VNĐ)</span>
+        <span class="lg"><span class="sw sw-line"></span>Lợi nhuận gộp (VNĐ)</span>
+      </div>
+      <div class="chart-box">
+        <svg id="chart-svg" viewBox="0 0 960 380" role="img"
+          aria-label="Biểu đồ doanh thu và lợi nhuận theo tháng"></svg>
+        <div class="chart-tip" id="chart-tip"></div>
+      </div>
+    </div>
+
+  </div>
+
+
+</div>
+
+<script>
+function showTab(name){
+  document.getElementById('tab-report').classList.toggle('active', name==='report');
+  document.getElementById('tab-chart').classList.toggle('active', name==='chart');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab')[name==='report'?0:1].classList.add('active');
+}
+
+const fmt = n => n.toLocaleString('vi-VN');
+
+const months = [
+  {t:'01-2026', th:170000000, gg:8000000,  dt:162000000, gv:100000000, ln:62000000, r:'38,27%'},
+  {t:'02-2026', th:160000000, gg:9000000,  dt:151000000, gv:95000000,  ln:56000000, r:'37,09%'},
+  {t:'03-2026', th:210000000, gg:10000000, dt:200000000, gv:125000000, ln:75000000, r:'37,50%'},
+  {t:'04-2026', th:190000000, gg:11000000, dt:179000000, gv:115000000, ln:64000000, r:'35,75%'},
+  {t:'05-2026', th:220000000, gg:12000000, dt:208000000, gv:130000000, ln:78000000, r:'37,50%'},
+  {t:'06-2026', th:200000000, gg:8000000,  dt:192000000, gv:120000000, ln:72000000, r:'37,50%', drill:true},
+  {t:'07-2026', th:230000000, gg:10000000, dt:220000000, gv:138000000, ln:82000000, r:'37,27%'},
+  {t:'08-2026', th:215000000, gg:9000000,  dt:206000000, gv:128000000, ln:78000000, r:'37,86%'},
+  {t:'09-2026', th:195000000, gg:8000000,  dt:187000000, gv:117000000, ln:70000000, r:'37,43%'},
+  {t:'10-2026', th:240000000, gg:11000000, dt:229000000, gv:143000000, ln:86000000, r:'37,55%'},
+  {t:'11-2026', th:225000000, gg:10000000, dt:215000000, gv:134000000, ln:81000000, r:'37,67%'},
+  {t:'12-2026', th:250000000, gg:12000000, dt:238000000, gv:149000000, ln:89000000, r:'37,39%'},
+];
+const monthsTotal = {th:2505000000, gg:118000000, dt:2387000000, gv:1494000000, ln:893000000, r:'37,41%'};
+
+// mock ngày (chỉ hiện ngày CÓ dữ liệu — không có dòng rỗng)
+const days = [
+  {dd:'01', th:5000000, gg:200000, dt:4800000, gv:3000000, ln:1800000, r:'37,50%'},
+  {dd:'02', th:6000000, gg:250000, dt:5750000, gv:3600000, ln:2150000, r:'37,39%'},
+  {dd:'03', th:7500000, gg:300000, dt:7200000, gv:4500000, ln:2700000, r:'37,50%'},
+  {dd:'18', th:8000000, gg:320000, dt:7680000, gv:4800000, ln:2880000, r:'37,50%'},
+];
+const daysTotal = {th:200000000, gg:8000000, dt:192000000, gv:120000000, ln:72000000, r:'37,50%'};
+
+const invoices = [
+  {code:'HD000123', hm:'09:15', th:1500000, gg:60000,  dt:1440000, gv:900000,  ln:540000,  r:'37,50%'},
+  {code:'HD000124', hm:'10:32', th:2000000, gg:80000,  dt:1920000, gv:1200000, ln:720000,  r:'37,50%'},
+  {code:'HD000125', hm:'14:05', th:4500000, gg:180000, dt:4320000, gv:2700000, ln:1620000, r:'37,50%'},
+];
+const invTotal = {th:8000000, gg:320000, dt:7680000, gv:4800000, ln:2880000, r:'37,50%'};
+
+let curMonth='06', curDay='18';
+
+const numCells = d => `<td class="money">${fmt(d.dt)}</td><td class="money">${fmt(d.gv)}</td>`+
+  `<td class="money">${fmt(d.ln)}</td><td class="rate tnum">${d.r}</td>`;
+
+// dòng Tổng (nền xanh đậm) — colspan phần nhãn
+const totalRow = (label, t, extraCols=0) =>
+  `<tr class="total-row"><td class="txt"${extraCols?` colspan="${1+extraCols}"`:''}>${label}</td>`+
+  `<td class="money">${fmt(t.dt)}</td><td class="money">${fmt(t.gv)}</td>`+
+  `<td class="money">${fmt(t.ln)}</td><td class="tnum">${t.r}</td></tr>`;
+
+// CẤP 1 — MỌI tháng đều click được, drill xuống báo cáo ngày
+document.getElementById('lv1-body').innerHTML =
+  totalRow('Tổng', monthsTotal) +
+  months.map(m=>{
+    const mm=m.t.slice(0,2);
+    return `<tr><td class="txt"><span class="link" onclick="drillMonth('${mm}')">${m.t}</span></td>${numCells(m)}</tr>`;
+  }).join('');
+
+// CẤP 2 — build động theo tháng được chọn
+function renderLv2(){
+  document.getElementById('lv2-body').innerHTML =
+    totalRow('Tổng', daysTotal) +
+    days.map(d=>`<tr><td class="txt"><span class="link" onclick="drillDay('${d.dd}')">${d.dd}/${curMonth}/2026</span></td>${numCells(d)}</tr>`).join('');
+}
+
+// CẤP 3 — build động theo ngày được chọn
+function renderLv3(){
+  document.getElementById('lv3-body').innerHTML =
+    totalRow('Tổng', invTotal, 1) +
+    invoices.map(v=>`<tr class="leaf"><td class="txt"><span class="link">${v.code}</span></td>`+
+      `<td class="txt">${curDay}/${curMonth}/2026 ${v.hm}</td>${numCells(v)}</tr>`).join('');
+}
+
+function drillMonth(mm){
+  curMonth=mm;
+  document.getElementById('lv2-crumb').textContent='Tháng '+mm+'/2026';
+  document.getElementById('lv2-title').textContent='Báo cáo lợi nhuận theo ngày — Tháng '+mm+'/2026';
+  document.getElementById('lv2-period').innerHTML='Kỳ báo cáo : Tháng '+mm+'/2026 &nbsp;·&nbsp; Chi nhánh trung tâm';
+  renderLv2();
+  go(2);
+}
+
+function drillDay(dd){
+  curDay=dd;
+  document.getElementById('lv3-cm').textContent='Tháng '+curMonth+'/2026';
+  document.getElementById('lv3-cd').textContent='Ngày '+dd+'/'+curMonth+'/2026';
+  document.getElementById('lv3-title').textContent='Chi tiết lợi nhuận theo hóa đơn — Ngày '+dd+'/'+curMonth+'/2026';
+  document.getElementById('lv3-period').innerHTML='Kỳ báo cáo : Ngày '+dd+'/'+curMonth+'/2026 &nbsp;·&nbsp; Chi nhánh trung tâm';
+  renderLv3();
+  go(3);
+}
+
+// khởi tạo mặc định
+renderLv2();
+renderLv3();
+
+function go(level){
+  [1,2,3].forEach(i=>document.getElementById('lv'+i).classList.toggle('active', i===level));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ---- Biểu đồ: cột doanh thu (trục trái) + đường lợi nhuận (trục phải) ----
+const BAR='#0074BD', LINE='#E37E36';
+const CW=960, CH=380, mL=104, mR=104, mT=30, mB=40;
+const pW=CW-mL-mR, pH=CH-mT-mB;
+const maxDt=250, maxLn=100;                       // đơn vị: triệu đồng
+const dtTicks=[0,50,100,150,200,250], lnTicks=[0,20,40,60,80,100];
+const chartData = months.map(m=>({mm:m.t.slice(0,2), dt:m.dt, ln:m.ln, r:m.r}));
+const band=pW/chartData.length;
+const ccx=i=> mL + band*i + band/2;
+const yDt=v=> mT+pH-(v/1e6/maxDt)*pH;             // v tính bằng đồng
+const yLn=v=> mT+pH-(v/1e6/maxLn)*pH;
+
+function renderChart(){
+  const bw=band*0.5;
+  let s='';
+  // tiêu đề đơn vị 2 đầu trục — đen, weight medium
+  s+=`<text x="${mL-12}" y="16" text-anchor="end" font-size="12.5" font-weight="500" fill="#000">Doanh thu VNĐ</text>`;
+  s+=`<text x="${CW}" y="16" text-anchor="end" font-size="12.5" font-weight="500" fill="#000">Lợi nhuận gộp VNĐ</text>`;
+  // lưới + nhãn trục TRÁI (doanh thu) — số đầy đủ, đen
+  dtTicks.forEach(t=>{
+    const yy=yDt(t*1e6);
+    s+=`<line x1="${mL}" y1="${yy}" x2="${mL+pW}" y2="${yy}" stroke="#EEEEEE"/>`;
+    s+=`<text x="${mL-12}" y="${yy+4}" text-anchor="end" font-size="12" fill="#000">${fmt(t*1e6)}</text>`;
+  });
+  // nhãn trục PHẢI (lợi nhuận) — số đầy đủ, đen
+  lnTicks.forEach(t=>{
+    const yy=yLn(t*1e6);
+    s+=`<text x="${mL+pW+12}" y="${yy+4}" text-anchor="start" font-size="12" fill="#000">${fmt(t*1e6)}</text>`;
+  });
+  // đường gióng hover (ẩn)
+  s+=`<line id="cguide" x1="0" y1="${mT}" x2="0" y2="${mT+pH}" stroke="#B0D4EB" stroke-width="1.5" stroke-dasharray="5 4" opacity="0"/>`;
+  // cột doanh thu (trục trái) — KHÔNG ghi số
+  chartData.forEach((d,i)=>{
+    const yy=yDt(d.dt), h=(mT+pH)-yy;
+    s+=`<rect class="cbar" data-i="${i}" x="${ccx(i)-bw/2}" y="${yy}" width="${bw}" height="${h}" rx="4" fill="${BAR}" style="transition:opacity .1s"/>`;
+  });
+  // đường lợi nhuận (trục phải) — KHÔNG ghi số
+  const pts=chartData.map((d,i)=>`${ccx(i)},${yLn(d.ln)}`).join(' ');
+  s+=`<polyline points="${pts}" fill="none" stroke="${LINE}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;
+  chartData.forEach((d,i)=>{
+    s+=`<circle cx="${ccx(i)}" cy="${yLn(d.ln)}" r="4.5" fill="#fff" stroke="${LINE}" stroke-width="2.5"/>`;
+  });
+  // điểm highlight hover (ẩn)
+  s+=`<circle id="chl" r="6" fill="${LINE}" stroke="#fff" stroke-width="2.5" opacity="0"/>`;
+  // trục X
+  s+=`<line x1="${mL}" y1="${mT+pH}" x2="${mL+pW}" y2="${mT+pH}" stroke="#DEE0E2"/>`;
+  chartData.forEach((d,i)=>{
+    s+=`<text x="${ccx(i)}" y="${mT+pH+24}" text-anchor="middle" font-size="12.5" fill="#000">Th ${d.mm}</text>`;
+  });
+  document.getElementById('chart-svg').innerHTML=s;
+  bindChartHover();
+}
+
+function bindChartHover(){
+  const svg=document.getElementById('chart-svg');
+  const tip=document.getElementById('chart-tip');
+  const guide=document.getElementById('cguide');
+  const hl=document.getElementById('chl');
+  const box=svg.parentElement;
+  const bars=svg.querySelectorAll('.cbar');
+  function move(e){
+    const r=svg.getBoundingClientRect();
+    const sx=(e.clientX-r.left)/r.width*CW;
+    let i=Math.floor((sx-mL)/band);
+    if(i<0||i>=chartData.length||sx<mL||sx>mL+pW){ hide(); return; }
+    const d=chartData[i];
+    bars.forEach((b,bi)=>b.style.opacity = bi===i ? '1' : '0.5');
+    guide.setAttribute('x1',ccx(i)); guide.setAttribute('x2',ccx(i)); guide.setAttribute('opacity','1');
+    hl.setAttribute('cx',ccx(i)); hl.setAttribute('cy',yLn(d.ln)); hl.setAttribute('opacity','1');
+    tip.innerHTML =
+      `<div class="tip-head">Tháng ${d.mm}/2026</div>`+
+      `<div class="tip-row"><span class="lbl"><span class="dot" style="background:${BAR}"></span>Doanh thu</span><b>${fmt(d.dt)}</b></div>`+
+      `<div class="tip-row"><span class="lbl"><span class="dot" style="background:${LINE}"></span>Lợi nhuận gộp</span><b>${fmt(d.ln)}</b></div>`+
+      `<div class="tip-rate"><span>Tỷ suất lợi nhuận</span><b>${d.r}</b></div>`;
+    tip.classList.add('show');
+    const bx=box.getBoundingClientRect();
+    let left=e.clientX-bx.left+16;
+    const tw=tip.offsetWidth;
+    if(left+tw>box.clientWidth) left=e.clientX-bx.left-tw-16;
+    tip.style.left=left+'px';
+    tip.style.top=(e.clientY-bx.top-tip.offsetHeight/2)+'px';
+  }
+  function hide(){ tip.classList.remove('show'); guide.setAttribute('opacity','0'); hl.setAttribute('opacity','0');
+    bars.forEach(b=>b.style.opacity='1'); }
+  svg.addEventListener('mousemove',move);
+  svg.addEventListener('mouseleave',hide);
+}
+renderChart();
+lucide.createIcons();
+</script>
+</body>
+</html>

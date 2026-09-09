@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thêm mới CTKM — Mobile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root{
+      --blue-500:#0074BD; --blue-100:#E6F1F8; --blue-50:#F0F7FB;
+      --ink:#151B33; --text-secondary:#455064; --text-placeholder:#B0B0B0;
+      --surface:#FFFFFF; --surface-page:#F4F6F8; --border:#E6E6E6; --border-faint:#EEEEEE;
+      --success-500:#2BA45C;
+      --radius-sm:6px; --radius-md:8px; --radius-lg:12px;
+      --font-sans:'Noto Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      --font-display:'Be Vietnam Pro','Noto Sans',sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#e5e5ea;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;padding:32px 0;font-family:var(--font-sans);color:var(--ink);}
+
+    /* Phone frame */
+    .phone{width:390px;background:var(--surface-page);border-radius:40px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative;height:844px;display:flex;flex-direction:column;}
+
+    /* Status bar */
+    .status-bar{background:#fff;display:flex;justify-content:space-between;align-items:center;padding:12px 22px 4px;font-size:13px;font-weight:600;}
+
+    /* Nav header */
+    .nav-header{background:#fff;padding:10px 14px;display:flex;align-items:center;gap:8px;}
+    .nav-icon{color:var(--ink);display:flex;align-items:center;cursor:pointer;}
+    .nav-title{font-family:var(--font-display);font-size:17px;font-weight:600;flex:1;}
+
+    /* Tabs */
+    .tabs{display:flex;background:#fff;border-bottom:1px solid var(--border);}
+    .tab{flex:1;text-align:center;padding:12px 0;font-size:14px;font-weight:500;color:var(--text-secondary);cursor:pointer;position:relative;}
+    .tab.active{color:var(--blue-500);font-weight:600;}
+    .tab.active::after{content:'';position:absolute;left:20%;right:20%;bottom:-1px;height:2.5px;border-radius:2px;background:var(--blue-500);}
+
+    /* Scroll content */
+    .content{overflow-y:auto;flex:1;padding-bottom:90px;}
+    .content::-webkit-scrollbar{width:0;}
+
+    /* Card block */
+    .block{background:#fff;margin-top:10px;padding:16px;}
+    .block-title{font-family:var(--font-display);font-size:15px;font-weight:600;margin-bottom:14px;}
+
+    /* Form field */
+    .field{margin-bottom:16px;}
+    .field:last-child{margin-bottom:0;}
+    .field-label{font-size:13px;color:var(--text-secondary);margin-bottom:6px;display:block;}
+    .req{color:var(--error,#EB5146);margin-left:1px;}
+    .field-input{width:100%;border:none;border-bottom:1px solid var(--border);padding:6px 0;font-size:15px;font-family:var(--font-sans);color:var(--ink);outline:none;background:none;}
+    .field-input::placeholder{color:var(--text-placeholder);}
+    .field-input:focus{border-bottom-color:var(--blue-500);}
+
+    /* Checkbox row */
+    .check-row{display:flex;align-items:center;gap:10px;padding:6px 0;cursor:pointer;}
+    .check-box{width:20px;height:20px;border-radius:5px;border:1.5px solid #C5CAD3;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s;}
+    .check-box i{width:14px;height:14px;color:#fff;opacity:0;transition:.15s;}
+    .check-row.checked .check-box{background:var(--blue-500);border-color:var(--blue-500);}
+    .check-row.checked .check-box i{opacity:1;}
+    .check-text{font-size:14px;}
+    .check-row.with-chevron{justify-content:space-between;}
+    .check-left{display:flex;align-items:center;gap:10px;}
+
+    /* Range subfield */
+    .subfield{margin:8px 0 4px 30px;}
+    .range-input{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding:6px 0;}
+    .range-input span{font-size:14px;color:var(--text-placeholder);}
+    .range-input i{width:18px;height:18px;color:var(--text-secondary);}
+
+    /* Radio row */
+    .radio-group{display:flex;gap:32px;}
+    .radio{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;}
+    .radio-dot{width:20px;height:20px;border-radius:50%;border:1.5px solid #C5CAD3;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .radio.sel .radio-dot{border-color:var(--blue-500);}
+    .radio.sel .radio-dot::after{content:'';width:11px;height:11px;border-radius:50%;background:var(--blue-500);}
+
+    /* ── Collapsible "Cài đặt lịch chi tiết" ── */
+    .collapse{border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
+    .collapse-head{display:flex;align-items:center;justify-content:space-between;padding:13px 14px;cursor:pointer;user-select:none;background:#fff;}
+    .collapse-head:hover{background:var(--blue-50);}
+    .collapse-head .ch-title{font-family:var(--font-display);font-size:14px;font-weight:600;}
+    .collapse-toggle{width:30px;height:30px;border-radius:50%;background:var(--blue-100);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;}
+    .collapse-toggle i{width:18px;height:18px;color:var(--blue-500);transition:transform .25s ease;}
+    .collapse.open .collapse-toggle i{transform:rotate(180deg);}
+    .collapse.open .collapse-toggle{background:var(--blue-500);}
+    .collapse.open .collapse-toggle i{color:#fff;}
+
+    .collapse-body{max-height:0;overflow:hidden;transition:max-height .28s ease;}
+    .collapse.open .collapse-body{max-height:520px;}
+    .collapse-inner{padding:4px 14px 14px;}
+    .collapse-hint{font-size:12px;color:var(--text-secondary);background:var(--blue-50);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:6px;line-height:1.45;}
+
+    .picker-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border-faint);cursor:pointer;}
+    .picker-row:last-child{border-bottom:none;}
+    .picker-label{font-size:13px;color:var(--text-secondary);}
+    .picker-value{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--text-placeholder);}
+    .picker-value.has-val{color:var(--ink);font-weight:500;}
+    .picker-value i{width:18px;height:18px;color:#C5CAD3;}
+
+    /* Promotion form */
+    .select-row{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding:6px 0;cursor:pointer;}
+    .select-row .sv{font-size:15px;}
+    .select-row i{width:18px;height:18px;color:var(--text-secondary);}
+
+    .cond-card{background:var(--surface-page);border-radius:var(--radius-lg);padding:14px;margin-top:14px;}
+    .cond-title{font-size:13px;font-weight:600;margin-bottom:12px;}
+    .seg{display:inline-flex;border:1px solid var(--blue-500);border-radius:var(--radius-sm);overflow:hidden;}
+    .seg button{border:none;background:#fff;color:var(--blue-500);font-size:13px;font-weight:600;padding:5px 14px;cursor:pointer;font-family:var(--font-sans);}
+    .seg button.on{background:var(--blue-500);color:#fff;}
+    .discount-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:6px;}
+    .discount-row .dl{font-size:14px;}
+    .discount-val{display:flex;align-items:center;gap:10px;}
+    .discount-val input{width:60px;text-align:right;border:none;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;outline:none;padding:4px 0;font-family:var(--font-sans);}
+
+    .btn-add{width:100%;background:var(--blue-100);color:var(--blue-500);border:none;border-radius:var(--radius-md);padding:11px;font-size:14px;font-weight:600;margin-top:14px;cursor:pointer;font-family:var(--font-sans);display:flex;align-items:center;justify-content:center;gap:6px;}
+
+    /* Bottom save bar */
+    .savebar{position:absolute;left:0;right:0;bottom:0;background:#fff;padding:12px 16px 24px;border-top:1px solid var(--border);}
+    .btn-save{width:100%;background:var(--blue-500);color:#fff;border:none;border-radius:var(--radius-md);padding:14px;font-size:16px;font-weight:600;cursor:pointer;font-family:var(--font-display);}
+    .home-ind{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:130px;height:5px;border-radius:3px;background:#000;opacity:.25;}
+  </style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <span style="display:flex;gap:6px;align-items:center;font-size:12px;">●●●  Wifi  🔋</span>
+  </div>
+
+  <!-- Nav -->
+  <div class="nav-header">
+    <span class="nav-icon"><i data-lucide="chevron-left" style="width:24px;height:24px;"></i></span>
+    <span class="nav-title">Thêm mới CTKM</span>
+    <span class="nav-icon"><i data-lucide="more-vertical" style="width:22px;height:22px;"></i></span>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active">Thông tin</div>
+    <div class="tab">Phạm vi áp dụng</div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- Thông tin chung -->
+    <div class="block">
+      <div class="block-title">Thông tin chung</div>
+
+      <div class="field">
+        <label class="field-label">Mã CTKM <span class="req">*</span></label>
+        <input class="field-input" type="text" placeholder="Nhập mã CTKM" />
+      </div>
+      <div class="field">
+        <label class="field-label">Tên CTKM <span class="req">*</span></label>
+        <input class="field-input" type="text" placeholder="Nhập tên CTKM" />
+      </div>
+
+      <div class="check-row checked" onclick="toggleCheck(this)">
+        <div class="check-box"><i data-lucide="check"></i></div>
+        <span class="check-text">Tự động áp dụng KM khi tạo đơn</span>
+      </div>
+
+      <div class="field" style="margin-top:12px;">
+        <label class="field-label">Hiệu lực</label>
+        <div class="range-input">
+          <span>Từ ngày - Đến ngày</span>
+          <i data-lucide="calendar"></i>
+        </div>
+      </div>
+
+      <div class="check-row checked with-chevron" onclick="toggleCheck(this, event)">
+        <div class="check-left">
+          <div class="check-box"><i data-lucide="check"></i></div>
+          <span class="check-text">Áp dụng sinh nhật</span>
+        </div>
+        <i data-lucide="chevron-right" style="width:18px;height:18px;color:#C5CAD3;"></i>
+      </div>
+
+      <!-- Trạng thái -->
+      <div class="field" style="margin-top:16px;">
+        <label class="field-label">Trạng thái</label>
+        <div class="radio-group">
+          <div class="radio sel" onclick="pickRadio(this)"><span class="radio-dot"></span>Đang kích hoạt</div>
+          <div class="radio" onclick="pickRadio(this)"><span class="radio-dot"></span>Chưa kích hoạt</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Cài đặt lịch chi tiết (COLLAPSIBLE) ── -->
+    <div class="block">
+      <div class="collapse" id="scheduleCollapse">
+        <div class="collapse-head" onclick="toggleCollapse('scheduleCollapse')">
+          <span class="ch-title">Cài đặt lịch chi tiết</span>
+          <span class="collapse-toggle"><i data-lucide="chevron-down"></i></span>
+        </div>
+        <div class="collapse-body">
+          <div class="collapse-inner">
+            <div class="collapse-hint">
+              Ví dụ: Chương trình khuyến mãi chỉ diễn ra vào 18:00 - 22:00 các ngày thứ Tư trong khoảng thời gian hiệu lực.
+            </div>
+            <div class="picker-row">
+              <span class="picker-label">Chọn tháng</span>
+              <span class="picker-value">-- <i data-lucide="chevron-right"></i></span>
+            </div>
+            <div class="picker-row">
+              <span class="picker-label">Chọn thứ</span>
+              <span class="picker-value">-- <i data-lucide="chevron-right"></i></span>
+            </div>
+            <div class="picker-row">
+              <span class="picker-label">Chọn ngày</span>
+              <span class="picker-value">-- <i data-lucide="chevron-right"></i></span>
+            </div>
+            <div class="picker-row">
+              <span class="picker-label">Ngoại trừ ngày</span>
+              <span class="picker-value">-- <i data-lucide="chevron-right"></i></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hình thức khuyến mãi -->
+    <div class="block">
+      <div class="block-title">Hình thức khuyến mãi</div>
+      <div class="field">
+        <label class="field-label">Hình thức khuyến mãi</label>
+        <div class="select-row">
+          <span class="sv">Mua đơn hàng - giảm giá đơn hàng</span>
+          <i data-lucide="chevron-right"></i>
+        </div>
+      </div>
+
+      <div class="cond-card">
+        <div class="cond-title">Điều kiện 1</div>
+        <div class="field" style="margin-bottom:14px;">
+          <label class="field-label">Mua từ <span class="req">*</span></label>
+          <input class="field-input" type="text" placeholder="Nhập giá trị" style="background:#fff;border-bottom-color:#D8DCE2;" />
+        </div>
+        <div class="discount-row">
+          <span class="dl">Giảm giá</span>
+          <div class="discount-val">
+            <div class="seg">
+              <button class="on">VND</button>
+              <button>%</button>
+            </div>
+            <input type="text" value="0" />
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-add"><i data-lucide="plus" style="width:16px;height:16px;"></i> Thêm điều kiện</button>
+    </div>
+
+  </div>
+
+  <!-- Save bar -->
+  <div class="savebar">
+    <button class="btn-save">Lưu</button>
+  </div>
+  <div class="home-ind"></div>
+
+</div>
+
+<script>
+  function toggleCollapse(id){
+    document.getElementById(id).classList.toggle('open');
+  }
+  function toggleCheck(el, ev){
+    if(ev){ ev.stopPropagation(); }
+    el.classList.toggle('checked');
+  }
+  function pickRadio(el){
+    el.parentElement.querySelectorAll('.radio').forEach(r=>r.classList.remove('sel'));
+    el.classList.add('sel');
+  }
+  lucide.createIcons();
+</script>
+</body>
+</html>

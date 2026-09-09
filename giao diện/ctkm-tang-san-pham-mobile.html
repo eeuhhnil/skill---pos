@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Khuyến mãi mua đơn tặng sản phẩm — Mobile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root{
+      --blue-500:#0074BD; --blue-100:#E6F1F8; --blue-50:#F0F7FB;
+      --ink:#151B33; --text-secondary:#455064; --text-tertiary:#545454; --text-placeholder:#B0B0B0;
+      --surface:#FFFFFF; --surface-page:#F4F6F8; --surface-subtle:#F7F7F7;
+      --border:#E6E6E6; --border-faint:#EEEEEE;
+      --success-700:#1E7D45; --success-500:#2BA45C; --success-100:#C8F2D7; --success-50:#E0FFEB;
+      --error-500:#EB5146; --error-50:#FEF3F2;
+      --orange-700:#A15926; --orange-50:#FCF2EB;
+      --warning-700:#B7791F; --warning-50:#FFFAE7;
+      --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-xl:16px; --radius-full:999px;
+      --font-sans:'Noto Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      --font-display:'Be Vietnam Pro','Noto Sans',sans-serif;
+      --shadow-sm:0 1px 2px rgba(16,24,40,.08);
+      --shadow-md:0 4px 12px rgba(16,24,40,.12);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#e5e5ea;display:flex;justify-content:center;align-items:flex-start;gap:40px;flex-wrap:wrap;min-height:100vh;padding:40px 0;font-family:var(--font-sans);color:var(--ink);}
+
+    .phone{width:390px;background:var(--surface-page);border-radius:40px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative;height:844px;display:flex;flex-direction:column;}
+
+    .status-bar{background:#fff;display:flex;justify-content:space-between;align-items:center;padding:12px 22px 4px;font-size:13px;font-weight:600;flex-shrink:0;}
+    .status-bar .sb-right{display:flex;gap:6px;align-items:center;font-size:12px;}
+
+    .nav-header{background:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border-faint);flex-shrink:0;}
+    .nav-icon{color:var(--ink);display:flex;align-items:center;cursor:pointer;}
+    .nav-title{font-family:var(--font-display);font-size:17px;font-weight:600;flex:1;}
+    .nav-actions{display:flex;gap:14px;align-items:center;color:var(--ink);}
+    .nav-actions i{width:22px;height:22px;}
+
+    .content{overflow-y:auto;flex:1;padding-bottom:8px;}
+    .content::-webkit-scrollbar{width:0;}
+
+    /* rows */
+    .link-row{background:#fff;display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border-faint);cursor:pointer;}
+    .link-row i.lead{width:20px;height:20px;color:var(--text-secondary);}
+    .link-row .lr-text{flex:1;font-size:15px;font-weight:500;}
+    .link-row i.chev{width:20px;height:20px;color:var(--text-placeholder);}
+
+    /* delivery type */
+    .block{background:#fff;padding:14px 16px;border-bottom:1px solid var(--border-faint);}
+    .block-title{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;color:var(--text-secondary);margin-bottom:12px;}
+    .block-title i{width:18px;height:18px;color:var(--text-secondary);}
+    .seg{display:flex;gap:22px;}
+    .seg-item{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;}
+    .radio{width:18px;height:18px;border-radius:50%;border:1.6px solid #C5CAD3;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+    .seg-item.on .radio{border-color:var(--blue-500);}
+    .seg-item.on .radio::after{content:'';width:9px;height:9px;border-radius:50%;background:var(--blue-500);}
+    .seg-item.on{font-weight:600;color:var(--blue-500);}
+
+    /* product list section */
+    .plist-head{display:flex;align-items:center;gap:9px;padding:14px 16px 8px;}
+    .plist-head i{width:18px;height:18px;color:var(--ink);}
+    .plist-head .t{font-family:var(--font-display);font-size:14px;font-weight:600;flex:1;}
+    .plist-head .cnt{font-size:12px;color:var(--text-secondary);}
+
+    .prod-card{background:#fff;border-bottom:1px solid var(--border-faint);padding:14px 16px;}
+    .prod-top{display:flex;gap:12px;}
+    .thumb{width:46px;height:46px;border-radius:10px;background:var(--surface-subtle);border:1px solid var(--border-faint);flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--text-placeholder);}
+    .thumb i{width:22px;height:22px;}
+    .p-main{flex:1;min-width:0;}
+    .p-name-row{display:flex;align-items:center;gap:8px;}
+    .p-name{font-size:14.5px;font-weight:600;line-height:1.3;}
+    .p-icons{display:flex;gap:12px;align-items:center;color:var(--text-secondary);}
+    .p-icons i{width:17px;height:17px;cursor:pointer;}
+    .p-icons i.del{color:var(--text-secondary);}
+    .p-attr{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;}
+    .p-attr .meta{font-size:12px;color:var(--text-secondary);}
+    .p-price{font-size:14px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums;}
+    .p-price .qty{color:var(--blue-500);font-weight:700;}
+
+    .tag{font-size:11px;font-weight:600;padding:2px 9px;border-radius:var(--radius-full);white-space:nowrap;line-height:1.5;}
+    .tag-gift{background:var(--success-50);color:var(--success-700);}
+    .tag-top{background:var(--orange-50);color:var(--orange-700);}
+    .tag-lot{background:var(--blue-100);color:var(--blue-500);}
+
+    .lot-lines{margin-top:8px;display:flex;flex-direction:column;gap:5px;}
+    .lot-line{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);}
+    .lot-line .lx{font-weight:700;color:var(--ink);}
+    .lot-line a{color:var(--blue-500);font-weight:600;text-decoration:none;}
+
+    .note-link{display:inline-flex;align-items:center;gap:6px;margin-top:9px;font-size:12.5px;color:var(--text-secondary);cursor:pointer;}
+    .note-link i{width:14px;height:14px;}
+
+    /* addon sub-line (gift / topping) */
+    .addon{display:flex;align-items:center;gap:8px;margin-top:9px;padding:8px 10px;background:var(--surface-subtle);border-radius:var(--radius-md);}
+    .addon .a-name{flex:1;font-size:12.5px;color:var(--text-secondary);min-width:0;}
+    .addon .a-name .strike{text-decoration:line-through;color:var(--text-placeholder);margin-left:4px;}
+    .addon .a-qty{font-size:12.5px;font-weight:600;color:var(--ink);}
+
+    .xemthem{padding:10px 16px;background:#fff;border-bottom:1px solid var(--border-faint);}
+    .xemthem a{color:var(--blue-500);font-size:13px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:4px;}
+    .xemthem i{width:15px;height:15px;}
+
+    /* ★ ORDER-LEVEL GIFT PROMO CARD (green bordered) — the focus */
+    .promo-wrap{padding:14px 12px 6px;}
+    .promo-card{border:1.4px solid var(--success-500);background:var(--success-50);border-radius:var(--radius-xl);overflow:hidden;}
+    .promo-head{display:flex;align-items:center;gap:9px;padding:11px 14px;background:var(--success-100);}
+    .promo-head .g-ic{width:34px;height:34px;border-radius:9px;background:var(--success-500);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .promo-head .g-ic i{width:19px;height:19px;color:#fff;}
+    .promo-head .g-txt{flex:1;min-width:0;}
+    .promo-head .g-title{font-size:13.5px;font-weight:700;color:var(--success-700);line-height:1.3;}
+    .promo-head .g-sub{font-size:11.5px;color:var(--success-700);opacity:.85;margin-top:2px;}
+    .promo-body{background:#fff;padding:13px 14px;}
+    .promo-body .prod-top{align-items:flex-start;}
+    .free-tag{font-size:11px;font-weight:700;padding:2px 9px;border-radius:var(--radius-full);background:var(--success-500);color:#fff;}
+    .p-price-free{font-size:14px;font-weight:700;margin-top:6px;color:var(--success-700);font-variant-numeric:tabular-nums;}
+    .p-price-free .old{color:var(--text-placeholder);font-weight:400;text-decoration:line-through;margin-left:8px;font-size:12.5px;}
+    .qty-stepper{display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;flex-shrink:0;height:30px;}
+    .qty-stepper button{width:30px;height:30px;border:none;background:#fff;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);cursor:pointer;}
+    .qty-stepper button:disabled{color:var(--text-placeholder);background:var(--surface-subtle);}
+    .qty-stepper button i{width:15px;height:15px;}
+    .qty-stepper .qv{min-width:30px;text-align:center;font-size:14px;font-weight:600;}
+    .promo-note{display:flex;align-items:center;gap:6px;padding:9px 14px;font-size:11.5px;color:var(--warning-700);background:var(--warning-50);border-top:1px solid var(--border-faint);}
+    .promo-note i{width:14px;height:14px;flex-shrink:0;}
+
+    /* add product */
+    .add-prod{margin:12px 12px 4px;border:1.4px dashed var(--blue-200,#B0D4EB);color:var(--blue-500);background:var(--blue-50);border-radius:var(--radius-lg);padding:13px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:600;cursor:pointer;}
+    .add-prod i{width:18px;height:18px;}
+
+    /* footer summary */
+    .foot{flex-shrink:0;background:#fff;border-top:1px solid var(--border);padding:12px 16px 8px;}
+    .sum-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;font-size:13.5px;}
+    .sum-row .lbl{color:var(--text-secondary);display:flex;align-items:center;gap:7px;}
+    .sum-row .lbl .kmlink{color:var(--blue-500);font-weight:600;display:inline-flex;align-items:center;gap:3px;cursor:pointer;}
+    .sum-row .lbl .kmlink i{width:15px;height:15px;}
+    .sum-row .val{font-weight:600;font-variant-numeric:tabular-nums;}
+    .sum-row .val.free{color:var(--success-500);}
+    .sum-total{border-top:1px dashed var(--border);margin-top:6px;padding-top:9px;}
+    .sum-total .lbl{font-size:14.5px;font-weight:700;color:var(--ink);}
+    .sum-total .val{font-size:18px;font-weight:700;color:var(--blue-500);}
+    .foot-actions{display:flex;gap:12px;margin-top:12px;padding-bottom:6px;}
+    .btn-ghost{flex:1;background:#fff;color:var(--blue-500);border:1.3px solid var(--blue-500);border-radius:var(--radius-md);padding:13px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font-sans);}
+    .btn-primary{flex:1.4;background:var(--blue-500);color:#fff;border:none;border-radius:var(--radius-md);padding:13px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font-sans);}
+
+    .home-ind{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:130px;height:5px;border-radius:3px;background:#000;opacity:.22;}
+
+    .caption{width:390px;text-align:center;font-size:12.5px;color:#6b7280;margin-top:-24px;}
+  </style>
+</head>
+<body>
+
+<div class="phone">
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <span class="sb-right">●●●&nbsp; Wifi &nbsp;🔋</span>
+  </div>
+
+  <!-- Nav -->
+  <div class="nav-header">
+    <span class="nav-icon"><i data-lucide="chevron-left" style="width:24px;height:24px;"></i></span>
+    <span class="nav-title">Bán hàng</span>
+    <span class="nav-actions">
+      <i data-lucide="ticket-percent"></i>
+      <i data-lucide="more-vertical"></i>
+    </span>
+  </div>
+
+  <div class="content">
+
+    <!-- Khách hàng -->
+    <div class="link-row">
+      <i data-lucide="user" class="lead"></i>
+      <span class="lr-text">Khách hàng</span>
+      <i data-lucide="chevron-right" class="chev"></i>
+    </div>
+
+    <!-- Kiểu giao đơn -->
+    <div class="block">
+      <div class="block-title"><i data-lucide="truck"></i> Kiểu giao đơn</div>
+      <div class="seg">
+        <div class="seg-item"><span class="radio"></span> Ăn tại bàn</div>
+        <div class="seg-item on"><span class="radio"></span> Mang về</div>
+        <div class="seg-item"><span class="radio"></span> Giao hàng</div>
+      </div>
+    </div>
+
+    <!-- Bảng giá chung -->
+    <div class="link-row">
+      <i data-lucide="tag" class="lead"></i>
+      <span class="lr-text">Bảng giá chung</span>
+      <i data-lucide="chevron-right" class="chev"></i>
+    </div>
+
+    <!-- Danh sách sản phẩm -->
+    <div class="plist-head">
+      <i data-lucide="package"></i>
+      <span class="t">Danh sách sản phẩm</span>
+      <span class="cnt">2 sản phẩm</span>
+    </div>
+
+    <!-- Normal product line -->
+    <div class="prod-card">
+      <div class="prod-top">
+        <div class="thumb"><i data-lucide="shirt"></i></div>
+        <div class="p-main">
+          <div class="p-name-row">
+            <span class="p-name">Áo thun regular ringer summer</span>
+            <span class="p-icons">
+              <i data-lucide="copy"></i>
+              <i data-lucide="trash-2" class="del"></i>
+            </span>
+          </div>
+          <div class="p-attr">
+            <span class="meta">Chiếc · Kho mặc định · Demopro</span>
+          </div>
+          <div class="p-price"><span class="qty">1x</span> 339.000đ</div>
+          <div class="lot-lines">
+            <div class="lot-line"><span class="lx">1x</span> LÔ2 · HSD: 05/05/2025 <a>Chọn lô</a></div>
+          </div>
+          <span class="note-link"><i data-lucide="paperclip"></i> Thêm ghi chú</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Xem thêm -->
+    <div class="xemthem"><a>Xem thêm <i data-lucide="chevron-down"></i></a></div>
+
+    <!-- ★ ORDER-LEVEL GIFT PROMOTION CARD -->
+    <div class="promo-wrap">
+      <div class="promo-card">
+        <div class="promo-head">
+          <span class="g-ic"><i data-lucide="gift"></i></span>
+          <div class="g-txt">
+            <div class="g-title">Khuyến mãi mua đơn hàng tặng sản phẩm</div>
+            <div class="g-sub">Đơn từ 300.000đ · Tặng 1 sản phẩm</div>
+          </div>
+        </div>
+
+        <div class="promo-body">
+          <div class="prod-top">
+            <div class="thumb"><i data-lucide="shirt"></i></div>
+            <div class="p-main">
+              <div class="p-name-row">
+                <span class="p-name">Áo thun regular ringer summer</span>
+                <span class="free-tag">Quà tặng</span>
+              </div>
+              <div class="p-attr">
+                <span class="meta">Chiếc · Kho mặc định · Demopro</span>
+              </div>
+              <div class="p-price-free">0đ <span class="old">339.000đ</span></div>
+              <div class="lot-lines">
+                <div class="lot-line"><span class="lx">1x</span> LÔ2 · HSD: 05/05/2025 <a>Chọn lô</a></div>
+              </div>
+            </div>
+            <div class="qty-stepper">
+              <button disabled><i data-lucide="minus"></i></button>
+              <span class="qv">1</span>
+              <button><i data-lucide="plus"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="promo-note">
+          <i data-lucide="info"></i>
+          Quà tặng theo chương trình khuyến mãi, không tính vào tiền hàng.
+        </div>
+      </div>
+    </div>
+
+    <!-- Thêm sản phẩm -->
+    <div class="add-prod"><i data-lucide="plus"></i> Thêm sản phẩm</div>
+
+  </div>
+
+  <!-- Footer summary -->
+  <div class="foot">
+    <div class="sum-row">
+      <span class="lbl">Tạm tính (1)</span>
+      <span class="val">339.000đ</span>
+    </div>
+    <div class="sum-row">
+      <span class="lbl">Khuyến mãi <span class="kmlink">(1) <i data-lucide="chevron-right"></i></span></span>
+      <span class="val free">1 quà tặng</span>
+    </div>
+    <div class="sum-row sum-total">
+      <span class="lbl">Tổng tiền thanh toán</span>
+      <span class="val">339.000đ</span>
+    </div>
+    <div class="foot-actions">
+      <button class="btn-ghost">Lưu tạm</button>
+      <button class="btn-primary">Thanh toán</button>
+    </div>
+  </div>
+
+  <div class="home-ind"></div>
+</div>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

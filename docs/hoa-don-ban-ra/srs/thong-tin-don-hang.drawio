@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- ╔══════════════════════════════════════════════════════════════╗ -->
+    <!-- ║  PROCESS POOL                                                ║ -->
+    <!-- ╚══════════════════════════════════════════════════════════════╝ -->
+    <mxCell id="pool"
+            value="Thông tin đơn hàng — Ghép cặp &amp; Tạo đơn"
+            style="swimlane;startSize=30;horizontal=1;fillColor=#f5f5f5;strokeColor=#555555;fontStyle=1;fontSize=12;fontColor=#333333;"
+            vertex="1" parent="1">
+      <mxGeometry x="10" y="10" width="1760" height="510" as="geometry" />
+    </mxCell>
+
+    <!-- Lane: Người dùng -->
+    <mxCell id="lane_nd"
+            value="Người dùng"
+            style="swimlane;startSize=30;horizontal=0;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;fontStyle=1;"
+            vertex="1" parent="pool">
+      <mxGeometry x="0" y="30" width="1760" height="230" as="geometry" />
+    </mxCell>
+
+    <!-- Lane: Hệ thống -->
+    <mxCell id="lane_ht"
+            value="Hệ thống"
+            style="swimlane;startSize=30;horizontal=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;"
+            vertex="1" parent="pool">
+      <mxGeometry x="0" y="260" width="1760" height="250" as="geometry" />
+    </mxCell>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!--  NGƯỜI DÙNG — Elements                                        -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+
+    <!-- Start Event -->
+    <mxCell id="start"
+            value="Từ màn&#xa;Danh sách HĐ"
+            style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=9;fontStyle=1;"
+            vertex="1" parent="lane_nd">
+      <mxGeometry x="50" y="90" width="50" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- nd_chon_sp: Chọn SP EPOS cho dòng đỏ thủ công -->
+    <mxCell id="nd_chon_sp"
+            value="Chọn SP EPOS&#xa;cho dòng đỏ thủ công"
+            style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;"
+            vertex="1" parent="lane_nd">
+      <mxGeometry x="570" y="85" width="140" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- nd_kiem_tra: Kiểm tra / chỉnh sửa thông tin đơn -->
+    <mxCell id="nd_kiem_tra"
+            value="Kiểm tra /&#xa;chỉnh sửa thông tin đơn"
+            style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;"
+            vertex="1" parent="lane_nd">
+      <mxGeometry x="820" y="85" width="140" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- gw_luu_tt: XOR Gateway — Lưu hay Thanh toán? -->
+    <mxCell id="gw_luu_tt"
+            value="Lưu hay&#xa;Thanh toán?"
+            style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=9;verticalAlign=middle;"
+            vertex="1" parent="lane_nd">
+      <mxGeometry x="1040" y="90" width="60" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- nd_chon_pttt: Chọn PTTT và xác nhận -->
+    <mxCell id="nd_chon_pttt"
+            value="Chọn PTTT&#xa;và xác nhận"
+            style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;"
+            vertex="1" parent="lane_nd">
+      <mxGeometry x="1230" y="85" width="140" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!--  HỆ THỐNG — Elements                                          -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+
+    <!-- ht_ghep: Ghép tự động KH và SP từ XML CQT -->
+    <mxCell id="ht_ghep"
+            value="Ghép tự động&#xa;KH và SP từ XML CQT"
+            style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;"
+            vertex="1" parent="lane_ht">
+      <mxGeometry x="50" y="95" width="150" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- ht_hien_thi: Hiển thị màn Thông tin ĐH -->
+    <mxCell id="ht_hien_thi"
+            value="Hiển thị màn Thông tin ĐH&#xa;Ngày = NLap · Đánh dấu dòng đỏ"
+            style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;"
+            vertex="1" parent="lane_ht">
+      <mxGeometry x="260" y="90" width="150" height="70" as="geometry" />
+    </mxCell>
+
+    <!-- gw_dong_do: XOR Gateway — Còn SP chưa ghép? -->
+    <mxCell id="gw_dong_do"
+            value="Còn SP&#xa;chưa ghép?"
+            style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=9;verticalAlign=middle;"
+            vertex="1" parent="lane_ht">
+      <mxGeometry x="465" y="100" width="60" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- ht_luu_mapping: Lưu kết quả ghép vào invoice_product_mapping -->
+    <mxCell id="ht_luu_mapping"
+            value="Lưu kết quả ghép&#xa;vào invoice_product_mapping"
+            style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;"
+            vertex="1" parent="lane_ht">
+      <mxGeometry x="570" y="165" width="140" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- ht_luu_nhap: Lưu nháp đơn hàng -->
+    <mxCell id="ht_luu_nhap"
+            value="Lưu nháp đơn hàng&#xa;Chưa trừ tồn kho"
+            style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;"
+            vertex="1" parent="lane_ht">
+      <mxGeometry x="1040" y="155" width="140" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- end_nhap: End Event — Đơn nháp đã lưu -->
+    <mxCell id="end_nhap"
+            value="Đơn nháp&#xa;đã lưu"
+            style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=3;fontSize=9;fontStyle=1;"
+            vertex="1" parent="lane_ht">
+      <mxGeometry x="1240" y="160" width="50" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- ht_popup: Hiển thị popup Chọn PTTT -->
+    <mxCell id="ht_popup"
+            value="Hiển thị popup&#xa;Chọn PTTT"
+            style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;"
+            vertex="1" parent="lane_ht">
+      <mxGeometry x="1230" y="95" width="140" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- ht_tao_don: Tạo đơn hoàn thành + trừ tồn kho + cập nhật ref_id -->
+    <mxCell id="ht_tao_don"
+            value="Tạo đơn hoàn thành&#xa;Trừ tồn kho&#xa;Cập nhật invoice_tax.ref_id"
+            style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;"
+            vertex="1" parent="lane_ht">
+      <mxGeometry x="1430" y="90" width="150" height="80" as="geometry" />
+    </mxCell>
+
+    <!-- end_hoan: End Event — Đơn hoàn thành -->
+    <mxCell id="end_hoan"
+            value="Đơn hoàn thành&#xa;Tồn kho đã trừ"
+            style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#b85450;strokeColor=#6c3718;fontColor=#ffffff;strokeWidth=3;fontSize=9;fontStyle=1;"
+            vertex="1" parent="lane_ht">
+      <mxGeometry x="1640" y="100" width="60" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- ══════════════════════════════════════════════════════════════ -->
+    <!--  EDGES (sequence flows)                                       -->
+    <!-- ══════════════════════════════════════════════════════════════ -->
+
+    <!-- e1: Start → ht_ghep  (dashed message flow, cross-lane) -->
+    <mxCell id="e1"
+            value="Từ màn Danh sách HĐ"
+            style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;fontSize=9;fontStyle=2;"
+            edge="1" source="start" target="ht_ghep" parent="pool">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- e2: ht_ghep → ht_hien_thi -->
+    <mxCell id="e2"
+            value=""
+            style="edgeStyle=orthogonalEdgeStyle;html=1;"
+            edge="1" source="ht_ghep" target="ht_hien_thi" parent="pool">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- e3: ht_hien_thi → gw_dong_do -->
+    <mxCell id="e3"
+            value=""
+            style="edgeStyle=orthogonalEdgeStyle;html=1;"
+            edge="1" source="ht_hien_thi" target="gw_dong_do" parent="pool">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- e4: gw_dong_do → nd_chon_sp  (cross-lane ↑, "Còn dòng đỏ") -->
+    <mxCell id="e4"
+            value="Còn dòng đỏ"
+            style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;"
+            edge="1" source="gw_dong_do" target="nd_chon_sp" parent="pool">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- e5: nd_chon_sp → ht_luu_mapping  (cross-lane ↓, "Ghép thủ công") -->
+    <mxCell id="e5"
+            value="Ghép thủ công"
+            style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;"
+            edge="1" source="nd_chon_sp" target="ht_luu_mapping" parent="pool">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- e6: ht_luu_mapping → gw_dong_do  (loop back ←) -->
+    <mxCell id="e6"
+            value=""
+            style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;"
+            edge="1" source="ht_luu_mapping" target="gw_dong_do" parent="pool">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- e7: gw_dong_do → nd_kiem_tra  (cross-lane ↑, "Tất cả đã ghép") -->
+    <mxCell id="e7"
+            value="Tất cả đã ghép"
+            style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;"
+            edge="1" source="gw_dong_do" target="nd_kiem_tra" parent="pool">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- e8: nd_kiem_tra → gw_luu_tt -->
+    <mxCell id="e8"
+            value=""
+            style="edgeStyle=orthogonalEdgeStyle;html=1;"
+            edge="1" source="nd_kiem_tra" target="gw_luu_tt" parent="pool">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- e9: gw_luu_tt → ht_luu_nhap  (cross-lane ↓, "Lưu") -->
+    <mxCell id="e9"
+            value="Lưu"
+            style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;exitX=0.5;exitY=1;exitDx=0;exitDy=0;"
+            edge="1" source="gw_luu_tt" target="ht_luu_nhap" parent="pool">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- e10: ht_luu_nhap → end_nhap -->
+    <mxCell id="e10"
+            value=""
+            style="edgeStyle=orthogonalEdgeStyle;html=1;"
+            edge="1" source="ht_luu_nhap" target="end_nhap" parent="pool">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- e11: gw_luu_tt → ht_popup  (cross-lane ↓ then →, "Thanh toán") -->
+    <mxCell id="e11"
+            value="Thanh toán"
+            style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;exitX=1;exitY=0.5;exitDx=0;exitDy=0;"
+            edge="1" source="gw_luu_tt" target="ht_popup" parent="pool">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- e12: ht_popup → nd_chon_pttt  (cross-lane ↑) -->
+    <mxCell id="e12"
+            value=""
+            style="edgeStyle=orthogonalEdgeStyle;html=1;"
+            edge="1" source="ht_popup" target="nd_chon_pttt" parent="pool">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- e13: nd_chon_pttt → ht_tao_don  (cross-lane ↓, "Xác nhận") -->
+    <mxCell id="e13"
+            value="Xác nhận"
+            style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;"
+            edge="1" source="nd_chon_pttt" target="ht_tao_don" parent="pool">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- e14: ht_tao_don → end_hoan -->
+    <mxCell id="e14"
+            value=""
+            style="edgeStyle=orthogonalEdgeStyle;html=1;"
+            edge="1" source="ht_tao_don" target="end_hoan" parent="pool">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+  </root>
+</mxGraphModel>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EasyPOS Mobile — Trang chủ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../colors_and_type.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); background: #d8dee6; min-height: 100vh;
+         display: flex; align-items: center; justify-content: center; padding: 30px; gap: 40px; flex-wrap: wrap; }
+
+  /* ---- Device frame ---- */
+  .phone { width: 390px; height: 844px; background: var(--surface-page); border-radius: 46px;
+           box-shadow: 0 24px 60px rgba(16,24,40,.35), 0 0 0 11px #0c1320, 0 0 0 13px #2a3442;
+           position: relative; overflow: hidden; display: flex; flex-direction: column; }
+  .notch { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); width: 126px;
+           height: 30px; background: #0c1320; border-radius: 999px; z-index: 30; }
+  .statusbar { height: 50px; display: flex; align-items: center; justify-content: space-between;
+               padding: 14px 28px 0; font-size: 14px; font-weight: 600; color: var(--ink); flex: none; z-index: 20; }
+  .statusbar .sb-r { display: flex; align-items: center; gap: 6px; }
+  .statusbar .sb-r i { width: 16px; height: 16px; }
+
+  .scroll { flex: 1; overflow-y: auto; padding-bottom: 86px; }
+  .scroll::-webkit-scrollbar { display: none; }
+
+  /* ---- Greeting header ---- */
+  .ghead { background: #fff; padding: 6px 18px 16px; }
+  .ghead .top { display: flex; align-items: center; justify-content: space-between; }
+  .ghead .hi { font-family: var(--font-display); font-weight: 700; font-size: 19px; color: var(--ink); }
+  .ghead .bell { width: 40px; height: 40px; border-radius: 999px; background: var(--surface-page);
+                 display: flex; align-items: center; justify-content: center; position: relative; }
+  .ghead .bell i { width: 20px; height: 20px; color: var(--ink); }
+  .ghead .bell .b { position: absolute; top: 7px; right: 8px; width: 9px; height: 9px;
+                    background: var(--error-500); border-radius: 999px; border: 1.5px solid #fff; }
+  .tax { margin-top: 14px; background: var(--blue-50); border: 1px solid var(--blue-100);
+         border-radius: 10px; padding: 11px 14px; font-size: 13.5px; color: var(--text-secondary); }
+  .tax b { color: var(--ink); }
+
+  /* ---- Revenue summary card (gộp doanh thu + đơn + hóa đơn) ---- */
+  .rev-card { margin: 4px 16px 16px; background: #fff; border-radius: 16px; padding: 16px 18px;
+              box-shadow: var(--shadow-sm); }
+  .rev-card .rc-head { display: flex; align-items: center; justify-content: space-between; }
+  .rev-card .rc-title { display: flex; align-items: center; gap: 7px; font-size: 14px;
+                        font-weight: 600; color: var(--text-secondary); }
+  .rev-card .rc-title i { width: 17px; height: 17px; color: var(--blue-500); }
+  .rev-card .rc-period { display: flex; align-items: center; gap: 3px; font-size: 12.5px;
+                         color: var(--text-secondary); }
+  .rev-card .rc-period i { width: 14px; height: 14px; }
+  .rev-card .rc-num { font-family: var(--font-num); font-weight: 700; font-size: 32px;
+                      color: var(--blue-500); font-variant-numeric: tabular-nums; line-height: 1.15;
+                      margin: 8px 0 4px; }
+  .rev-card .rc-num .unit { font-size: 20px; }
+  .rev-card .rc-sub { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; margin-top: 8px;
+                      border-top: 1px solid var(--border-faint); }
+  .rev-card .rc-stat { display: flex; align-items: center; gap: 8px; }
+  .rev-card .rc-stat i { width: 17px; height: 17px; color: var(--text-secondary); }
+  .rev-card .rc-stat .s-val { font-family: var(--font-num); font-weight: 700; font-size: 15px; color: var(--ink); }
+  .rev-card .rc-stat .s-lbl { font-size: 12.5px; color: var(--text-secondary); }
+  .report-btn { margin: 0 16px 14px; background: var(--blue-50); border-radius: 12px; padding: 13px 16px;
+                display: flex; align-items: center; justify-content: space-between; font-size: 14px;
+                font-weight: 600; color: var(--blue-700); }
+  .report-btn i { width: 18px; height: 18px; }
+
+  /* ===== CÔNG VIỆC CẦN LÀM ===== */
+  .tasks-card { margin: 4px 16px 16px; background: #fff; border-radius: 16px; padding: 14px;
+                box-shadow: var(--shadow-sm); }
+  .tasks-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .tasks-head .ti { display: flex; align-items: center; gap: 7px; font-size: 15px; font-weight: 700; color: var(--ink); }
+  .tasks-head .ti i { width: 18px; height: 18px; color: var(--blue-500); }
+  .tasks-head .cnt { background: var(--error-500); color: #fff; font-size: 11px; font-weight: 700;
+                     border-radius: 999px; min-width: 18px; height: 18px; display: inline-flex;
+                     align-items: center; justify-content: center; padding: 0 5px; }
+  .tasks-head .all { margin-left: auto; font-size: 12.5px; font-weight: 600; color: var(--blue-500);
+                     display: inline-flex; align-items: center; gap: 2px; }
+  .tasks-head .all i { width: 14px; height: 14px; }
+
+  .trow { display: flex; align-items: center; gap: 11px; padding: 10px 0;
+          border-top: 1px solid var(--border-faint); }
+  .trow .ic { width: 34px; height: 34px; border-radius: 9px; flex: none; display: flex;
+              align-items: center; justify-content: center; }
+  .trow .ic i { width: 18px; height: 18px; }
+  .trow.warn .ic { background: var(--warning-50); }  .trow.warn .ic i { color: var(--warning-700); }
+  .trow.err  .ic { background: var(--error-50); }    .trow.err  .ic i { color: var(--error-500); }
+  .trow.info .ic { background: var(--blue-100); }     .trow.info .ic i { color: var(--blue-700); }
+  .trow .bd { flex: 1; min-width: 0; }
+  .trow .bd .t { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  .trow .bd .h { font-size: 12px; color: var(--text-secondary); white-space: nowrap;
+                 overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+  .trow > i.chev { width: 18px; height: 18px; color: var(--text-placeholder); flex: none; }
+
+  /* ---- Menu grid ---- */
+  .grid-title { font-size: 15px; font-weight: 700; color: var(--ink); margin: 2px 18px 2px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 0; padding: 10px 8px; }
+  .gi { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 12px 4px; }
+  .gi .gicon { width: 30px; height: 30px; }
+  .gi .gicon i { width: 26px; height: 26px; color: var(--blue-500); }
+  .gi span { font-size: 11.5px; color: var(--text-secondary); text-align: center; line-height: 1.25; }
+  .gi.alert { position: relative; }
+  .gi .gbadge { position: absolute; top: 6px; right: 22px; background: var(--error-500); color: #fff;
+                font-size: 9px; font-weight: 700; border-radius: 999px; min-width: 15px; height: 15px;
+                display: flex; align-items: center; justify-content: center; padding: 0 4px;
+                border: 1.5px solid #fff; }
+
+  /* ---- Bottom nav ---- */
+  .tabbar { position: absolute; bottom: 0; left: 0; right: 0; height: 74px; background: #fff;
+            border-top: 1px solid var(--border); display: flex; align-items: flex-start;
+            padding-top: 9px; z-index: 25; }
+  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+         font-size: 11px; color: var(--text-secondary); }
+  .tab i { width: 22px; height: 22px; }
+  .tab.active { color: var(--blue-500); font-weight: 600; }
+  .fab { flex: 1; display: flex; justify-content: center; }
+  .fab .btn { width: 56px; height: 56px; border-radius: 999px; background: var(--blue-500);
+              display: flex; align-items: center; justify-content: center; margin-top: -22px;
+              box-shadow: 0 6px 16px rgba(0,116,189,.4); }
+  .fab .btn i { width: 26px; height: 26px; color: #fff; }
+
+  .caption-note { max-width: 320px; font-size: 13px; color: #51607a; line-height: 1.6; }
+  .caption-note h3 { font-family: var(--font-display); font-size: 16px; color: #1f2a44; margin-bottom: 8px; }
+  .caption-note li { margin: 4px 0; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="statusbar">
+    <span>9:41</span>
+    <span class="sb-r"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span>
+  </div>
+
+  <div class="scroll">
+    <!-- Greeting -->
+    <div class="ghead">
+      <div class="top">
+        <div class="hi">Xin chào, Hong Vu 👋</div>
+        <div class="bell"><i data-lucide="bell"></i><span class="b"></span></div>
+      </div>
+      <div class="tax">Trạng thái tờ khai 01: <b>Chưa có thông tin</b></div>
+    </div>
+
+    <!-- Doanh thu hôm nay (gộp doanh thu + đơn hàng + hóa đơn) -->
+    <div class="rev-card">
+      <div class="rc-head">
+        <div class="rc-title"><i data-lucide="bar-chart-3"></i> Doanh thu hôm nay</div>
+        <div class="rc-period">Hôm nay <i data-lucide="chevron-down"></i></div>
+      </div>
+      <div class="rc-num">125.000.000<span class="unit">đ</span></div>
+      <div class="rc-sub">
+        <div class="rc-stat"><i data-lucide="shopping-bag"></i><span class="s-val">125.000</span><span class="s-lbl">đơn hàng</span></div>
+        <div class="rc-stat"><i data-lucide="receipt"></i><span class="s-val">125.000</span><span class="s-lbl">hóa đơn</span></div>
+      </div>
+    </div>
+
+    <div class="report-btn">Xem báo cáo chi tiết <i data-lucide="chevron-right"></i></div>
+
+    <!-- ===== CÔNG VIỆC CẦN LÀM ===== -->
+    <div class="tasks-card">
+      <div class="tasks-head">
+        <div class="ti"><i data-lucide="list-checks"></i> Công việc cần làm <span class="cnt">5</span></div>
+        <span class="all">Xem tất cả <i data-lucide="chevron-right"></i></span>
+      </div>
+
+      <div class="trow err">
+        <div class="ic"><i data-lucide="file-x"></i></div>
+        <div class="bd"><div class="t">68 hóa đơn phát hành lỗi</div><div class="h">Sai MST người mua, trùng số hóa đơn</div></div>
+        <i data-lucide="chevron-right" class="chev"></i>
+      </div>
+
+      <div class="trow err">
+        <div class="ic"><i data-lucide="receipt"></i></div>
+        <div class="bd"><div class="t">250 hóa đơn chưa phát hành</div><div class="h">Chưa gửi lên CQT, cần phát hành trước cuối kỳ</div></div>
+        <i data-lucide="chevron-right" class="chev"></i>
+      </div>
+
+      <div class="trow warn">
+        <div class="ic"><i data-lucide="alert-triangle"></i></div>
+        <div class="bd"><div class="t">8 lô hàng sắp hết hạn</div><div class="h">LH-2406-015 (HSD 28/06) +7 lô khác</div></div>
+        <i data-lucide="chevron-right" class="chev"></i>
+      </div>
+    </div>
+
+    <!-- Menu grid -->
+    <div class="grid-title">Tiện ích</div>
+    <div class="grid">
+      <div class="gi"><div class="gicon"><i data-lucide="package"></i></div><span>Quản lý sản phẩm</span></div>
+      <div class="gi"><div class="gicon"><i data-lucide="grid-2x2"></i></div><span>Quản lý bàn</span></div>
+      <div class="gi"><div class="gicon"><i data-lucide="clock"></i></div><span>Quản lý ca</span></div>
+      <div class="gi"><div class="gicon"><i data-lucide="bar-chart-3"></i></div><span>Báo cáo</span></div>
+
+      <div class="gi"><div class="gicon"><i data-lucide="users"></i></div><span>Danh bạ</span></div>
+      <div class="gi"><div class="gicon"><i data-lucide="calendar-check"></i></div><span>Đặt bàn</span></div>
+      <div class="gi"><div class="gicon"><i data-lucide="wallet"></i></div><span>Quản lý thu chi</span></div>
+      <div class="gi"><div class="gicon"><i data-lucide="credit-card"></i></div><span>Quản lý thẻ</span></div>
+
+      <div class="gi"><div class="gicon"><i data-lucide="user-cog"></i></div><span>Nhân viên</span></div>
+      <div class="gi"><div class="gicon"><i data-lucide="ticket-percent"></i></div><span>Quản voucher</span></div>
+      <div class="gi"><div class="gicon"><i data-lucide="chef-hat"></i></div><span>Khu vực chế biến</span></div>
+      <div class="gi"><div class="gicon"><i data-lucide="book-open"></i></div><span>Nhật ký</span></div>
+
+      <div class="gi alert"><span class="gbadge">3</span><div class="gicon"><i data-lucide="box"></i></div><span>Quản lý kho</span></div>
+      <div class="gi"><div class="gicon"><i data-lucide="pill"></i></div><span>Đơn thuốc</span></div>
+      <div class="gi"><div class="gicon"><i data-lucide="utensils"></i></div><span>Bếp</span></div>
+      <div class="gi"><div class="gicon"><i data-lucide="fuel"></i></div><span>Quản lý trụ bơm</span></div>
+
+      <div class="gi"><div class="gicon"><i data-lucide="car"></i></div><span>Chỗ đỗ xe</span></div>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <div class="tabbar">
+    <div class="tab active"><i data-lucide="home"></i>Trang chủ</div>
+    <div class="tab"><i data-lucide="file-text"></i>Đơn hàng</div>
+    <div class="fab"><div class="btn"><i data-lucide="shopping-cart"></i></div></div>
+    <div class="tab"><i data-lucide="receipt"></i>Hóa đơn</div>
+    <div class="tab"><i data-lucide="user"></i>Tài khoản</div>
+  </div>
+</div>
+
+<div class="caption-note">
+  <h3>Nguyên tắc đưa dữ liệu lên mobile</h3>
+  <p>Màn nhỏ → chỉ giữ thứ <b>cần hành động</b>, sắp theo độ gấp:</p>
+  <ul style="padding-left:18px">
+    <li><b>Đỏ trước</b>: hóa đơn lỗi → hóa đơn chưa phát hành (rủi ro thuế).</li>
+    <li><b>Cam</b>: lô sắp hết hạn, tồn kho thấp.</li>
+    <li>Chỉ hiện <b>top 3</b> + "Xem tất cả (5)" để không đẩy lưới menu xuống quá xa.</li>
+    <li>Hint rút gọn <b>1 dòng</b> (truncate) — chi tiết để ở màn con.</li>
+    <li>Badge số đỏ gắn trực tiếp lên icon <b>Quản lý kho</b> để nhắc khi cuộn xuống grid.</li>
+  </ul>
+</div>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

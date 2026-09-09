@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cấu hình cửa hàng — Bán hàng</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+:root{
+  --blue-700:#005C96; --blue-600:#0068AA; --blue-500:#0074BD; --blue-400:#3392CB;
+  --blue-200:#B0D4EB; --blue-100:#E6F1F8; --blue-50:#F0F7FB;
+  --ink:#151B33; --text-secondary:#455064; --text-tertiary:#545454; --text-placeholder:#B0B0B0;
+  --surface:#FFFFFF; --surface-page:#F4F6F8; --surface-subtle:#F7F7F7;
+  --border:#E6E6E6; --border-strong:#DEE0E2; --border-faint:#EEEEEE;
+  --success-700:#1E7D45; --success-500:#2BA45C; --success-50:#E0FFEB;
+  --warning-500:#F0A92A; --error-500:#EB5146; --error-50:#FEF3F2;
+  --font-sans:'Noto Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --font-display:'Be Vietnam Pro','Noto Sans',sans-serif;
+  --radius-xs:4px; --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-xl:16px; --radius-full:999px;
+  --shadow-sm:0 1px 2px rgba(16,24,40,.08); --shadow-md:0 4px 12px rgba(16,24,40,.15);
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px;
+  --rail-w:204px; --list-w:420px; --topbar-h:56px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-sans);background:var(--surface-page);color:var(--ink);font-size:14px;line-height:1.5}
+
+/* ══ TOP BAR ══ */
+.topbar{height:var(--topbar-h);background:var(--blue-500);display:flex;align-items:center;gap:var(--space-2);
+  padding:0 var(--space-4) 0 var(--space-3);position:fixed;top:0;left:0;right:0;z-index:100}
+.tb-logo{display:flex;align-items:center;gap:var(--space-2);color:#fff;font-family:var(--font-display);
+  font-weight:700;font-size:18px;letter-spacing:-.2px}
+.tb-logo-mark{width:32px;height:32px;border-radius:var(--radius-md);background:#fff;display:flex;
+  align-items:center;justify-content:center;color:var(--blue-500)}
+.tb-burger{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:none;
+  background:none;color:rgba(255,255,255,.85);border-radius:var(--radius-md);cursor:pointer;margin-left:var(--space-2)}
+.tb-burger:hover{background:rgba(255,255,255,.14)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:var(--space-1)}
+.tb-item{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--radius-md);color:#fff;
+  font-size:13px;font-weight:500;text-decoration:none;white-space:nowrap;cursor:pointer;position:relative}
+.tb-item:hover{background:rgba(255,255,255,.14)}
+.tb-item.active{background:#fff;color:var(--blue-500)}
+.tb-item i,.tb-item svg{width:16px;height:16px}
+.tb-badge{position:absolute;top:0;right:2px;background:var(--error-500);color:#fff;font-size:9px;font-weight:700;
+  min-width:17px;height:17px;padding:0 4px;border-radius:var(--radius-full);display:flex;align-items:center;justify-content:center}
+.tb-sep{width:1px;height:22px;background:rgba(255,255,255,.22);margin:0 6px}
+
+/* ══ LEFT RAIL ══ */
+.rail{position:fixed;top:var(--topbar-h);bottom:0;left:0;width:var(--rail-w);background:var(--surface);
+  border-right:1px solid var(--border);overflow-y:auto;padding:var(--space-2) 0 var(--space-5);z-index:60}
+.rail::-webkit-scrollbar{width:4px}
+.rail::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.rail-item{display:flex;align-items:center;gap:10px;padding:9px 14px;font-size:13px;color:var(--ink);
+  text-decoration:none;cursor:pointer;border-bottom:1px solid var(--border-faint)}
+.rail-item i,.rail-item svg{width:19px;height:19px;flex-shrink:0;color:var(--text-secondary);stroke-width:1.5}
+.rail-item:hover{background:var(--blue-50);color:var(--blue-500)}
+.rail-item:hover svg{color:var(--blue-500)}
+.rail-item .chev{margin-left:auto;width:15px;height:15px;color:var(--text-placeholder)}
+.rail-item.active{background:var(--blue-500);color:#fff;font-weight:600}
+.rail-item.active svg{color:#fff}
+.rail-sub{display:flex;align-items:center;padding:9px 14px 9px 44px;font-size:13px;color:var(--ink);
+  text-decoration:none;cursor:pointer;border-bottom:1px solid var(--border-faint)}
+.rail-sub:hover{color:var(--blue-500)}
+.rail-sub.active{color:var(--blue-500);font-weight:600}
+
+/* ══ CONFIG LIST (cột giữa) ══ */
+.layout{display:flex;padding-top:var(--topbar-h)}
+.cfg-list{position:fixed;top:calc(var(--topbar-h) + var(--space-4));bottom:var(--space-4);
+  left:calc(var(--rail-w) + var(--space-4));width:var(--list-w);background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--radius-lg);overflow-y:auto}
+.cfg-list::-webkit-scrollbar{width:5px}
+.cfg-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.cfg-link{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);
+  padding:15px 20px;font-size:14px;color:var(--ink);text-decoration:none;cursor:pointer;
+  border-bottom:1px solid var(--border-faint)}
+.cfg-link:last-child{border-bottom:none}
+.cfg-link:hover{background:var(--blue-50);color:var(--blue-500)}
+.cfg-link svg{width:16px;height:16px;color:var(--text-placeholder);flex-shrink:0}
+.cfg-link.active{background:var(--blue-100);color:var(--blue-700);font-weight:600}
+.cfg-link.active svg{color:var(--blue-500)}
+
+/* ══ MAIN ══ */
+.main{margin-left:calc(var(--rail-w) + var(--list-w) + var(--space-4)*2);padding:var(--space-4) var(--space-4) var(--space-6);flex:1;min-width:0}
+.page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4)}
+.page-title{font-family:var(--font-display);font-size:20px;font-weight:600;color:var(--ink)}
+.page-sub{font-size:13px;color:var(--text-secondary);margin-top:2px}
+
+/* ══ CARD ══ */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);
+  margin-bottom:var(--space-3);overflow:hidden}
+.card-header{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);
+  padding:12px 20px;border-bottom:1px solid var(--border-faint);background:var(--surface)}
+.card-head-left{display:flex;align-items:center;gap:10px;min-width:0}
+.card-title{font-size:14px;font-weight:600;color:var(--ink)}
+.card-desc{font-size:12px;color:var(--text-secondary);margin-top:1px}
+.card-body{padding:var(--space-2) 20px var(--space-4);opacity:.68;pointer-events:none;user-select:none;transition:opacity .2s}
+.card.editing .card-body{opacity:1;pointer-events:auto;user-select:auto}
+.card.editing{border-color:var(--blue-200);box-shadow:var(--shadow-sm)}
+
+/* ══ BUTTONS ══ */
+.btn{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:var(--radius-md);
+  font-family:var(--font-sans);font-size:13px;font-weight:600;cursor:pointer;border:none;white-space:nowrap}
+.btn svg{width:14px;height:14px}
+.btn-ghost{background:none;color:var(--blue-500);border:1px solid transparent}
+.btn-ghost:hover{background:var(--blue-100);border-color:var(--blue-200)}
+.btn-tertiary{background:var(--blue-100);color:var(--blue-500)}
+.btn-tertiary:hover{background:#d9e9f4}
+.btn-primary{background:var(--blue-500);color:#fff}
+.btn-primary:hover{background:var(--blue-600)}
+.btn-lg{height:38px;padding:0 22px;font-size:14px}
+.page-actions{position:sticky;bottom:0;display:flex;justify-content:flex-end;gap:var(--space-2);
+  padding:var(--space-3) 0 var(--space-2);background:var(--surface-page);
+  border-top:1px solid var(--border);margin-top:var(--space-1)}
+
+/* ══ SETTING ROW ══ */
+.row{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;
+  gap:10px var(--space-5);padding:12px 0;border-bottom:1px solid var(--border-faint)}
+.row:last-child{border-bottom:none;padding-bottom:2px}
+.row-label{flex:1;min-width:220px;font-size:13px;color:var(--ink);padding-top:1px;line-height:1.5}
+.row-label .req{color:var(--error-500);font-weight:600}
+.row-hint{display:block;font-size:12px;color:var(--text-secondary);margin-top:2px;line-height:1.45}
+.row-control{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;
+  gap:var(--space-2);padding-top:1px}
+.row-sub{width:100%;padding-top:2px}
+.row.stack .row-control{width:100%;align-items:flex-start}
+
+/* ══ TOGGLE ══ */
+.sw{position:relative;display:inline-block;width:42px;height:23px;flex-shrink:0}
+.sw input{opacity:0;width:0;height:0}
+.sw-track{position:absolute;inset:0;background:var(--text-placeholder);border-radius:var(--radius-full);
+  cursor:pointer;transition:.2s}
+.sw-track:before{content:"";position:absolute;height:17px;width:17px;left:3px;bottom:3px;background:#fff;
+  border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.sw input:checked+.sw-track{background:var(--blue-500)}
+.sw input:checked+.sw-track:before{transform:translateX(19px)}
+.dep{margin-top:var(--space-1)}
+
+/* ══ RADIO ══ */
+.radio-inline{display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px}
+.radio-stack{display:flex;flex-direction:column;gap:9px}
+.radio-opt{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--text-tertiary);cursor:pointer;user-select:none}
+.radio-opt input[type=radio]{width:15px;height:15px;accent-color:var(--blue-500);cursor:pointer;flex-shrink:0;margin:0}
+.radio-opt:hover span{color:var(--blue-500)}
+.radio-opt input[type=radio]:checked+span{color:var(--blue-700);font-weight:600}
+
+/* ══ INPUT ══ */
+.inp{background:var(--surface-subtle);border:1px solid var(--border);border-radius:var(--radius-md);
+  padding:7px 11px;font-family:var(--font-sans);font-size:13px;color:var(--ink);outline:none;transition:.15s}
+.inp:focus{border-color:var(--blue-400);background:#fff;box-shadow:0 0 0 3px rgba(0,116,189,.1)}
+.inp:disabled{background:var(--border-faint);color:var(--text-placeholder);cursor:not-allowed}
+.sel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238A8A8A'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 11px center;padding-right:30px;cursor:pointer}
+.field-inline{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.field-label{font-size:12px;color:var(--text-secondary);min-width:88px}
+.sample{font-size:12px;color:var(--text-secondary)}
+.sample b{color:var(--ink);font-weight:600}
+
+/* ══ PAYMENT METHOD GRID ══ */
+.pm-grid{display:flex;flex-wrap:wrap;gap:10px 18px}
+.pm-item{display:flex;align-items:center;gap:9px;width:200px}
+.pm-item input[type=radio]{width:15px;height:15px;accent-color:var(--blue-500);cursor:pointer;flex-shrink:0;margin:0}
+.pm-item .inp{flex:1;min-width:0}
+.pm-item input[type=radio]:checked~.inp{border-color:var(--blue-200);background:var(--blue-50)}
+
+/* ══ MISC ══ */
+.info-dot{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;
+  border-radius:var(--radius-full);background:var(--blue-100);color:var(--blue-500);font-size:10px;
+  font-weight:700;margin-left:5px;cursor:help;vertical-align:middle}
+.note{display:flex;align-items:flex-start;gap:8px;background:var(--blue-50);border:1px solid var(--blue-100);
+  border-radius:var(--radius-sm);padding:9px 12px;font-size:12px;color:var(--text-secondary);line-height:1.5}
+.note svg{width:15px;height:15px;color:var(--blue-500);flex-shrink:0;margin-top:1px}
+.sub-child{padding-left:24px;border-left:2px solid var(--border);margin-left:2px}
+</style>
+</head>
+<body>
+
+<!-- ══════════ TOP BAR ══════════ -->
+<div class="topbar">
+  <div class="tb-logo">
+    <span class="tb-logo-mark"><i data-lucide="store"></i></span>
+    EasyPOS
+  </div>
+  <button class="tb-burger"><i data-lucide="menu"></i></button>
+
+  <div class="tb-right">
+    <a class="tb-item active"><i data-lucide="shopping-cart"></i>Bán hàng</a>
+    <a class="tb-item"><i data-lucide="alert-circle"></i>Hỗ trợ</a>
+    <div class="tb-sep"></div>
+    <a class="tb-item"><i data-lucide="bell"></i><span class="tb-badge">5+</span></a>
+    <div class="tb-sep"></div>
+    <a class="tb-item"><i data-lucide="home"></i>QLDV EASYPOS</a>
+    <a class="tb-item"><i data-lucide="users"></i>Quản Lý Dịch Vụ</a>
+  </div>
+</div>
+
+<div class="layout">
+
+<!-- ══════════ LEFT RAIL ══════════ -->
+<nav class="rail">
+  <a class="rail-item"><i data-lucide="home"></i>Trang chủ</a>
+  <a class="rail-item"><i data-lucide="shopping-cart"></i>Bán hàng</a>
+  <a class="rail-item"><i data-lucide="package"></i>Quản lý sản phẩm<i data-lucide="chevron-down" class="chev"></i></a>
+  <a class="rail-item"><i data-lucide="file-text"></i>Đơn hàng</a>
+  <a class="rail-item"><i data-lucide="shopping-bag"></i>Sàn TMĐT<i data-lucide="chevron-down" class="chev"></i></a>
+  <a class="rail-item"><i data-lucide="receipt"></i>Hóa đơn<i data-lucide="chevron-down" class="chev"></i></a>
+  <a class="rail-item"><i data-lucide="git-branch"></i>Chi nhánh</a>
+  <a class="rail-item"><i data-lucide="ticket-percent"></i>Quản lý Voucher<i data-lucide="chevron-down" class="chev"></i></a>
+  <a class="rail-item"><i data-lucide="map-pin"></i>Quản lý khu vực<i data-lucide="chevron-down" class="chev"></i></a>
+  <a class="rail-item"><i data-lucide="wallet"></i>Quản lý thu chi</a>
+  <a class="rail-item"><i data-lucide="users"></i>Danh bạ<i data-lucide="chevron-down" class="chev"></i></a>
+  <a class="rail-item"><i data-lucide="credit-card"></i>Quản lý thẻ</a>
+  <a class="rail-item"><i data-lucide="concierge-bell"></i>Bếp</a>
+  <a class="rail-item"><i data-lucide="box"></i>Kho<i data-lucide="chevron-down" class="chev"></i></a>
+
+  <a class="rail-item active"><i data-lucide="settings"></i>Cài đặt<i data-lucide="chevron-up" class="chev"></i></a>
+  <a class="rail-sub active">Cấu hình cửa hàng</a>
+  <a class="rail-sub">Cài đặt hiển thị chức năng</a>
+  <a class="rail-sub">Mẫu QR bàn ăn</a>
+
+  <a class="rail-item"><i data-lucide="bar-chart-3"></i>Báo cáo</a>
+  <a class="rail-item"><i data-lucide="arrow-left-right"></i>Đối soát giao dịch</a>
+  <a class="rail-item"><i data-lucide="file-text"></i>Tờ khai thuế</a>
+  <a class="rail-item"><i data-lucide="banknote"></i>Doanh Thu Ngày</a>
+</nav>
+
+<!-- ══════════ CỘT DANH SÁCH CẤU HÌNH ══════════ -->
+<aside class="cfg-list">
+  <a class="cfg-link" href="san-pham.html">Sản phẩm<i data-lucide="chevron-right"></i></a>
+  <a class="cfg-link">Cấu hình hộ kinh doanh<i data-lucide="chevron-right"></i></a>
+  <a class="cfg-link">Cổng thanh toán điện tử<i data-lucide="chevron-right"></i></a>
+  <a class="cfg-link">Cấu hình font chữ<i data-lucide="chevron-right"></i></a>
+  <a class="cfg-link">Cấu hình điều chỉnh hóa đơn<i data-lucide="chevron-right"></i></a>
+  <a class="cfg-link">Thiết lập vận chuyển<i data-lucide="chevron-right"></i></a>
+  <a class="cfg-link">Thông tin kê khai thuế<i data-lucide="chevron-right"></i></a>
+  <a class="cfg-link">Cấu hình thẻ khách hàng<i data-lucide="chevron-right"></i></a>
+  <a class="cfg-link">Cấu hình Hóa đơn điện tử<i data-lucide="chevron-right"></i></a>
+  <a class="cfg-link active">Bán hàng<i data-lucide="chevron-right"></i></a>
+  <a class="cfg-link">Thiết lập in<i data-lucide="chevron-right"></i></a>
+  <a class="cfg-link">Định dạng số<i data-lucide="chevron-right"></i></a>
+  <a class="cfg-link">Thông tin cửa hàng<i data-lucide="chevron-right"></i></a>
+  <a class="cfg-link">Cấu hình phụ thu<i data-lucide="chevron-right"></i></a>
+  <a class="cfg-link">Cấu hình kết nối Cơ quan thuế<i data-lucide="chevron-right"></i></a>
+</aside>
+
+<!-- ══════════ MAIN ══════════ -->
+<main class="main">
+
+  <div class="page-head">
+    <div>
+      <div class="page-title">Bán hàng</div>
+      <div class="page-sub">Thiết lập cách vận hành màn Bán hàng: giảm giá, thuế, thanh toán, đơn hàng, ca làm việc và kho.</div>
+    </div>
+  </div>
+
+  <!-- ─────── 1. GIẢM GIÁ VÀ VOUCHER ─────── -->
+  <section class="card" id="c-giamgia">
+    <div class="card-header">
+      <div class="card-head-left">
+        <div>
+          <div class="card-title">Giảm giá và voucher</div>
+          <div class="card-desc">Phạm vi áp dụng giảm giá và cách dùng voucher trên đơn hàng</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div class="row">
+        <div class="row-label">Giảm giá <span class="req">(*)</span>
+          <span class="row-hint">Cho phép thu ngân nhập giảm giá khi lập đơn.</span>
+        </div>
+        <div class="row-control">
+          <label class="sw"><input type="checkbox" id="sw-giam-gia" checked><span class="sw-track"></span></label>
+        </div>
+        <div class="row-sub dep" data-dep="sw-giam-gia">
+          <div class="radio-stack">
+            <label class="radio-opt"><input type="radio" name="loai-giam-gia"><span>Giá trị đơn hàng</span></label>
+            <label class="radio-opt"><input type="radio" name="loai-giam-gia"><span>Giá trị sản phẩm</span></label>
+            <label class="radio-opt"><input type="radio" name="loai-giam-gia" checked><span>Cả hai</span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-label">Hiển thị nội dung giảm giá <span class="req">(*)</span>
+          <span class="row-hint">Ghi lý do giảm giá lên đơn hàng và phiếu in.</span>
+        </div>
+        <div class="row-control">
+          <label class="sw"><input type="checkbox" checked><span class="sw-track"></span></label>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-label">Áp dụng voucher <span class="req">(*)</span></div>
+        <div class="row-control">
+          <label class="sw"><input type="checkbox" checked><span class="sw-track"></span></label>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-label">Áp dụng gộp voucher <span class="req">(*)</span>
+          <span class="row-hint">Cho phép dùng nhiều voucher trên cùng một đơn hàng.</span>
+        </div>
+        <div class="row-control">
+          <label class="sw"><input type="checkbox" checked><span class="sw-track"></span></label>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─────── 2. GIẢM TRỪ VÀ THUẾ ─────── -->
+  <section class="card" id="c-thue">
+    <div class="card-header">
+      <div class="card-head-left">
+        <div>
+          <div class="card-title">Giảm trừ và thuế</div>
+          <div class="card-desc">Cách tính giảm trừ thuế và thuế tiêu thụ đặc biệt trên đơn hàng</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div class="row">
+        <div class="row-label">Giảm trừ thuế <span class="req">(*)</span>
+          <span class="row-hint">Giảm trừ chung tính trên tổng đơn; giảm trừ riêng tính theo từng sản phẩm.</span>
+        </div>
+        <div class="row-control">
+          <label class="sw"><input type="checkbox" id="sw-giam-tru" checked><span class="sw-track"></span></label>
+        </div>
+        <div class="row-sub dep" data-dep="sw-giam-tru">
+          <div class="radio-stack">
+            <label class="radio-opt"><input type="radio" name="loai-giam-tru" checked><span>Giảm trừ chung</span></label>
+            <label class="radio-opt"><input type="radio" name="loai-giam-tru"><span>Giảm trừ riêng</span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-label">Thuế đặc biệt <span class="req">(*)</span>
+          <span class="row-hint">Bật khi cửa hàng bán mặt hàng chịu thuế tiêu thụ đặc biệt.</span>
+          <span class="row-hint">Chỉ áp dụng cho hóa đơn GTGT. Hóa đơn bán hàng không sử dụng thuế đặc biệt.</span>
+        </div>
+        <div class="row-control">
+          <label class="sw"><input type="checkbox"><span class="sw-track"></span></label>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─────── 3. THANH TOÁN ─────── -->
+  <section class="card" id="c-thanhtoan">
+    <div class="card-header">
+      <div class="card-head-left">
+        <div>
+          <div class="card-title">Thanh toán</div>
+          <div class="card-desc">Hình thức thanh toán hiển thị tại quầy và thao tác sau khi thu tiền</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div class="row stack">
+        <div class="row-label">Danh sách hình thức thanh toán <span class="req">(*)</span>
+          <span class="row-hint">Chọn hình thức thanh toán hóa đơn mặc định khi mở màn thanh toán; có thể đổi tên hiển thị.</span>
+        </div>
+        <div class="row-control">
+          <div class="pm-grid">
+            <label class="pm-item"><input type="radio" name="httt"><input class="inp" type="text" value="Tiền mặt"></label>
+            <label class="pm-item"><input type="radio" name="httt"><input class="inp" type="text" value="Chuyển khoản"></label>
+            <label class="pm-item"><input type="radio" name="httt" checked><input class="inp" type="text" value="TM/CK"></label>
+            <label class="pm-item"><input type="radio" name="httt"><input class="inp" type="text" value="Cổng thanh toán"></label>
+            <label class="pm-item"><input type="radio" name="httt"><input class="inp" type="text" value="Khác"></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-label">In tem nhãn khi thanh toán <span class="req">(*)</span>
+          <span class="row-hint">Tự động in tem sản phẩm ngay sau khi đơn hàng thanh toán thành công.</span>
+        </div>
+        <div class="row-control">
+          <label class="sw"><input type="checkbox"><span class="sw-track"></span></label>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─────── 4. ĐƠN HÀNG ─────── -->
+  <section class="card" id="c-donhang">
+    <div class="card-header">
+      <div class="card-head-left">
+        <div>
+          <div class="card-title">Đơn hàng</div>
+          <div class="card-desc">Quy tắc sinh mã đơn hàng và cách hiển thị đơn tại màn Bán hàng</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div class="row stack">
+        <div class="row-label">Cấu hình mã đơn hàng <span class="req">(*)</span>
+          <span class="row-hint">Mã đơn gồm tiền tố cố định và phần số sinh theo quy tắc đã chọn.</span>
+        </div>
+        <div class="row-control">
+          <div class="field-inline">
+            <span class="field-label">Tiền tố</span>
+            <input class="inp" type="text" id="dh-prefix" value="DH" maxlength="10" style="width:160px">
+          </div>
+          <div class="field-inline" style="align-items:flex-start">
+            <span class="field-label" style="padding-top:2px">Cách đánh số</span>
+            <div class="radio-inline">
+              <label class="radio-opt"><input type="radio" name="danh-so" value="stt" checked><span>Số thứ tự</span></label>
+              <label class="radio-opt"><input type="radio" name="danh-so" value="tgian"><span>Thời gian thực</span></label>
+              <label class="radio-opt"><input type="radio" name="danh-so" value="random"><span>Ngẫu nhiên</span></label>
+            </div>
+          </div>
+          <div class="field-inline" id="dh-len-row" style="display:none">
+            <span class="field-label">Số ký tự</span>
+            <input class="inp" type="number" id="dh-len" value="7" min="1" max="20" style="width:80px;text-align:center">
+          </div>
+          <div class="sample">Mã đơn hàng mẫu: <b id="dh-sample">DH15</b></div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-label">Hiển thị danh sách đơn hàng đã lưu tại màn Bán hàng <span class="req">(*)</span></div>
+        <div class="row-control">
+          <label class="sw"><input type="checkbox" checked><span class="sw-track"></span></label>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-label">Cấu hình hiển thị combo trên hóa đơn điện tử <span class="req">(*)</span></div>
+        <div class="row-control">
+          <select class="inp sel" style="width:100%;max-width:420px">
+            <option selected>Hiển thị cả tên sản phẩm combo và thành phần</option>
+            <option>Chỉ hiển thị tên combo</option>
+            <option>Chỉ hiển thị tên sản phẩm thành phần</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─────── 5. VẬN HÀNH VÀ NHÂN SỰ ─────── -->
+  <section class="card" id="c-vanhanh">
+    <div class="card-header">
+      <div class="card-head-left">
+        <div>
+          <div class="card-title">Vận hành và nhân sự</div>
+          <div class="card-desc">Gán nhân viên phục vụ và quản lý giao dịch theo ca làm việc</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div class="row">
+        <div class="row-label">Chọn nhân viên cho từng sản phẩm dịch vụ <span class="req">(*)</span>
+          <span class="row-hint">Dùng cho spa, salon, dịch vụ tính hoa hồng theo nhân viên thực hiện.</span>
+        </div>
+        <div class="row-control">
+          <label class="sw"><input type="checkbox"><span class="sw-track"></span></label>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-label">Quản lý giao dịch theo ca <span class="req">(*)</span>
+          <span class="info-dot" title="Bắt buộc mở ca trước khi bán và chốt ca khi kết thúc.">i</span>
+          <span class="row-hint">Thu ngân phải mở ca trước khi bán, chốt ca để đối soát tiền mặt.</span>
+        </div>
+        <div class="row-control">
+          <label class="sw"><input type="checkbox" checked><span class="sw-track"></span></label>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─────── 6. KHO ─────── -->
+  <section class="card" id="c-kho">
+    <div class="card-header">
+      <div class="card-head-left">
+        <div>
+          <div class="card-title">Kho</div>
+          <div class="card-desc">Ràng buộc tồn kho khi lập đơn bán hàng</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div class="row">
+        <div class="row-label">Cho phép xuất quá số lượng tồn <span class="req">(*)</span>
+          <span class="row-hint">Nếu cho phép, đơn vẫn bán được khi tồn kho không đủ và tồn sẽ về âm.</span>
+        </div>
+        <div class="row-control">
+          <label class="sw"><input type="checkbox" id="sw-xuat-qua-ton"><span class="sw-track"></span></label>
+        </div>
+        <div class="row-sub dep" data-dep="sw-xuat-qua-ton">
+          <div class="note">
+            <i data-lucide="alert-triangle"></i>
+            <span>Khi cho phép xuất quá tồn, báo cáo xuất nhập tồn có thể xuất hiện số âm cho tới khi nhập bù hàng.</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─────── THANH HÀNH ĐỘNG CHUNG ─────── -->
+  <div class="page-actions">
+    <button class="btn btn-tertiary btn-lg" id="btn-edit-all">Sửa</button>
+    <button class="btn btn-primary btn-lg" id="btn-save-all">Cập nhật</button>
+  </div>
+
+</main>
+</div>
+
+<script>
+  lucide.createIcons();
+
+  /* ── Sửa / Cập nhật chung cho toàn màn ── */
+  (function () {
+    const cards = document.querySelectorAll('.card');
+    const setEditing = on => cards.forEach(c => c.classList.toggle('editing', on));
+    document.getElementById('btn-edit-all').addEventListener('click', () => setEditing(true));
+    document.getElementById('btn-save-all').addEventListener('click', () => setEditing(false));
+    setEditing(false);
+  })();
+
+  /* ── Toggle bật → hiện lựa chọn con ── */
+  document.querySelectorAll('.sw input[type="checkbox"][id]').forEach(sw => {
+    const deps = document.querySelectorAll('.dep[data-dep="' + sw.id + '"]');
+    if (!deps.length) return;
+    const update = () => deps.forEach(d => { d.style.display = sw.checked ? '' : 'none'; });
+    sw.addEventListener('change', update);
+    update();
+  });
+
+  /* ── Mã đơn hàng mẫu động ── */
+  (function () {
+    const sample = document.getElementById('dh-sample');
+    const lenRow = document.getElementById('dh-len-row');
+    const lenInp = document.getElementById('dh-len');
+    const prefix = document.getElementById('dh-prefix');
+    const POOL = 'VhnC7358xKpRmTwBjQsL';
+    function update() {
+      const mode = document.querySelector('input[name="danh-so"]:checked').value;
+      const p = prefix.value || 'DH';
+      const n = Math.min(Math.max(parseInt(lenInp.value || 7, 10), 1), POOL.length);
+      lenRow.style.display = mode === 'random' ? 'flex' : 'none';
+      if (mode === 'stt')        sample.textContent = p + '15';
+      else if (mode === 'tgian') sample.textContent = p + '1780124500892';
+      else                       sample.textContent = p + POOL.slice(0, n);
+    }
+    document.querySelectorAll('input[name="danh-so"]').forEach(r => r.addEventListener('change', update));
+    lenInp.addEventListener('input', update);
+    prefix.addEventListener('input', update);
+    update();
+  })();
+</script>
+</body>
+</html>

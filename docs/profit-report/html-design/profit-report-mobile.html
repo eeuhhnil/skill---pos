@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Lợi nhuận bán hàng — Mobile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --blue-700:#005C96; --blue-500:#0074BD; --blue-100:#E6F1F8; --blue-50:#F0F7FB;
+      --ink:#151B33; --text-primary:#151B33; --text-secondary:#455064;
+      --text-placeholder:#B0B0B0;
+      --surface:#FFFFFF; --surface-page:#F4F6F8; --surface-subtle:#F7F7F7;
+      --border:#E6E6E6; --border-faint:#EEEEEE;
+      --success-500:#2BA45C; --error-500:#EB5146;
+      --radius-md:8px; --radius-lg:12px;
+      --font-sans:'Noto Sans',sans-serif;
+      --font-display:'Be Vietnam Pro',sans-serif;
+      /* muted steel-blue used for the report table header (matches source screen) */
+      --report-head:#557488;
+      --report-head-bg:#E9F1F6;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      background: #1C1C1E;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Phone frame (iPhone 12 — 390×844) ── */
+    .phone {
+      width: 390px; height: 844px;
+      border-radius: 50px;
+      box-shadow: 0 0 0 2px #3A3A3C, 0 0 0 8px #2C2C2E, 0 40px 100px rgba(0,0,0,.7);
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      position: relative;
+      background: var(--surface-page);
+    }
+
+    /* ── Status bar ── */
+    .status-bar {
+      height: 50px; background: #fff; flex-shrink: 0;
+      display: flex; align-items: flex-end; justify-content: space-between;
+      padding: 0 24px 10px;
+      position: relative; z-index: 10;
+    }
+    .status-time { font: 600 15px/1 var(--font-sans); color: var(--ink); }
+    .status-icons { display: flex; align-items: center; gap: 5px; color: var(--ink); }
+
+    /* ── Pages wrapper ── */
+    .pages-wrapper { flex: 1; position: relative; overflow: hidden; }
+    .page {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      background: var(--surface-page);
+      transform: translateX(100%);
+      transition: transform .3s cubic-bezier(.25,.46,.45,.94);
+      will-change: transform;
+    }
+    .page.active    { transform: translateX(0); }
+    .page.slide-out { transform: translateX(-25%); }
+
+    /* ── Top nav ── */
+    .top-nav {
+      height: 48px; background: #fff; flex-shrink: 0;
+      display: flex; align-items: center; padding: 0 8px 0 4px;
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-back {
+      width: 40px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      border: none; background: transparent; color: var(--ink);
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .nav-title {
+      font: 600 17px/1.4 var(--font-display); color: var(--text-primary); flex: 1;
+    }
+    .nav-action {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      border: none; background: transparent; color: var(--blue-500);
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ── Screen body ── */
+    .screen-body {
+      flex: 1; overflow-y: auto; overflow-x: hidden;
+      background: var(--surface-page);
+      -webkit-overflow-scrolling: touch;
+    }
+    .screen-body::-webkit-scrollbar { display: none; }
+
+    /* ── Period selector row ── */
+    .period-row {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #fff; padding: 15px 20px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .period-row:active { background: var(--surface-subtle); }
+    .period-lbl { font: 400 15px/1.4 var(--font-sans); color: var(--text-secondary); }
+    .period-val {
+      display: flex; align-items: center; gap: 6px;
+      font: 600 15px/1.4 var(--font-sans); color: var(--text-primary);
+    }
+    .period-val svg { width: 18px; height: 18px; color: var(--text-secondary); }
+
+    /* ── Report table ── */
+    .report-table { background: #fff; }
+    .rt-head, .rt-row {
+      display: grid;
+      grid-template-columns: 62px 1fr 1fr 1fr;
+      align-items: stretch;
+    }
+    .rt-head {
+      background: var(--report-head-bg);
+      border-bottom: 1px solid var(--border);
+    }
+    .th {
+      padding: 11px 12px 12px;
+      text-align: right;
+      display: flex; flex-direction: column; gap: 3px; justify-content: flex-start;
+    }
+    .th + .th { border-left: 1px solid #D4E2E9; }
+    .th-name {
+      font: 400 13px/1.35 var(--font-sans); color: var(--report-head);
+    }
+    .th-total {
+      font: 700 15px/1.2 var(--font-sans); color: var(--report-head);
+      font-variant-numeric: tabular-nums;
+    }
+    .th-spacer { }
+
+    .rt-row { border-bottom: 1px solid var(--border-faint); }
+    .rt-row:active { background: var(--surface-subtle); }
+    .td-date {
+      padding: 16px 8px 16px 16px;
+      display: flex; align-items: center;
+    }
+    .td-date a {
+      font: 500 14px/1.2 var(--font-sans); color: var(--blue-500);
+      text-decoration: underline; text-underline-offset: 2px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .td-num {
+      padding: 16px 12px; text-align: right;
+      display: flex; align-items: center; justify-content: flex-end;
+      font: 400 14px/1.2 var(--font-sans); color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .td-num.profit { color: var(--success-500); font-weight: 600; }
+
+    /* row states (BR-profit-report-003) */
+    .rt-row.void .td-num, .rt-row.void .td-date a { text-decoration: line-through; color: var(--text-placeholder); }
+    .td-num.negative { color: var(--error-500); }
+
+    /* ── Empty state ── */
+    .empty {
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      gap: 12px; padding: 80px 24px; text-align: center;
+    }
+    .empty svg { width: 44px; height: 44px; color: var(--text-placeholder); }
+    .empty p { font: 400 14px/1.5 var(--font-sans); color: var(--text-secondary); }
+
+    /* ── Detail page (per-invoice) ── */
+    .detail-sub {
+      background: #fff; padding: 12px 20px; border-bottom: 1px solid var(--border);
+    }
+    .detail-sub-title { font: 600 13px/1.4 var(--font-sans); color: var(--text-secondary); }
+    .detail-sub-title strong { color: var(--text-primary); }
+
+    .inv-total {
+      background: var(--blue-50); border-bottom: 1px solid var(--border);
+      padding: 12px 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+    }
+    .inv-total .cell { display: flex; flex-direction: column; gap: 3px; }
+    .inv-total .cell:not(:first-child) { align-items: flex-end; text-align: right; }
+    .inv-total .k { font: 400 11px/1.3 var(--font-sans); color: var(--text-secondary); }
+    .inv-total .v { font: 700 14px/1.2 var(--font-sans); color: var(--ink); font-variant-numeric: tabular-nums; }
+    .inv-total .v.profit { color: var(--success-500); }
+
+    /* ── Detail card list (per-invoice) — screenshot style ── */
+    .dcard {
+      display: flex; align-items: center; gap: 10px;
+      background: #fff; padding: 14px 16px 14px 20px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .dcard:active { background: var(--surface-subtle); }
+    .dcard-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+    .dcard-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .dcard-code { font: 700 15px/1.3 var(--font-sans); color: var(--ink); }
+    .dcard-time { font: 400 13px/1.3 var(--font-sans); color: var(--text-secondary); white-space: nowrap; }
+    .dcard-k { font: 400 14px/1.3 var(--font-sans); color: var(--text-secondary); }
+    .dcard-v { font: 700 14px/1.3 var(--font-sans); color: var(--ink); font-variant-numeric: tabular-nums; }
+    .dcard-v.profit { color: var(--success-500); }
+    .dcard-v.negative { color: var(--error-500); }
+    .dcard-chev { color: #C7C7CC; flex-shrink: 0; }
+    .dcard.void .dcard-v, .dcard.void .dcard-code { text-decoration: line-through; color: var(--text-placeholder); }
+
+    .inv-badge {
+      font: 600 11px/1.4 var(--font-sans); padding: 2px 8px; border-radius: 999px;
+      background: #FEF3F2; color: #BE211C;
+    }
+    .inv-badge.ret { background: #FFFAE7; color: #B7791F; }
+
+    /* ── Bottom sheet ── */
+    .bs-overlay {
+      display: none; position: absolute; inset: 0;
+      background: rgba(0,0,0,.45); z-index: 200; align-items: flex-end;
+    }
+    .bs-overlay.visible { display: flex; }
+    .bottom-sheet {
+      background: #fff; border-radius: 20px 20px 0 0; width: 100%;
+      animation: slideUp .25s ease; display: flex; flex-direction: column; max-height: 88%;
+    }
+    @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+    .bs-handle { width: 36px; height: 4px; background: #E5E5EA; border-radius: 2px; margin: 10px auto 0; flex-shrink: 0; }
+    .bs-title { font: 600 16px/1.4 var(--font-display); color: var(--text-primary); padding: 12px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .bs-list { overflow-y: auto; }
+    .bs-list::-webkit-scrollbar { display: none; }
+    .bs-opt {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 15px 20px; border-bottom: 1px solid var(--border-faint);
+      cursor: pointer; font: 400 15px/1.4 var(--font-sans); color: var(--text-primary);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .bs-opt:last-child { border-bottom: none; }
+    .bs-opt:active { background: var(--surface-subtle); }
+    .bs-opt.selected { color: var(--blue-500); font-weight: 600; }
+
+    /* ── Param sheet (Chọn tham số) ── */
+    .param-row {
+      padding: 14px 20px; border-bottom: 1px solid var(--border-faint);
+      display: flex; flex-direction: column; gap: 7px;
+    }
+    .param-lbl { font: 600 13px/1.4 var(--font-sans); color: var(--text-primary); }
+    .param-field {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 44px; padding: 0 14px; background: #fff;
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font: 400 14px/1 var(--font-sans); color: var(--text-primary);
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .param-field svg { width: 16px; height: 16px; color: var(--text-secondary); }
+    .param-dates { display: flex; gap: 10px; }
+    .param-dates .param-field { flex: 1; }
+    .param-check {
+      display: flex; align-items: center; gap: 12px; padding: 16px 20px;
+      font: 400 14px/1.4 var(--font-sans); color: var(--text-primary);
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+      border-bottom: 1px solid var(--border-faint);
+    }
+    .param-check input { width: 18px; height: 18px; accent-color: var(--blue-500); }
+    .bs-actions { display: flex; gap: 12px; padding: 12px 20px 24px; border-top: 1px solid var(--border); }
+    .btn-outline {
+      flex: 1; height: 50px; background: #fff;
+      border: 1.5px solid var(--blue-500); color: var(--blue-500);
+      border-radius: var(--radius-md); font: 600 15px/1 var(--font-display);
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .btn-outline:active { background: var(--blue-50); }
+    .btn-solid {
+      flex: 1.4; height: 50px; background: var(--blue-500); color: #fff;
+      border: none; border-radius: var(--radius-md);
+      font: 600 15px/1 var(--font-display); cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-solid:active { background: var(--blue-700); }
+  </style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span class="status-time">9:41</span>
+    <div class="status-icons">
+      <i data-lucide="signal" style="width:14px;height:14px"></i>
+      <i data-lucide="wifi"   style="width:14px;height:14px"></i>
+      <i data-lucide="battery-full" style="width:18px;height:14px"></i>
+    </div>
+  </div>
+
+  <div class="pages-wrapper">
+
+    <!-- ══ Page: Báo cáo lợi nhuận (bảng tổng hợp) ══ -->
+    <div class="page active" id="page-main">
+
+      <div class="top-nav">
+        <button class="nav-back"><i data-lucide="chevron-left" style="width:26px;height:26px"></i></button>
+        <span class="nav-title">Lợi nhuận bán hàng</span>
+        <button class="nav-action" onclick="openParam()"><i data-lucide="filter" style="width:22px;height:22px"></i></button>
+      </div>
+
+      <div class="screen-body">
+
+        <!-- Period selector -->
+        <div class="period-row" onclick="openPeriod()">
+          <span class="period-lbl">Thời gian</span>
+          <span class="period-val" id="period-val">Tháng này <i data-lucide="chevron-down"></i></span>
+        </div>
+
+        <!-- Report table -->
+        <div class="report-table" id="report-table">
+          <div class="rt-head">
+            <div class="th-spacer"></div>
+            <div class="th">
+              <span class="th-name">Doanh thu</span>
+              <span class="th-total" id="tot-rev">0</span>
+            </div>
+            <div class="th">
+              <span class="th-name">Tổng giá vốn</span>
+              <span class="th-total" id="tot-cogs">0</span>
+            </div>
+            <div class="th">
+              <span class="th-name">Lợi nhuận gộp</span>
+              <span class="th-total" id="tot-profit">0</span>
+            </div>
+          </div>
+
+          <!-- rows rendered by JS -->
+          <div id="rt-body"></div>
+        </div>
+
+        <!-- Empty state (hidden by default) -->
+        <div class="empty" id="empty-state">
+          <i data-lucide="inbox"></i>
+          <p>Không có dữ liệu trong kỳ đã chọn</p>
+        </div>
+
+      </div><!-- /screen-body -->
+    </div><!-- /page-main -->
+
+    <!-- ══ Page: Chi tiết theo hóa đơn ══ -->
+    <div class="page" id="page-detail">
+
+      <div class="top-nav">
+        <button class="nav-back" onclick="goBack()"><i data-lucide="chevron-left" style="width:26px;height:26px"></i></button>
+        <span class="nav-title" id="detail-title">Chi tiết ngày 10/05</span>
+      </div>
+
+      <div class="screen-body">
+
+        <!-- Invoice card list rendered by JS -->
+        <div id="detail-body"></div>
+
+        <div style="height:20px"></div>
+      </div><!-- /screen-body -->
+    </div><!-- /page-detail -->
+
+  </div><!-- /pages-wrapper -->
+
+  <!-- ── Period bottom sheet (Kỳ báo cáo) ── -->
+  <div class="bs-overlay" id="period-overlay" onclick="closeBSOnBG(this,event)">
+    <div class="bottom-sheet">
+      <div class="bs-handle"></div>
+      <div class="bs-title">Chọn thời gian</div>
+      <div class="bs-list" id="period-list">
+        <div class="bs-opt" onclick="pickPeriod(this,'Hôm nay')">Hôm nay</div>
+        <div class="bs-opt" onclick="pickPeriod(this,'Hôm qua')">Hôm qua</div>
+        <div class="bs-opt" onclick="pickPeriod(this,'Tuần này')">Tuần này</div>
+        <div class="bs-opt" onclick="pickPeriod(this,'Tuần trước')">Tuần trước</div>
+        <div class="bs-opt selected" onclick="pickPeriod(this,'Tháng này')">Tháng này <i data-lucide="check" style="width:18px;height:18px;color:var(--blue-500)"></i></div>
+        <div class="bs-opt" onclick="pickPeriod(this,'Tháng trước')">Tháng trước</div>
+        <div class="bs-opt" onclick="pickPeriod(this,'30 ngày qua')">30 ngày qua</div>
+        <div class="bs-opt" onclick="pickPeriod(this,'Quý này')">Quý này</div>
+        <div class="bs-opt" onclick="pickPeriod(this,'Quý trước')">Quý trước</div>
+        <div class="bs-opt" onclick="pickPeriod(this,'Năm nay')">Năm nay</div>
+        <div class="bs-opt" onclick="pickPeriod(this,'Năm trước')">Năm trước</div>
+        <div class="bs-opt" onclick="pickPeriod(this,'Tùy chỉnh')">Tùy chỉnh…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Param sheet (Chọn tham số) ── -->
+  <div class="bs-overlay" id="param-overlay" onclick="closeBSOnBG(this,event)">
+    <div class="bottom-sheet">
+      <div class="bs-handle"></div>
+      <div class="bs-title">Chọn tham số</div>
+      <div class="bs-list">
+        <div class="param-row">
+          <span class="param-lbl">Kỳ báo cáo</span>
+          <div class="param-field">Hôm nay <i data-lucide="chevron-down"></i></div>
+        </div>
+        <div class="param-row">
+          <span class="param-lbl">Chi nhánh</span>
+          <div class="param-field">Chi nhánh trung tâm <i data-lucide="chevron-down"></i></div>
+        </div>
+        <div class="param-row">
+          <span class="param-lbl">Khoảng thời gian</span>
+          <div class="param-dates">
+            <div class="param-field">10/05/2026 <i data-lucide="calendar"></i></div>
+            <div class="param-field">10/05/2026 <i data-lucide="calendar"></i></div>
+          </div>
+        </div>
+        <label class="param-check">
+          <input type="checkbox"> Tách lợi nhuận Combo theo từng thành phần
+        </label>
+      </div>
+      <div class="bs-actions">
+        <button class="btn-outline" onclick="closeParam()">Đóng</button>
+        <button class="btn-solid" onclick="closeParam()">Xem báo cáo</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /phone -->
+
+<script>
+  /* ── Data (kỳ = Tháng này · Tháng 05/2026) ── mỗi ngày có phát sinh dữ liệu ── */
+  const YEAR = 2026, MONTH = '05';
+  // rev = doanh thu, cogs = tổng giá vốn; lợi nhuận gộp = rev - cogs (BR-profit-report-005)
+  const DAYS = [
+    { d: '10', rev: 1000000, cogs: 200000 },
+    { d: '09', rev: 2450000, cogs: 780000 },
+    { d: '08', rev: 1820000, cogs: 610000 },
+    { d: '07', rev: 3200000, cogs: 1150000 },
+    { d: '06', rev: 950000,  cogs: 320000 },
+    { d: '05', rev: 4100000, cogs: 1480000 },
+    { d: '04', rev: 2760000, cogs: 990000 },
+    { d: '03', rev: 1540000, cogs: 520000 },
+    { d: '02', rev: 3680000, cogs: 1320000 },
+    { d: '01', rev: 2150000, cogs: 700000 },
+  ];
+
+  const fmt = n => (n < 0 ? '-' : '') + Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const roundK = n => Math.round(n / 1000) * 1000;
+
+  /* ── Render bảng tổng hợp ── */
+  function renderMain() {
+    let tRev = 0, tCogs = 0;
+    const rows = DAYS.map(x => {
+      const profit = x.rev - x.cogs;
+      tRev += x.rev; tCogs += x.cogs;
+      const label = x.d + '/' + MONTH;
+      return `<div class="rt-row" onclick="goDetail('${x.d}')">
+        <div class="td-date"><a>${label}</a></div>
+        <div class="td-num">${fmt(x.rev)}</div>
+        <div class="td-num">${fmt(x.cogs)}</div>
+        <div class="td-num profit">${fmt(profit)}</div>
+      </div>`;
+    }).join('');
+    document.getElementById('rt-body').innerHTML = rows;
+    document.getElementById('tot-rev').textContent    = fmt(tRev);
+    document.getElementById('tot-cogs').textContent   = fmt(tCogs);
+    document.getElementById('tot-profit').textContent = fmt(tRev - tCogs);
+  }
+
+  /* ── Render chi tiết theo hóa đơn cho 1 ngày (§3.2) ── */
+  function renderDetail(dd) {
+    const day = DAYS.find(x => x.d === dd);
+    if (!day) return;
+    const dateStr = `${dd}/${MONTH}/${YEAR}`;
+    document.getElementById('detail-title').textContent = `Chi tiết ngày ${dd}/${MONTH}`;
+
+    // tách thành 2 hóa đơn hợp lệ, cộng đúng bằng tổng ngày
+    const rev1 = roundK(day.rev * 0.6), rev2 = day.rev - rev1;
+    const cogs1 = roundK(day.cogs * 0.6), cogs2 = day.cogs - cogs1;
+
+    const card = (code, time, rev, cogs, opt = {}) => {
+      const p = rev - cogs;
+      const neg = opt.negative ? ' negative' : '';
+      const profitCls = opt.void ? '' : (opt.negative ? ' negative' : ' profit');
+      const badge = opt.badge ? ` <span class="inv-badge${opt.badgeCls || ''}">${opt.badge}</span>` : '';
+      return `<div class="dcard${opt.void ? ' void' : ''}">
+        <div class="dcard-main">
+          <div class="dcard-row">
+            <span class="dcard-code">${code}${badge}</span>
+            <span class="dcard-time">${dateStr} ${time}</span>
+          </div>
+          <div class="dcard-row"><span class="dcard-k">Doanh thu</span><span class="dcard-v${neg}">${fmt(rev)}</span></div>
+          <div class="dcard-row"><span class="dcard-k">Tổng giá vốn</span><span class="dcard-v${neg}">${fmt(cogs)}</span></div>
+          <div class="dcard-row"><span class="dcard-k">Lợi nhuận</span><span class="dcard-v${profitCls}">${fmt(p)}</span></div>
+        </div>
+        <i data-lucide="chevron-right" class="dcard-chev" style="width:20px;height:20px"></i>
+      </div>`;
+    };
+
+    let cards = card('DH' + dd + '01', '10:15:22', rev1, cogs1)
+              + card('DH' + dd + '02', '15:40:07', rev2, cogs2);
+    // ngày 10 minh họa thêm trạng thái đơn (BR-profit-report-003): đơn hủy không cộng tổng
+    if (dd === '10') {
+      cards += card('DH1003', '18:22:47', 150000, 30000, { badge: 'Đã hủy', void: true });
+    }
+
+    document.getElementById('detail-body').innerHTML = cards;
+    lucide.createIcons();
+  }
+
+  /* ── Page nav ── */
+  function goDetail(dd) {
+    renderDetail(dd);
+    document.getElementById('page-main').classList.add('slide-out');
+    document.getElementById('page-detail').classList.add('active');
+    document.querySelector('#page-detail .screen-body').scrollTop = 0;
+  }
+  function goBack() {
+    document.getElementById('page-detail').classList.remove('active');
+    document.getElementById('page-main').classList.remove('slide-out');
+  }
+
+  renderMain();
+  lucide.createIcons();
+
+  /* ── Period sheet ── */
+  function openPeriod() { document.getElementById('period-overlay').classList.add('visible'); lucide.createIcons(); }
+  function pickPeriod(el, val) {
+    document.querySelectorAll('#period-list .bs-opt').forEach(o => {
+      o.classList.remove('selected');
+      const chk = o.querySelector('i'); if (chk) chk.remove();
+    });
+    el.classList.add('selected');
+    const icon = document.createElement('i');
+    icon.setAttribute('data-lucide', 'check');
+    icon.style.cssText = 'width:18px;height:18px;color:var(--blue-500)';
+    el.appendChild(icon);
+    document.getElementById('period-val').innerHTML =
+      val + ' <i data-lucide="chevron-down"></i>';
+    lucide.createIcons();
+    setTimeout(() => document.getElementById('period-overlay').classList.remove('visible'), 180);
+  }
+
+  /* ── Param sheet ── */
+  function openParam()  { document.getElementById('param-overlay').classList.add('visible'); lucide.createIcons(); }
+  function closeParam() { document.getElementById('param-overlay').classList.remove('visible'); }
+
+  function closeBSOnBG(overlay, e) { if (e.target === overlay) overlay.classList.remove('visible'); }
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><link rel="stylesheet" href="../colors_and_type.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  body{margin:0;font-family:var(--font-sans);background:#fff;color:var(--ink)}
+  .wrap{padding:20px 24px}
+  .tag{font:var(--caption);color:var(--text-secondary);margin-bottom:14px}
+  .tag b{color:var(--ink)}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+  .ic{display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--ink)}
+  .ic svg{width:24px;height:24px;stroke-width:1.6}
+  .ic span{font-size:10px;color:var(--text-secondary)}
+  .ic.active{color:var(--blue-500)}
+</style></head>
+<body><div class="wrap">
+  <div class="tag">Iconography — product uses <b>Iconsax / vuesax</b> (linear · bold · twotone). Shown here in <b>Lucide</b> as the nearest CDN substitute (~1.6px rounded stroke).</div>
+  <div class="grid" id="g"></div>
+</div>
+<script>
+const icons=['layout-grid','shopping-cart','package','bookmark','ticket-percent','gift','credit-card','receipt','users','bar-chart-3','wallet','store','bell','settings','search','calendar','printer','qr-code','tag','box','home','arrow-left-right','file-text','more-horizontal'];
+document.getElementById('g').innerHTML=icons.map((n,i)=>`<div class="ic ${i===0?'active':''}"><i data-lucide="${n}"></i><span>${n.replace(/-/g,' ')}</span></div>`).join('');
+lucide.createIcons();
+</script>
+</body></html>

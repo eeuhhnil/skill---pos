@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, initial-scale=1" />
+<title>EasyPOS · Bán hàng — Thanh toán swap panel</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+<style>
+:root{
+  --blue-900:#00314F; --blue-800:#004671; --blue-700:#005C96; --blue-600:#0068AA;
+  --blue-500:#0074BD; --blue-400:#3392CB; --blue-300:#66ADD9; --blue-200:#B0D4EB;
+  --blue-100:#E6F1F8; --blue-50:#F0F7FB;
+  --orange-700:#A15926; --orange-500:#E37E36; --orange-50:#FCF2EB;
+  --ink:#151B33; --gray-100:#B5B3C8; --gray-50:#E7E7ED;
+  --text-primary:#151B33; --text-secondary:#455064; --text-tertiary:#545454; --text-placeholder:#B0B0B0;
+  --surface:#FFFFFF; --surface-page:#F4F6F8; --surface-subtle:#F7F7F7;
+  --border:#E6E6E6; --border-strong:#DEE0E2; --border-faint:#EEEEEE;
+  --success-700:#1E7D45; --success-500:#2BA45C; --success-100:#C8F2D7; --success-50:#E0FFEB;
+  --warning-700:#B7791F; --warning-500:#F0A92A; --warning-100:#FDEFC8; --warning-50:#FFFAE7;
+  --error-700:#BE211C; --error-500:#EB5146; --error-100:#FED9D5; --error-50:#FEF3F2;
+  --font-sans:'Noto Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --font-display:'Be Vietnam Pro','Noto Sans',sans-serif;
+  --font-num:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',sans-serif;
+  --radius-xs:4px; --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-xl:16px; --radius-full:999px;
+  --shadow-sm:0 1px 2px rgba(16,24,40,.08);
+  --shadow-md:0 4px 12px rgba(16,24,40,.15);
+  --shadow-lg:0 12px 32px rgba(16,24,40,.16);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{width:100%; min-width:1280px; height:100vh; overflow:hidden;}
+body{font-family:var(--font-sans); color:var(--text-primary); background:var(--surface-page); font-size:14px;}
+button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+input{font-family:inherit;}
+.num{font-family:var(--font-num); font-weight:700; font-variant-numeric:tabular-nums;}
+.app{display:flex; flex-direction:column; height:100vh;}
+
+/* ============ TOP BAR ============ */
+.topbar{height:70px; background:var(--blue-500); display:flex; align-items:center; gap:var(--s4); padding:0 var(--s5); color:#fff; flex:none;}
+.brand{display:flex; align-items:center; gap:var(--s2); font-family:var(--font-display); font-weight:700; font-size:22px; letter-spacing:.2px;}
+.brand .mark{width:30px; height:30px; border-radius:8px; background:#fff; display:flex; align-items:center; justify-content:center; color:var(--blue-500);}
+.search-top{display:flex; align-items:center; gap:var(--s2); background:rgba(255,255,255,.16); border-radius:var(--radius-md); padding:9px 14px; width:330px; color:#fff;}
+.search-top input{background:none; border:none; outline:none; color:#fff; width:100%; font-size:14px;}
+.search-top input::placeholder{color:rgba(255,255,255,.8);}
+.inv-tabs{display:flex; align-items:center; gap:var(--s2);}
+.inv-tab{display:flex; align-items:center; gap:6px; background:#fff; color:var(--blue-700); font-weight:600; padding:7px 14px; border-radius:var(--radius-md); font-size:14px;}
+.inv-add{width:34px; height:34px; border-radius:var(--radius-md); background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; color:#fff;}
+.qr{display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.16); color:#fff; padding:8px 14px; border-radius:var(--radius-md); font-weight:500;}
+.qr-count{background:var(--warning-500); color:var(--ink); font-weight:700; font-size:12px; border-radius:var(--radius-full); padding:1px 7px;}
+.spacer{flex:1;}
+.mode{display:flex; align-items:center; gap:8px; background:#fff; color:var(--blue-700); padding:8px 14px; border-radius:var(--radius-md); font-weight:600;}
+.account{display:flex; align-items:center; gap:8px; font-weight:600;}
+.account img{width:36px; height:36px; border-radius:var(--radius-full); object-fit:cover;}
+.burger{width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:var(--radius-md);}
+
+/* ============ BODY ============ */
+.body{flex:1; display:flex; min-height:0;}
+.rail{width:72px; background:#fff; border-right:1px solid var(--border); display:flex; flex-direction:column; align-items:center; padding-top:var(--s3); gap:6px; flex:none;}
+.rail-item{width:52px; height:52px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; color:var(--text-secondary);}
+.rail-item.active{background:var(--blue-100); color:var(--blue-500);}
+.rail-item:hover:not(.active){background:var(--surface-subtle);}
+
+.main{flex:1; display:flex; flex-direction:column; min-width:0; padding:var(--s4); gap:var(--s3);}
+
+/* ============ ORDER HEADER ============ */
+.orderhead{display:flex; align-items:center; gap:var(--s4); flex:none; background:#fff; border:1px solid var(--border); border-radius:var(--radius-xl); padding:var(--s3) var(--s4);}
+.customer{display:flex; align-items:center; gap:10px; height:48px; background:var(--surface-subtle); border:1px solid var(--border); border-radius:var(--radius-md); padding:0 14px;}
+.customer img{width:36px; height:36px; border-radius:var(--radius-full);}
+.cust-name{font-weight:700; font-size:15px;}
+.cust-meta{display:flex; gap:var(--s3); color:var(--text-secondary); font-size:12px; margin-top:2px;}
+.cust-meta span{display:flex; align-items:center; gap:4px;}
+.cust-add{width:48px; height:48px; border:1px solid var(--blue-200); border-radius:var(--radius-md); color:var(--blue-500); display:flex; align-items:center; justify-content:center; flex:none;}
+.seg{display:flex; align-items:center; gap:6px; height:48px; background:var(--surface-subtle); border:1px solid var(--border); border-radius:var(--radius-md); padding:0 16px; color:var(--text-primary); font-weight:600;}
+.oh-actions{margin-left:auto; display:flex; align-items:center; gap:var(--s3); flex:none;}
+.head-btn{display:flex; align-items:center; gap:6px; height:48px; padding:0 18px; border-radius:var(--radius-md); font-weight:600; border:1px solid var(--border); background:#fff;}
+.head-btn.primary{background:var(--blue-500); color:#fff; border-color:var(--blue-500);}
+
+/* ============ WORK AREA ============ */
+.work{flex:1; display:flex; gap:var(--s3); min-height:0;}
+.cart-col{flex:1.25; display:flex; flex-direction:column; min-width:0;}
+.cart{flex:1; background:#fff; border-radius:var(--radius-xl); border:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden;}
+.cart-head{display:grid; grid-template-columns:1fr 132px 150px 150px 60px; align-items:center; padding:14px var(--s4); border-bottom:1px solid var(--border-strong); color:var(--text-secondary); font-weight:600; font-size:13px;}
+.cart-head .c{text-align:center;} .cart-head .r{text-align:right;}
+.cart-body{flex:1; overflow-y:auto;}
+.cart-body::-webkit-scrollbar{width:8px;} .cart-body::-webkit-scrollbar-thumb{background:#d9dde2; border-radius:4px;}
+
+.row{position:relative; display:grid; grid-template-columns:1fr 132px 150px 150px 60px; align-items:center; padding:14px var(--s4); border-bottom:1px solid var(--border-faint); transition:background .12s;}
+.row:hover{background:var(--surface-subtle);}
+.cell-prod{display:flex; gap:12px; min-width:0; padding-right:8px;}
+.thumb{width:46px; height:46px; border-radius:var(--radius-md); background:var(--surface-subtle); border:1px solid var(--border); flex:none; display:flex; align-items:center; justify-content:center; color:var(--text-placeholder);}
+.prod-info{min-width:0;}
+.prod-name{font-weight:600; font-size:14px;}
+.prod-sku{color:var(--text-secondary); font-size:12px; margin-top:2px;}
+.cell-qty{display:flex; justify-content:center;}
+.stepper{display:inline-flex; align-items:center; border:1px solid var(--border-strong); border-radius:var(--radius-md); overflow:hidden; background:#fff;}
+.stepper button{width:34px; height:36px; display:flex; align-items:center; justify-content:center; color:var(--blue-500); font-weight:700;}
+.stepper button:hover{background:var(--blue-50);}
+.stepper button:disabled{color:var(--text-placeholder); cursor:not-allowed;}
+.stepper .qty{width:42px; text-align:center; font-weight:700; font-family:var(--font-num); border-left:1px solid var(--border); border-right:1px solid var(--border); line-height:36px;}
+.cell-price{text-align:right; font-family:var(--font-num); font-weight:700;}
+.cell-total{text-align:right; font-family:var(--font-num); font-weight:700; color:var(--ink); font-size:15px;}
+.cell-act{display:flex; align-items:center; justify-content:flex-end;}
+.del{width:36px; height:36px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; color:var(--error-500);}
+.del:hover{background:var(--error-50);}
+
+.cart-empty{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; color:var(--text-secondary);}
+.cart-empty .ico{width:84px; height:84px; border-radius:var(--radius-full); background:var(--surface-subtle); display:flex; align-items:center; justify-content:center; color:var(--text-placeholder);}
+.cart-empty b{font-size:16px; color:var(--text-primary);}
+
+/* ============ RIGHT PANEL SHARED ============ */
+.rpanel{flex:1; background:#fff; border-radius:var(--radius-xl); border:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; min-width:0;}
+
+/* ----- PRODUCT PICKER ----- */
+.picker-tabs{display:flex; align-items:center; gap:var(--s5); padding:14px var(--s4) 0; border-bottom:1px solid var(--border);}
+.ptab{padding:10px 2px 14px; font-weight:600; color:var(--text-secondary); border-bottom:3px solid transparent; margin-bottom:-1px;}
+.ptab.active{color:var(--blue-500); border-color:var(--blue-500);}
+.picker-list-btn{margin-left:auto; width:36px; height:36px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; color:var(--text-secondary);}
+.picker-search{display:flex; align-items:center; gap:var(--s3); padding:var(--s3) var(--s4);}
+.search-field{flex:1; display:flex; align-items:center; gap:8px; border:1px solid var(--border-strong); border-radius:var(--radius-md); padding:9px 12px; color:var(--text-secondary);}
+.search-field input{border:none; outline:none; width:100%; font-size:14px; color:var(--ink);}
+.barcode{display:flex; align-items:center; gap:8px; color:var(--text-secondary); font-size:13px; font-weight:500; white-space:nowrap;}
+.tg{width:38px; height:22px; border-radius:var(--radius-full); background:var(--blue-500); position:relative; display:inline-block;}
+.tg::after{content:""; position:absolute; width:16px; height:16px; border-radius:50%; background:#fff; top:3px; right:3px;}
+.filter-btn{width:40px; height:40px; border:1px solid var(--border-strong); border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; color:var(--text-secondary);}
+.cats{display:flex; gap:8px; padding:0 var(--s4) var(--s3); flex-wrap:wrap;}
+.cat{padding:7px 14px; border-radius:var(--radius-full); background:var(--surface-subtle); color:var(--text-secondary); font-weight:600; font-size:13px; display:flex; align-items:center; gap:6px;}
+.cat .n{color:var(--text-placeholder); font-weight:600;}
+.cat.active{background:var(--blue-500); color:#fff;}
+.cat.active .n{color:rgba(255,255,255,.8);}
+.grid{flex:1; overflow-y:auto; padding:0 var(--s4) var(--s3); display:grid; grid-template-columns:repeat(4,1fr); gap:var(--s3); align-content:start;}
+.grid::-webkit-scrollbar{width:8px;} .grid::-webkit-scrollbar-thumb{background:#d9dde2; border-radius:4px;}
+.pcard{background:#fff; border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; text-align:left; display:flex; flex-direction:column; transition:box-shadow .12s, border-color .12s;}
+.pcard:hover{box-shadow:var(--shadow-md); border-color:var(--blue-300);}
+.pcard-thumb{position:relative; aspect-ratio:1/.78; background:var(--surface-subtle); display:flex; align-items:center; justify-content:center; color:var(--text-placeholder);}
+.pcard-badge{position:absolute; top:8px; left:8px; font-size:11px; font-weight:700; padding:3px 8px; border-radius:var(--radius-full); background:var(--orange-500); color:#fff;}
+.pcard-badge.promo{background:var(--error-500);}
+.pcard-body{padding:10px 12px 12px;}
+.pcard-name{font-weight:600; font-size:13.5px; line-height:1.35; min-height:36px;}
+.pcard-meta{display:flex; align-items:center; gap:8px; margin:6px 0;}
+.stock{display:flex; align-items:center; gap:5px; font-size:12px; color:var(--text-secondary);}
+.stock-dot{width:8px; height:8px; border-radius:50%; background:var(--success-500);}
+.stock.low .stock-dot{background:var(--warning-500);}
+.stock.out .stock-dot{background:var(--error-500);}
+.pcard-price{display:flex; align-items:baseline; gap:8px;}
+.pcard-price b{font-family:var(--font-num); font-size:16px; color:var(--ink);}
+.pcard-price .old{font-size:12px; color:var(--text-placeholder); text-decoration:line-through;}
+.pager{display:flex; align-items:center; gap:8px; justify-content:flex-end; padding:10px var(--s4); border-top:1px solid var(--border); color:var(--text-secondary); font-size:13px;}
+.pager em{font-style:normal; color:var(--text-placeholder);}
+.pg{width:30px; height:30px; border:1px solid var(--border-strong); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; color:var(--text-secondary);}
+.pg.active{background:var(--blue-500); color:#fff; border-color:var(--blue-500);}
+
+/* ============ PAYMENT VIEW (swap) ============ */
+.pay-head{display:flex; align-items:center; gap:var(--s3); padding:14px var(--s4); border-bottom:1px solid var(--border); flex:none;}
+.pay-back{display:flex; align-items:center; gap:6px; height:36px; padding:0 12px 0 6px; border-radius:var(--radius-md); color:var(--blue-500); font-weight:600; font-size:14px;}
+.pay-back:hover{background:var(--blue-50);}
+.pay-title{font-family:var(--font-display); font-weight:700; font-size:18px;}
+.pay-step{margin-left:auto; font-size:12.5px; color:var(--text-secondary); background:var(--surface-subtle); padding:5px 11px; border-radius:var(--radius-full); font-weight:600;}
+.pay-scroll{flex:1; overflow-y:auto; padding:var(--s4); display:flex; flex-direction:column; gap:var(--s4);}
+.pay-scroll::-webkit-scrollbar{width:8px;} .pay-scroll::-webkit-scrollbar-thumb{background:#d9dde2; border-radius:4px;}
+
+/* component card */
+.comp-card{border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--s4); display:flex; flex-direction:column;}
+.comp-title{font-family:var(--font-display); font-weight:700; font-size:15px; display:flex; align-items:center; gap:8px; margin-bottom:6px; color:var(--text-primary);}
+.comp-title .ic{color:var(--blue-500);}
+.comp-sub{font-size:12px; font-weight:700; color:var(--text-secondary); letter-spacing:.02em; margin:10px 0 4px;}
+
+/* breakdown rows */
+.sum-row{position:relative; display:flex; align-items:center; min-height:40px; gap:10px;}
+.sum-row > .lbl{color:var(--text-secondary); display:flex; align-items:center; gap:8px;}
+.sum-row > .amt{margin-left:auto; font-family:var(--font-num); font-weight:700; color:var(--ink);}
+.sum-row .lbl .ic{color:var(--text-secondary);}
+.add-link{display:inline-flex; align-items:center; gap:5px; color:var(--blue-500); font-weight:600; font-size:13px; padding:5px 11px; border:1px dashed var(--blue-200); border-radius:var(--radius-full);}
+.add-link:hover{background:var(--blue-50);}
+.adj-chip{display:inline-flex; align-items:center; gap:6px; background:var(--blue-50); color:var(--blue-700); font-weight:600; font-size:12.5px; padding:3px 6px 3px 10px; border-radius:var(--radius-full);}
+.adj-chip.sur{background:var(--orange-50); color:var(--orange-700);}
+.adj-act{width:24px; height:24px; border-radius:var(--radius-full); display:flex; align-items:center; justify-content:center; color:inherit; opacity:.7;}
+.adj-act:hover{opacity:1; background:rgba(0,0,0,.06);}
+.amt.minus{color:var(--success-700);}
+.amt.plus{color:var(--orange-700);}
+.amt.muted{color:var(--text-placeholder);}
+.sum-div{height:1px; background:var(--border-strong); margin:8px 0;}
+.sum-div.strong{height:2px;}
+.sum-row.grand .lbl{color:var(--text-primary); font-weight:700; font-size:15px;}
+.sum-row.grand .amt{font-size:22px; color:var(--ink);}
+.sum-row.pretax .lbl{font-weight:600; color:var(--text-primary);}
+.sum-row.pretax .amt{color:var(--text-primary);}
+
+/* payment sources */
+.src-row{display:flex; align-items:center; gap:12px; min-height:52px;}
+.src-ic{width:38px; height:38px; border-radius:var(--radius-md); background:var(--blue-50); color:var(--blue-600); display:flex; align-items:center; justify-content:center; flex:none;}
+.src-ic.wallet{background:var(--warning-50); color:var(--warning-700);}
+.src-txt{display:flex; flex-direction:column; line-height:1.3;}
+.src-name{font-weight:600; color:var(--text-primary);}
+.src-sub{font-size:12px; color:var(--text-secondary);}
+.src-amt{margin-left:auto; font-family:var(--font-num); font-weight:700; color:var(--success-700);}
+.src-amt.off{color:var(--text-placeholder);}
+.switch{width:44px; height:24px; border-radius:999px; background:var(--gray-100); position:relative; transition:.15s; flex:none;}
+.switch.on{background:var(--blue-500);}
+.switch::after{content:""; position:absolute; width:18px; height:18px; border-radius:50%; background:#fff; top:3px; left:3px; transition:.15s; box-shadow:var(--shadow-sm);}
+.switch.on::after{left:23px;}
+
+/* due row inside component 2 */
+.due-row{display:flex; align-items:center; padding:6px 2px 2px;}
+.due-row .lbl{font-weight:700; font-size:15px; color:var(--text-primary);}
+.due-row .amt{margin-left:auto; font-family:var(--font-num); font-weight:700; font-size:26px; color:var(--blue-700);}
+
+/* popover */
+.adj-pop{position:absolute; z-index:30; top:calc(100% + 6px); right:0; width:320px; background:#fff; border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:10px; text-align:left;}
+.pop-title{font-weight:700; font-size:13px; margin:2px 4px 8px;}
+.pop-search{display:flex; align-items:center; gap:8px; border:1px solid var(--border-strong); border-radius:var(--radius-sm); padding:7px 10px; margin-bottom:8px; color:var(--text-secondary);}
+.pop-search input{border:none; outline:none; width:100%; font-size:13px; color:var(--ink);}
+.promo-opt{display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:9px 10px; border-radius:var(--radius-sm);}
+.promo-opt:hover{background:var(--blue-50);}
+.promo-radio{width:18px; height:18px; border-radius:50%; border:2px solid var(--border-strong); flex:none; display:flex; align-items:center; justify-content:center;}
+.promo-opt.sel .promo-radio{border-color:var(--blue-500);}
+.promo-opt.sel .promo-radio::after{content:""; width:9px; height:9px; border-radius:50%; background:var(--blue-500);}
+.promo-name{font-weight:600; font-size:13.5px;}
+.promo-val{margin-left:auto; font-family:var(--font-num); font-weight:700; color:var(--success-700); font-size:13px;}
+.pop-foot{display:flex; gap:8px; justify-content:flex-end; margin-top:8px; padding-top:8px; border-top:1px solid var(--border-faint);}
+.pop-row{display:flex; align-items:center; gap:8px; margin-bottom:8px;}
+.pop-field{flex:1;}
+.pop-field label{display:block; font-size:12px; color:var(--text-secondary); margin-bottom:4px;}
+.pop-field input{width:100%; border:1px solid var(--border-strong); border-radius:var(--radius-sm); padding:8px 10px; font-size:14px; outline:none;}
+.pop-field input:focus{border-color:var(--blue-500);}
+.seg-toggle{display:inline-flex; border:1px solid var(--border-strong); border-radius:var(--radius-sm); overflow:hidden;}
+.seg-toggle button{padding:7px 12px; font-weight:600; font-size:13px; color:var(--text-secondary);}
+.seg-toggle button.on{background:var(--blue-500); color:#fff;}
+.btn{display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:var(--radius-md); font-weight:600; font-size:13px;}
+.btn.ghost{color:var(--text-secondary);} .btn.ghost:hover{background:var(--surface-subtle);}
+.btn.primary{background:var(--blue-500); color:#fff;}
+
+/* tender */
+.field-label{font-weight:700; font-size:12px; color:var(--text-secondary); margin-bottom:8px; letter-spacing:.02em;}
+.methods{display:flex; flex-wrap:wrap; gap:8px;}
+.method{display:flex; align-items:center; gap:7px; padding:10px 14px; border:1.4px solid var(--border-strong); border-radius:var(--radius-md); font-weight:600; color:var(--text-secondary); background:#fff;}
+.method .dot{width:16px; height:16px; border-radius:50%; border:2px solid var(--border-strong); flex:none; display:flex; align-items:center; justify-content:center;}
+.method.active{border-color:var(--blue-500); color:var(--blue-700); background:var(--blue-50);}
+.method.active .dot{border-color:var(--blue-500);}
+.method.active .dot::after{content:""; width:8px; height:8px; border-radius:50%; background:var(--blue-500);}
+
+.cash-block{display:flex; flex-direction:column; gap:var(--s3);}
+.kt-row{display:flex; align-items:center; gap:10px;}
+.kt-input-wrap{flex:1; display:flex; align-items:center; gap:8px; border:1.6px solid var(--blue-500); border-radius:var(--radius-md); padding:0 12px; height:52px; background:#fff;}
+.kt-input-wrap input{flex:1; border:none; outline:none; font-family:var(--font-num); font-weight:700; font-size:22px; color:var(--ink); text-align:right; width:100%;}
+.kt-input-wrap .cur{color:var(--text-secondary); font-weight:600;}
+.kt-exact{height:52px; padding:0 16px; border:1px solid var(--blue-200); border-radius:var(--radius-md); color:var(--blue-700); font-weight:600; background:var(--blue-50); white-space:nowrap;}
+.kt-exact:hover{background:var(--blue-100);}
+.denoms{display:flex; flex-wrap:wrap; gap:8px;}
+.denom{padding:9px 14px; border:1px solid var(--border-strong); border-radius:var(--radius-md); font-family:var(--font-num); font-weight:700; font-size:13px; color:var(--text-primary); background:#fff;}
+.denom:hover{border-color:var(--blue-300); background:var(--blue-50);}
+.denom.reset{font-family:var(--font-sans); color:var(--text-secondary);}
+.change-row{display:flex; align-items:center; gap:10px; padding:14px 16px; border-radius:var(--radius-md); background:var(--surface-subtle); font-weight:600;}
+.change-row .ch-amt{margin-left:auto; font-family:var(--font-num); font-weight:700; font-size:18px;}
+.change-row.ok{background:var(--success-50); color:var(--success-700);}
+.change-row.short{background:var(--error-50); color:var(--error-700);}
+.covered-note{display:flex; align-items:center; gap:10px; padding:14px 16px; border-radius:var(--radius-md); background:var(--success-50); color:var(--success-700); font-weight:600;}
+
+.qr-block{display:flex; flex-direction:column; align-items:center; gap:14px; padding:var(--s4); border:1px solid var(--border); border-radius:var(--radius-lg);}
+.qr-box{width:170px; height:170px; border-radius:var(--radius-md); border:1px solid var(--border-strong); display:flex; align-items:center; justify-content:center; color:var(--ink); background:#fff;}
+.qr-info{text-align:center;}
+.qr-info .bank{font-weight:700;}
+.qr-info .amt{font-family:var(--font-num); font-weight:700; font-size:22px; color:var(--blue-700); margin-top:2px;}
+.qr-wait{display:flex; align-items:center; gap:8px; color:var(--warning-700); font-weight:600; font-size:13px;}
+
+/* payment footer */
+.pay-foot{flex:none; border-top:1px solid var(--border); padding:var(--s3) var(--s4); display:flex; flex-direction:column; gap:10px;}
+.print-opt{display:flex; align-items:center; gap:9px; font-size:13.5px; color:var(--text-secondary); align-self:flex-start;}
+.print-opt .box{width:19px; height:19px; border:1.6px solid var(--border-strong); border-radius:var(--radius-xs); display:flex; align-items:center; justify-content:center; color:#fff; transition:.12s;}
+.print-opt.on .box{background:var(--blue-500); border-color:var(--blue-500);}
+.print-opt.on{color:var(--text-primary);}
+.pay-commit{width:100%; height:56px; border-radius:var(--radius-md); background:var(--blue-500); color:#fff; font-weight:700; font-size:17px; display:flex; align-items:center; justify-content:center; gap:10px;}
+.pay-commit:hover{background:var(--blue-600);}
+.pay-commit:disabled{background:var(--surface-subtle); color:var(--text-placeholder); cursor:not-allowed;}
+.pay-commit .key{background:rgba(255,255,255,.22); border-radius:var(--radius-xs); padding:2px 7px; font-size:13px; font-weight:700;}
+
+/* ============ BOTTOM BAR ============ */
+.bottom{flex:none; background:#fff; border:1px solid var(--border); border-radius:var(--radius-xl); padding:var(--s3) var(--s4); display:flex; align-items:center; gap:var(--s5); margin-top:2px;}
+.total-card{display:flex; align-items:center; gap:16px;}
+.total-label{color:var(--text-secondary); font-weight:600;}
+.total-amt{font-family:var(--font-num); font-weight:700; font-size:26px; color:var(--blue-700);}
+.bottom-meta{display:flex; align-items:center; gap:var(--s5); color:var(--text-secondary); margin-left:var(--s5);}
+.created{display:flex; align-items:center; gap:6px;}
+.note-field{display:flex; align-items:center; gap:8px; border:1px solid var(--border-strong); border-radius:var(--radius-md); padding:8px 12px; width:300px;}
+.note-field input{border:none; outline:none; width:100%;}
+.bottom-actions{margin-left:auto; display:flex; gap:var(--s3);}
+.act{display:flex; align-items:center; gap:10px; padding:14px 30px; border-radius:var(--radius-md); font-weight:700; font-size:16px;}
+.act.save{background:var(--blue-100); color:var(--blue-700);}
+.act.pay{background:var(--blue-500); color:#fff;}
+.act:disabled{background:var(--surface-subtle); color:var(--text-placeholder); cursor:not-allowed;}
+.act.pay.is-active{background:var(--blue-700);}
+.key{background:rgba(255,255,255,.22); border-radius:var(--radius-xs); padding:2px 7px; font-size:13px; font-weight:700;}
+.act.save .key{background:var(--blue-200); color:var(--blue-800);}
+
+/* ============ TOAST ============ */
+.toast-wrap{position:fixed; bottom:28px; left:50%; transform:translateX(-50%); z-index:50; display:flex; flex-direction:column; gap:10px; align-items:center;}
+.toast{display:flex; align-items:center; gap:14px; background:var(--ink); color:#fff; padding:12px 16px 12px 18px; border-radius:var(--radius-lg); box-shadow:var(--shadow-lg); font-weight:500; animation:rise .18s ease;}
+@keyframes rise{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;}}
+.toast .ico-ok{color:var(--success-500);}
+.toast-x{color:rgba(255,255,255,.6); width:26px; height:26px; display:flex; align-items:center; justify-content:center;}
+
+i[data-lucide]{width:24px; height:24px; stroke-width:1.5; flex:none;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand"><span class="mark"><i data-lucide="store" style="width:20px;height:20px"></i></span>EasyPOS</div>
+    <div class="search-top"><i data-lucide="search" style="width:20px;height:20px"></i><input placeholder="Quét hoặc tìm hàng hóa (F3)"></div>
+    <div class="inv-tabs">
+      <button class="inv-tab"><i data-lucide="receipt-text" style="width:18px;height:18px"></i>HĐ 001</button>
+      <button class="inv-add"><i data-lucide="plus" style="width:20px;height:20px"></i></button>
+    </div>
+    <button class="qr"><i data-lucide="qr-code" style="width:20px;height:20px"></i>QR order<span class="qr-count">3</span></button>
+    <div class="spacer"></div>
+    <button class="mode"><i data-lucide="shopping-cart" style="width:18px;height:18px"></i>Bán thường<i data-lucide="chevron-down" style="width:18px;height:18px"></i></button>
+    <div class="account"><img src="https://i.pravatar.cc/64?img=47" alt="">Công ty Cổ phần SDS</div>
+    <button class="burger"><i data-lucide="menu"></i></button>
+  </header>
+
+  <div class="body">
+    <!-- LEFT RAIL -->
+    <nav class="rail">
+      <button class="rail-item active" title="Bán hàng"><i data-lucide="layout-grid"></i></button>
+      <button class="rail-item" title="Đơn hàng"><i data-lucide="shopping-cart"></i></button>
+      <button class="rail-item" title="Sản phẩm"><i data-lucide="package"></i></button>
+      <button class="rail-item" title="Đơn lưu"><i data-lucide="bookmark"></i></button>
+      <button class="rail-item" title="Khuyến mãi"><i data-lucide="ticket-percent"></i></button>
+      <button class="rail-item" title="Khách hàng"><i data-lucide="users"></i></button>
+      <button class="rail-item" title="Kho"><i data-lucide="layers"></i></button>
+      <button class="rail-item" title="Giao dịch"><i data-lucide="arrow-left-right"></i></button>
+      <button class="rail-item" title="Báo cáo"><i data-lucide="bar-chart-3"></i></button>
+      <button class="rail-item" title="Cài đặt"><i data-lucide="settings"></i></button>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main">
+      <!-- ORDER HEADER -->
+      <div class="orderhead">
+        <div class="customer">
+          <img src="https://i.pravatar.cc/64?img=32" alt="">
+          <div>
+            <div class="cust-name">Khách lẻ</div>
+            <div class="cust-meta">
+              <span><i data-lucide="star" style="width:14px;height:14px"></i>90 điểm</span>
+              <span><i data-lucide="wallet" style="width:14px;height:14px"></i>Ví: 125.000đ</span>
+            </div>
+          </div>
+        </div>
+        <button class="cust-add"><i data-lucide="user-plus" style="width:20px;height:20px"></i></button>
+        <button class="seg"><i data-lucide="shopping-bag" style="width:18px;height:18px"></i>Mang về<i data-lucide="chevron-down" style="width:16px;height:16px"></i></button>
+        <div class="oh-actions">
+          <button class="head-btn primary"><i data-lucide="list" style="width:18px;height:18px"></i>Thực đơn</button>
+          <button class="head-btn"><i data-lucide="grid-2x2" style="width:18px;height:18px"></i>Phòng bàn</button>
+        </div>
+      </div>
+
+      <!-- WORK -->
+      <div class="work">
+        <!-- CART (left) -->
+        <div class="cart-col">
+          <div class="cart">
+            <div class="cart-head">
+              <div>Tên sản phẩm</div>
+              <div class="c">Số lượng</div>
+              <div class="r">Đơn giá</div>
+              <div class="r">Thành tiền</div>
+              <div class="r"></div>
+            </div>
+            <div class="cart-body" id="cartBody"></div>
+          </div>
+        </div>
+
+        <!-- RIGHT: PRODUCT PICKER (default) -->
+        <section class="rpanel" id="pickerView">
+          <div class="picker-tabs">
+            <button class="ptab active">Sản phẩm</button>
+            <button class="ptab">Combo</button>
+            <button class="ptab">Dịch vụ</button>
+            <button class="picker-list-btn"><i data-lucide="menu" style="width:18px;height:18px"></i></button>
+          </div>
+          <div class="picker-search">
+            <div class="search-field"><i data-lucide="search" style="width:20px;height:20px"></i><input placeholder="Tìm kiếm hàng hóa"></div>
+            <label class="barcode">Tìm kiếm barcode<span class="tg"></span></label>
+            <button class="filter-btn"><i data-lucide="sliders-horizontal" style="width:20px;height:20px"></i></button>
+          </div>
+          <div class="cats" id="cats"></div>
+          <div class="grid" id="grid"></div>
+          <div class="pager">
+            <span>1-16 <em>/ 100</em></span>
+            <button class="pg"><i data-lucide="chevron-left" style="width:16px;height:16px"></i></button>
+            <button class="pg active"><i data-lucide="chevron-right" style="width:16px;height:16px"></i></button>
+          </div>
+        </section>
+
+        <!-- RIGHT: PAYMENT (swap) -->
+        <section class="rpanel" id="paymentView" hidden>
+          <div class="pay-head">
+            <button class="pay-back" id="payBack"><i data-lucide="chevron-left" style="width:20px;height:20px"></i>Giỏ hàng</button>
+            <span class="pay-title">Thanh toán</span>
+            <span class="pay-step">Bước 2 · thu tiền</span>
+          </div>
+
+          <div class="pay-scroll">
+
+            <!-- ========= COMPONENT 1: CHI TIẾT ĐƠN HÀNG ========= -->
+            <div class="comp-card">
+              <div class="comp-title"><i data-lucide="receipt-text" class="ic" style="width:18px;height:18px"></i>Chi tiết đơn hàng</div>
+
+              <div class="sum-row">
+                <span class="lbl">Tổng tiền hàng (<span id="paySpCnt">0</span> sản phẩm)</span>
+                <span class="amt" id="paySub">0đ</span>
+              </div>
+
+              <div class="sum-row" id="discRow">
+                <span class="lbl"><i data-lucide="badge-percent" class="ic" style="width:18px;height:18px"></i>Chiết khấu</span>
+                <span class="amt" id="discSlot"></span>
+              </div>
+
+              <div class="sum-row" id="promoRow">
+                <span class="lbl"><i data-lucide="ticket-percent" class="ic" style="width:18px;height:18px"></i>Khuyến mãi</span>
+                <span class="amt" id="promoSlot"></span>
+              </div>
+
+              <div class="sum-row" id="surRow">
+                <span class="lbl"><i data-lucide="plus-circle" class="ic" style="width:18px;height:18px"></i>Phụ thu</span>
+                <span class="amt" id="surSlot"></span>
+              </div>
+
+              <div class="sum-div"></div>
+              <div class="sum-row pretax">
+                <span class="lbl">Tổng tiền trước thuế</span>
+                <span class="amt" id="payBeforeTax">0đ</span>
+              </div>
+              <div class="sum-row">
+                <span class="lbl">Tổng tiền thuế</span>
+                <span class="amt muted" id="payTax">0đ</span>
+              </div>
+
+              <div class="sum-div strong"></div>
+              <div class="sum-row grand">
+                <span class="lbl">Tổng tiền cần thanh toán</span>
+                <span class="amt" id="payOrderTotal">0đ</span>
+              </div>
+            </div>
+
+            <!-- ========= COMPONENT 2: THANH TOÁN ========= -->
+            <div class="comp-card">
+              <div class="comp-title"><i data-lucide="wallet" class="ic" style="width:18px;height:18px"></i>Thanh toán</div>
+
+              <div class="comp-sub" id="sourceHeading">DÙNG ĐIỂM &amp; VÍ KHÁCH HÀNG</div>
+              <div class="src-row" id="pointRow">
+                <span class="src-ic"><i data-lucide="star" style="width:20px;height:20px"></i></span>
+                <span class="src-txt"><span class="src-name">Dùng điểm tích lũy</span><span class="src-sub" id="pointSub">90 điểm ≈ 90.000đ</span></span>
+                <span class="src-amt off" id="pointAmt">0đ</span>
+                <span class="switch" data-toggle="points" id="pointSw"></span>
+              </div>
+              <div class="src-row" id="walletRow">
+                <span class="src-ic wallet"><i data-lucide="credit-card" style="width:20px;height:20px"></i></span>
+                <span class="src-txt"><span class="src-name">Trừ ví / thẻ khách hàng</span><span class="src-sub" id="walletSub">Số dư 125.000đ</span></span>
+                <span class="src-amt off" id="walletAmt">0đ</span>
+                <span class="switch" data-toggle="wallet" id="walletSw"></span>
+              </div>
+
+              <div class="sum-div"></div>
+              <div class="due-row">
+                <span class="lbl">Còn phải thu</span>
+                <span class="amt" id="payDue">0đ</span>
+              </div>
+
+              <div class="comp-sub" style="margin-top:14px" id="methodHeading">HÌNH THỨC THANH TOÁN</div>
+              <div id="tenderMethods">
+                <div class="methods" id="methods">
+                  <button class="method active" data-method="cash"><span class="dot"></span>Tiền mặt</button>
+                  <button class="method" data-method="ck"><span class="dot"></span>Chuyển khoản</button>
+                  <button class="method" data-method="tmck"><span class="dot"></span>TM/CK</button>
+                  <button class="method" data-method="gateway"><span class="dot"></span>Cổng thanh toán</button>
+                  <button class="method" data-method="other"><span class="dot"></span>Khác</button>
+                </div>
+              </div>
+
+              <div class="cash-block" id="cashBlock" style="margin-top:14px">
+                <div class="kt-row">
+                  <div class="kt-input-wrap"><input id="khachTra" inputmode="numeric" value="0"><span class="cur">đ</span></div>
+                  <button class="kt-exact" id="ktExact">Đủ tiền</button>
+                </div>
+                <div class="denoms" id="denoms"></div>
+                <div class="change-row ok" id="changeRow">
+                  <span id="changeLabel">Tiền thừa</span>
+                  <span class="ch-amt" id="changeAmt">0đ</span>
+                </div>
+              </div>
+
+              <div class="qr-block" id="qrBlock" hidden style="margin-top:14px">
+                <div class="qr-box"><i data-lucide="qr-code" style="width:110px;height:110px"></i></div>
+                <div class="qr-info"><div class="bank">VietQR · Vietcombank</div><div class="amt" id="qrAmt">0đ</div></div>
+                <div class="qr-wait"><i data-lucide="loader" style="width:16px;height:16px"></i>Đang chờ khách quét &amp; chuyển…</div>
+              </div>
+
+              <div class="covered-note" id="coveredNote" hidden style="margin-top:14px">
+                <i data-lucide="check-circle-2" style="width:20px;height:20px"></i>
+                <span>Điểm &amp; ví đã đủ thanh toán — không cần thu thêm tiền.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pay-foot">
+            <label class="print-opt" id="printOpt"><span class="box"><i data-lucide="check" style="width:13px;height:13px"></i></span>In thông tin điểm cho khách</label>
+            <button class="pay-commit" id="payCommit">Thanh toán &amp; in đơn <span class="key">F9</span></button>
+          </div>
+        </section>
+      </div>
+
+      <!-- BOTTOM -->
+      <div class="bottom">
+        <div class="total-card">
+          <span class="total-label">Tổng tiền hàng (<span id="cnt">0</span>)</span>
+          <span class="total-amt" id="total">0đ</span>
+        </div>
+        <div class="bottom-meta">
+          <span class="created"><i data-lucide="calendar" style="width:18px;height:18px"></i>Ngày tạo: <b>17/06/2026</b></span>
+          <div class="note-field"><i data-lucide="paperclip" style="width:18px;height:18px"></i><input placeholder="Ghi chú"></div>
+        </div>
+        <div class="bottom-actions">
+          <button class="act save" id="btnSave">Lưu đơn <span class="key">F8</span></button>
+          <button class="act pay" id="btnPay">Thanh toán <span class="key">F9</span></button>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+const fmt = n => n.toLocaleString('vi-VN');
+
+/* ============ DATA ============ */
+const CATS = [
+  {name:'Tất cả', n:100}, {name:'Áo', n:32}, {name:'Quần', n:28},
+  {name:'Áo sơ mi', n:18}, {name:'Khăn - mũ', n:12}, {name:'Giày', n:10}
+];
+const PRODUCTS = [
+  {id:1, name:'Áo thun regular ringer summer', unit:'Chiếc', price:250000, stock:'Tồn 100', stockLv:'ok'},
+  {id:2, name:'Quần jeans nam slim fit', unit:'Chiếc', price:520000, stock:'Tồn 64', stockLv:'ok'},
+  {id:3, name:'Nón lưỡi trai thêu logo', unit:'Chiếc', price:180000, stock:'Tồn 88', stockLv:'ok'},
+  {id:4, name:'Áo sơ mi oxford dài tay', unit:'Chiếc', price:330000, stock:'Sắp hết · 6', stockLv:'low', badge:'-10%', badgeType:'promo', old:367000},
+  {id:5, name:'Áo khoác gió 2 lớp', unit:'Chiếc', price:450000, stock:'Tồn 40', stockLv:'ok'},
+  {id:6, name:'Quần short kaki', unit:'Chiếc', price:210000, stock:'Tồn 75', stockLv:'ok'},
+  {id:7, name:'Khăn quàng cổ nữ OWL', unit:'Chiếc', price:120000, stock:'Tồn 110', stockLv:'ok', badge:'Mua 2 tặng 1', badgeType:'gift'},
+  {id:8, name:'Giày sneaker canvas', unit:'Đôi', price:560000, stock:'Tồn 33', stockLv:'ok'},
+  {id:9, name:'Áo polo basic', unit:'Chiếc', price:240000, stock:'Tồn 96', stockLv:'ok'},
+  {id:10, name:'Quần tây âu công sở', unit:'Chiếc', price:480000, stock:'Hết hàng', stockLv:'out'},
+  {id:11, name:'Mũ len beanie', unit:'Chiếc', price:90000, stock:'Tồn 150', stockLv:'ok'},
+  {id:12, name:'Áo hoodie nỉ bông', unit:'Chiếc', price:390000, stock:'Tồn 52', stockLv:'ok'},
+  {id:13, name:'Thắt lưng da bò', unit:'Chiếc', price:280000, stock:'Tồn 60', stockLv:'ok'},
+  {id:14, name:'Áo thun tay lỡ unisex', unit:'Chiếc', price:190000, stock:'Tồn 300', stockLv:'ok'},
+  {id:15, name:'Quần jogger thể thao', unit:'Chiếc', price:260000, stock:'Tồn 88', stockLv:'ok'},
+  {id:16, name:'Vớ cổ trung 3 đôi', unit:'Set', price:75000, stock:'Tồn 200', stockLv:'ok'}
+];
+const PROMOS = [
+  {id:'p1', name:'Giảm 10% đơn hàng', type:'pct', val:10},
+  {id:'p2', name:'Voucher SINHNHAT', type:'amount', val:50000},
+  {id:'p3', name:'Giảm 5% hội viên', type:'pct', val:5}
+];
+const DENOMS = [50000,100000,200000,500000];
+const METHOD_LABEL = {cash:'Tiền mặt', ck:'Chuyển khoản', tmck:'TM/CK', gateway:'Cổng thanh toán', other:'Khác'};
+const QR_METHODS = new Set(['ck','gateway']);
+const CUSTOMER = { points:90, pointRate:1000, wallet:125000 };
+
+/* ============ STATE ============ */
+let cart = [
+  {uid:1, name:'Áo thun regular ringer summer', unit:'Chiếc', sku:'SP0001', price:250000, qty:2},
+  {uid:2, name:'Quần jeans nam slim fit', unit:'Chiếc', sku:'SP0042', price:520000, qty:1},
+  {uid:3, name:'Nón lưỡi trai thêu logo', unit:'Chiếc', sku:'SP0078', price:180000, qty:1}
+];
+let nextUid = 4;
+let discount = null;   // chiết khấu (giảm tay): {kind,amount,pct}
+let promo = null;      // khuyến mãi (CTKM): {id,name,discount}
+let surcharge = null;  // phụ thu: {kind,amount,pct,reason}
+let payMethod = 'cash';
+let khachTra = 0;
+let usePoints = false, useWallet = false, printPoints = false;
+let payOpen = false;
+
+/* ============ CART (LEFT) ============ */
+const cartBody = document.getElementById('cartBody');
+function subtotal(){ return cart.reduce((s,x)=>s+x.price*x.qty,0); }
+function lineCount(){ return cart.length; }
+
+function renderCart(){
+  cartBody.innerHTML = '';
+  if(!cart.length){
+    cartBody.innerHTML = `<div class="cart-empty">
+      <div class="ico"><i data-lucide="receipt-text" style="width:38px;height:38px"></i></div>
+      <b>Đơn mới — chưa có sản phẩm</b>
+      <span>Chọn hàng bên phải để bắt đầu</span></div>`;
+    lucide.createIcons(); updateBottom(); return;
+  }
+  cart.forEach(it=>{
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.dataset.uid = it.uid;
+    row.innerHTML = `
+      <div class="cell-prod">
+        <div class="thumb"><i data-lucide="shirt" style="width:22px;height:22px"></i></div>
+        <div class="prod-info"><div class="prod-name">${it.name}</div><div class="prod-sku">${it.unit} · ${it.sku}</div></div>
+      </div>
+      <div class="cell-qty"><div class="stepper">
+        <button data-act="minus" ${it.qty<=1?'disabled':''}><i data-lucide="minus" style="width:16px;height:16px"></i></button>
+        <span class="qty">${it.qty}</span>
+        <button data-act="plus"><i data-lucide="plus" style="width:16px;height:16px"></i></button>
+      </div></div>
+      <div class="cell-price">${fmt(it.price)}</div>
+      <div class="cell-total num">${fmt(it.price*it.qty)}đ</div>
+      <div class="cell-act"><button class="del" data-act="del" title="Xóa"><i data-lucide="trash-2" style="width:20px;height:20px"></i></button></div>`;
+    cartBody.appendChild(row);
+  });
+  lucide.createIcons();
+  updateBottom();
+}
+cartBody.addEventListener('click', e=>{
+  const row = e.target.closest('.row'); if(!row) return;
+  const it = cart.find(x=>x.uid===+row.dataset.uid);
+  const act = e.target.closest('[data-act]')?.dataset.act;
+  if(act==='plus'){ it.qty++; }
+  else if(act==='minus'){ if(it.qty>1) it.qty--; }
+  else if(act==='del'){ cart = cart.filter(x=>x.uid!==it.uid); }
+  else return;
+  renderCart();
+  if(payOpen){ khachTra=computeDue(); renderPayment(); }
+});
+function updateBottom(){
+  document.getElementById('cnt').textContent = lineCount();
+  document.getElementById('total').textContent = fmt(subtotal())+'đ';
+  document.getElementById('btnPay').disabled = !cart.length;
+}
+
+/* ============ PRODUCT PICKER ============ */
+const catsEl = document.getElementById('cats');
+CATS.forEach((c,i)=>{
+  const b=document.createElement('button'); b.className='cat'+(i===0?' active':'');
+  b.innerHTML = c.name+' <span class="n">('+c.n+')</span>';
+  b.onclick=()=>{ catsEl.querySelectorAll('.cat').forEach(x=>x.classList.remove('active')); b.classList.add('active'); };
+  catsEl.appendChild(b);
+});
+const grid = document.getElementById('grid');
+PRODUCTS.forEach(p=>{
+  const c=document.createElement('button'); c.className='pcard';
+  const badge = p.badge?`<span class="pcard-badge ${p.badgeType}">${p.badge}</span>`:'';
+  const stockCls = p.stockLv==='low'?'low':p.stockLv==='out'?'out':'';
+  c.innerHTML = `
+    <div class="pcard-thumb"><i data-lucide="shirt" style="width:34px;height:34px"></i>${badge}</div>
+    <div class="pcard-body">
+      <div class="pcard-name">${p.name}</div>
+      <div class="pcard-meta"><span class="stock ${stockCls}"><i class="stock-dot"></i>${p.stock}</span></div>
+      <div class="pcard-price">${p.old?'<span class="old">'+fmt(p.old)+'đ</span>':''}<b>${fmt(p.price)}đ</b></div>
+    </div>`;
+  if(p.stockLv!=='out') c.onclick = ()=> addProduct(p);
+  else c.style.opacity = .55;
+  grid.appendChild(c);
+});
+function addProduct(p){
+  const ex = cart.find(x=>x.name===p.name);
+  if(ex) ex.qty++;
+  else cart.push({uid:nextUid++, name:p.name, unit:p.unit, sku:'SP'+String(1000+p.id).slice(1), price:p.price, qty:1});
+  renderCart();
+  if(payOpen){ khachTra=computeDue(); renderPayment(); }
+}
+
+/* ============ SWAP ============ */
+const pickerView = document.getElementById('pickerView');
+const paymentView = document.getElementById('paymentView');
+const btnPay = document.getElementById('btnPay');
+function openPayment(){
+  if(!cart.length) return;
+  payOpen = true; pickerView.hidden = true; paymentView.hidden = false;
+  btnPay.classList.add('is-active'); khachTra = computeDue(); renderPayment();
+}
+function closePayment(){
+  payOpen = false; paymentView.hidden = true; pickerView.hidden = false;
+  btnPay.classList.remove('is-active'); closeAdjPops();
+}
+document.getElementById('payBack').onclick = closePayment;
+btnPay.onclick = openPayment;
+
+/* ============ CALC ============ */
+function discountAmt(){ return discount ? discount.amount : 0; }
+function promoDiscount(){ return promo ? promo.discount : 0; }
+function surAmount(){ return surcharge ? surcharge.amount : 0; }
+function beforeTax(){ return Math.max(0, subtotal() - discountAmt() - promoDiscount() + surAmount()); }
+function taxAmt(){ return 0; }
+function orderTotal(){ return beforeTax() + taxAmt(); }
+function pointsValue(){ return CUSTOMER.points * CUSTOMER.pointRate; }
+function pointsApplied(){ return usePoints ? Math.min(pointsValue(), orderTotal()) : 0; }
+function walletApplied(){ return useWallet ? Math.min(CUSTOMER.wallet, Math.max(0, orderTotal()-pointsApplied())) : 0; }
+function computeDue(){ return Math.max(0, orderTotal() - pointsApplied() - walletApplied()); }
+
+/* ============ PAYMENT RENDER ============ */
+function renderPayment(){
+  // --- Component 1 ---
+  document.getElementById('paySpCnt').textContent = lineCount();
+  document.getElementById('paySub').textContent = fmt(subtotal())+'đ';
+  document.getElementById('payBeforeTax').textContent = fmt(beforeTax())+'đ';
+  document.getElementById('payTax').textContent = fmt(taxAmt())+'đ';
+  document.getElementById('payOrderTotal').textContent = fmt(orderTotal())+'đ';
+
+  // chiết khấu
+  const discSlot = document.getElementById('discSlot');
+  if(discount){
+    const label = discount.kind==='pct' ? `${discount.pct}% đơn` : 'Giảm tiền';
+    discSlot.innerHTML = `<span class="adj-chip">${label}
+        <button class="adj-act" data-act="discEdit" title="Sửa"><i data-lucide="pencil" style="width:13px;height:13px"></i></button>
+        <button class="adj-act" data-act="discDel" title="Bỏ"><i data-lucide="x" style="width:14px;height:14px"></i></button>
+      </span><span class="amt minus" style="margin-left:10px">−${fmt(discount.amount)}đ</span>`;
+  }else{
+    discSlot.innerHTML = `<button class="add-link" id="discAdd"><i data-lucide="plus" style="width:14px;height:14px"></i>Thêm</button>`;
+  }
+  // khuyến mãi
+  const promoSlot = document.getElementById('promoSlot');
+  if(promo){
+    promoSlot.innerHTML = `<span class="adj-chip">${promo.name}
+        <button class="adj-act" data-act="promoEdit" title="Đổi"><i data-lucide="pencil" style="width:13px;height:13px"></i></button>
+        <button class="adj-act" data-act="promoDel" title="Bỏ"><i data-lucide="x" style="width:14px;height:14px"></i></button>
+      </span><span class="amt minus" style="margin-left:10px">−${fmt(promo.discount)}đ</span>`;
+  }else{
+    promoSlot.innerHTML = `<button class="add-link" id="promoAdd"><i data-lucide="plus" style="width:14px;height:14px"></i>Chọn</button>`;
+  }
+  // phụ thu
+  const surSlot = document.getElementById('surSlot');
+  if(surcharge){
+    surSlot.innerHTML = `<span class="adj-chip sur">${surcharge.reason||'Phụ thu'}
+        <button class="adj-act" data-act="surEdit" title="Sửa"><i data-lucide="pencil" style="width:13px;height:13px"></i></button>
+        <button class="adj-act" data-act="surDel" title="Bỏ"><i data-lucide="x" style="width:14px;height:14px"></i></button>
+      </span><span class="amt plus" style="margin-left:10px">+${fmt(surcharge.amount)}đ</span>`;
+  }else{
+    surSlot.innerHTML = `<button class="add-link" id="surAdd"><i data-lucide="plus" style="width:14px;height:14px"></i>Thêm</button>`;
+  }
+
+  // --- Component 2 ---
+  document.getElementById('payDue').textContent = fmt(computeDue())+'đ';
+  document.getElementById('pointRow').style.display = CUSTOMER.points>0 ? 'flex':'none';
+  document.getElementById('walletRow').style.display = CUSTOMER.wallet>0 ? 'flex':'none';
+  document.getElementById('pointSub').textContent = `${CUSTOMER.points} điểm ≈ ${fmt(pointsValue())}đ`;
+  document.getElementById('walletSub').textContent = `Số dư ${fmt(CUSTOMER.wallet)}đ`;
+  document.getElementById('pointSw').classList.toggle('on', usePoints);
+  document.getElementById('walletSw').classList.toggle('on', useWallet);
+  const pa=document.getElementById('pointAmt'), wa=document.getElementById('walletAmt');
+  pa.textContent = usePoints ? '−'+fmt(pointsApplied())+'đ' : '0đ'; pa.classList.toggle('off', !usePoints);
+  wa.textContent = useWallet ? '−'+fmt(walletApplied())+'đ' : '0đ'; wa.classList.toggle('off', !useWallet);
+  document.getElementById('printOpt').classList.toggle('on', printPoints);
+
+  renderTender();
+  lucide.createIcons();
+}
+
+function renderTender(){
+  const due = computeDue();
+  const isQR = QR_METHODS.has(payMethod);
+  const fully = due<=0;
+  document.getElementById('methodHeading').hidden = fully;
+  document.getElementById('tenderMethods').hidden = fully;
+  document.getElementById('cashBlock').hidden = fully || isQR;
+  document.getElementById('qrBlock').hidden = fully || !isQR;
+  document.getElementById('coveredNote').hidden = !fully;
+  document.querySelectorAll('.method').forEach(m=>m.classList.toggle('active', m.dataset.method===payMethod));
+
+  const commit = document.getElementById('payCommit');
+  if(fully){ commit.innerHTML='Hoàn tất &amp; in đơn <span class="key">F9</span>'; commit.disabled=false; return; }
+  if(isQR){ document.getElementById('qrAmt').textContent=fmt(due)+'đ'; commit.innerHTML='Đã nhận tiền · Thanh toán <span class="key">F9</span>'; commit.disabled=false; return; }
+
+  document.getElementById('khachTra').value = fmt(khachTra);
+  const dEl = document.getElementById('denoms');
+  if(!dEl.dataset.built){
+    DENOMS.forEach(v=>{ const b=document.createElement('button'); b.className='denom'; b.textContent='+'+fmt(v); b.dataset.add=v; dEl.appendChild(b); });
+    const ex=document.createElement('button'); ex.className='denom'; ex.dataset.set='exact'; ex.textContent='Vừa đủ'; dEl.appendChild(ex);
+    const r=document.createElement('button'); r.className='denom reset'; r.dataset.reset='1'; r.textContent='Xóa'; dEl.appendChild(r);
+    dEl.dataset.built='1';
+  }
+  const change = khachTra - due;
+  const cr = document.getElementById('changeRow');
+  if(change>=0){
+    cr.className='change-row ok';
+    document.getElementById('changeLabel').textContent='Tiền thừa trả khách';
+    document.getElementById('changeAmt').textContent=fmt(change)+'đ';
+    commit.innerHTML='Thanh toán &amp; in đơn <span class="key">F9</span>'; commit.disabled=false;
+  }else{
+    cr.className='change-row short';
+    document.getElementById('changeLabel').textContent='Khách trả còn thiếu';
+    document.getElementById('changeAmt').textContent=fmt(-change)+'đ';
+    commit.innerHTML='Chưa đủ tiền <span class="key">F9</span>'; commit.disabled=true;
+  }
+}
+
+/* method chips */
+document.getElementById('methods').addEventListener('click', e=>{
+  const m = e.target.closest('.method'); if(!m) return;
+  payMethod = m.dataset.method; renderTender(); lucide.createIcons();
+});
+/* khách trả */
+document.getElementById('khachTra').addEventListener('input', e=>{
+  khachTra = parseInt(e.target.value.replace(/\D/g,''),10) || 0; renderTender(); lucide.createIcons();
+});
+document.getElementById('ktExact').onclick = ()=>{ khachTra=computeDue(); renderTender(); lucide.createIcons(); document.getElementById('khachTra').value=fmt(khachTra); };
+document.getElementById('denoms').addEventListener('click', e=>{
+  const b = e.target.closest('.denom'); if(!b) return;
+  if(b.dataset.add) khachTra += +b.dataset.add;
+  else if(b.dataset.set==='exact') khachTra = computeDue();
+  else if(b.dataset.reset) khachTra = 0;
+  document.getElementById('khachTra').value=fmt(khachTra); renderTender(); lucide.createIcons();
+});
+
+/* ============ TOGGLES + ADJ DELEGATION ============ */
+paymentView.addEventListener('click', e=>{
+  const sw = e.target.closest('[data-toggle]');
+  if(sw){
+    if(sw.dataset.toggle==='points'){ usePoints=!usePoints; if(usePoints) printPoints=true; }
+    if(sw.dataset.toggle==='wallet'){ useWallet=!useWallet; }
+    khachTra=computeDue(); renderPayment(); return;
+  }
+  if(e.target.closest('#printOpt')){ printPoints=!printPoints; renderPayment(); return; }
+  const act = e.target.closest('[data-act]')?.dataset.act;
+  if(e.target.closest('#discAdd') || act==='discEdit'){ e.stopPropagation(); openDiscountPop(); return; }
+  if(e.target.closest('#promoAdd') || act==='promoEdit'){ e.stopPropagation(); openPromoPop(); return; }
+  if(e.target.closest('#surAdd') || act==='surEdit'){ e.stopPropagation(); openSurPop(); return; }
+  if(act==='discDel'){ discount=null; khachTra=computeDue(); renderPayment(); return; }
+  if(act==='promoDel'){ promo=null; khachTra=computeDue(); renderPayment(); return; }
+  if(act==='surDel'){ surcharge=null; khachTra=computeDue(); renderPayment(); return; }
+});
+
+/* ============ POPOVERS ============ */
+function closeAdjPops(){ document.querySelectorAll('.adj-pop').forEach(p=>p.remove()); }
+
+function openDiscountPop(){
+  closeAdjPops();
+  const row = document.getElementById('discRow');
+  const pop = document.createElement('div'); pop.className='adj-pop';
+  const kind = discount?.kind || 'amount';
+  pop.innerHTML = `<div class="pop-title">${discount?'Sửa':'Thêm'} chiết khấu (giảm tay)</div>
+    <div class="pop-row"><span style="font-size:12px;color:var(--text-secondary)">Loại</span>
+      <span class="seg-toggle"><button data-kind="amount" class="${kind==='amount'?'on':''}">Số tiền</button><button data-kind="pct" class="${kind==='pct'?'on':''}">%</button></span></div>
+    <div class="pop-row"><div class="pop-field"><label>Giá trị</label><input id="discVal" inputmode="numeric" value="${discount?(kind==='pct'?discount.pct:discount.amount):''}" placeholder="0"></div></div>
+    <div class="pop-foot"><button class="btn ghost" data-x>Hủy</button><button class="btn primary" data-apply>${discount?'Lưu':'Thêm'}</button></div>`;
+  row.appendChild(pop);
+  let curKind = kind;
+  pop.addEventListener('click', ev=>{
+    const k = ev.target.closest('[data-kind]');
+    if(k){ curKind=k.dataset.kind; pop.querySelectorAll('[data-kind]').forEach(b=>b.classList.toggle('on', b.dataset.kind===curKind)); return; }
+    if(ev.target.closest('[data-x]')){ closeAdjPops(); return; }
+    if(ev.target.closest('[data-apply]')){
+      const raw = parseInt(pop.querySelector('#discVal').value.replace(/\D/g,''),10)||0;
+      const amount = curKind==='pct' ? Math.round(subtotal()*raw/100) : raw;
+      if(amount>0){ discount = {kind:curKind, amount, pct: curKind==='pct'?raw:null}; }
+      closeAdjPops(); khachTra=computeDue(); renderPayment();
+    }
+  });
+  pop.querySelector('#discVal').focus();
+  lucide.createIcons();
+}
+
+function openPromoPop(){
+  closeAdjPops();
+  const row = document.getElementById('promoRow');
+  const pop = document.createElement('div'); pop.className='adj-pop';
+  pop.innerHTML = `<div class="pop-title">Chọn khuyến mại</div>
+    <div class="pop-search"><i data-lucide="search" style="width:16px;height:16px"></i><input placeholder="Tìm…" id="promoQ"></div>
+    <div id="promoList"></div>
+    <div class="pop-foot"><button class="btn ghost" data-x>Hủy</button><button class="btn primary" data-apply>Áp dụng</button></div>`;
+  row.appendChild(pop);
+  const sub = subtotal();
+  let pick = promo ? promo.id : null;
+  const discOf = p => p.type==='pct' ? Math.round(sub*p.val/100) : p.val;
+  function drawList(q=''){
+    const kw=q.toLowerCase();
+    document.getElementById('promoList').innerHTML = PROMOS.filter(p=>p.name.toLowerCase().includes(kw)).map(p=>`
+      <button class="promo-opt ${pick===p.id?'sel':''}" data-pid="${p.id}">
+        <span class="promo-radio"></span><span class="promo-name">${p.name}</span>
+        <span class="promo-val">−${fmt(discOf(p))}đ</span></button>`).join('');
+    lucide.createIcons();
+  }
+  drawList();
+  pop.querySelector('#promoQ').oninput = ev=> drawList(ev.target.value);
+  pop.addEventListener('click', ev=>{
+    const opt = ev.target.closest('[data-pid]');
+    if(opt){ pick = opt.dataset.pid; drawList(pop.querySelector('#promoQ').value); return; }
+    if(ev.target.closest('[data-x]')){ closeAdjPops(); return; }
+    if(ev.target.closest('[data-apply]')){
+      if(pick){ const p=PROMOS.find(x=>x.id===pick); promo={id:p.id, name:p.name, discount:discOf(p)}; }
+      closeAdjPops(); khachTra=computeDue(); renderPayment();
+    }
+  });
+  lucide.createIcons();
+}
+
+function openSurPop(){
+  closeAdjPops();
+  const row = document.getElementById('surRow');
+  const pop = document.createElement('div'); pop.className='adj-pop';
+  const kind = surcharge?.kind || 'amount';
+  pop.innerHTML = `<div class="pop-title">${surcharge?'Sửa':'Thêm'} phụ thu</div>
+    <div class="pop-row"><span style="font-size:12px;color:var(--text-secondary)">Loại</span>
+      <span class="seg-toggle"><button data-kind="amount" class="${kind==='amount'?'on':''}">Số tiền</button><button data-kind="pct" class="${kind==='pct'?'on':''}">%</button></span></div>
+    <div class="pop-row"><div class="pop-field"><label>Giá trị</label><input id="surVal" inputmode="numeric" value="${surcharge?(kind==='pct'?surcharge.pct:surcharge.amount):''}" placeholder="0"></div></div>
+    <div class="pop-row"><div class="pop-field"><label>Lý do</label><input id="surReason" value="${surcharge?.reason||''}" placeholder="VD: Phí giao hàng"></div></div>
+    <div class="pop-foot"><button class="btn ghost" data-x>Hủy</button><button class="btn primary" data-apply>${surcharge?'Lưu':'Thêm'}</button></div>`;
+  row.appendChild(pop);
+  let curKind = kind;
+  pop.addEventListener('click', ev=>{
+    const k = ev.target.closest('[data-kind]');
+    if(k){ curKind=k.dataset.kind; pop.querySelectorAll('[data-kind]').forEach(b=>b.classList.toggle('on', b.dataset.kind===curKind)); return; }
+    if(ev.target.closest('[data-x]')){ closeAdjPops(); return; }
+    if(ev.target.closest('[data-apply]')){
+      const raw = parseInt(pop.querySelector('#surVal').value.replace(/\D/g,''),10)||0;
+      const reason = pop.querySelector('#surReason').value.trim() || 'Phụ thu';
+      const amount = curKind==='pct' ? Math.round(subtotal()*raw/100) : raw;
+      if(amount>0){ surcharge = {kind:curKind, amount, pct: curKind==='pct'?raw:null, reason}; }
+      closeAdjPops(); khachTra=computeDue(); renderPayment();
+    }
+  });
+  pop.querySelector('#surVal').focus();
+  lucide.createIcons();
+}
+document.addEventListener('click', e=>{ if(!e.target.closest('.adj-pop') && !e.target.closest('[data-act]') && !e.target.closest('#discAdd') && !e.target.closest('#promoAdd') && !e.target.closest('#surAdd')) closeAdjPops(); });
+
+/* ============ COMMIT ============ */
+document.getElementById('payCommit').onclick = commit;
+function commit(){
+  if(document.getElementById('payCommit').disabled) return;
+  const due = computeDue();
+  const label = METHOD_LABEL[payMethod];
+  const usedPts = usePoints ? ` · dùng ${CUSTOMER.points} điểm` : '';
+  const msg = due>0 ? `Đã thanh toán ${fmt(due)}đ · ${label}${usedPts} · đang in đơn`
+                    : `Đã thanh toán bằng điểm/ví${usedPts} · đang in đơn`;
+  cart=[]; discount=null; promo=null; surcharge=null; payMethod='cash'; khachTra=0; usePoints=false; useWallet=false; printPoints=false;
+  closePayment(); renderCart(); toast(msg);
+}
+
+/* ============ TOAST ============ */
+const toasts = document.getElementById('toasts');
+function toast(msg){
+  const t = document.createElement('div'); t.className='toast';
+  t.innerHTML = `<i data-lucide="check-circle-2" class="ico-ok" style="width:22px;height:22px"></i><span>${msg}</span>
+    <i data-lucide="printer" style="width:18px;height:18px"></i>
+    <button class="toast-x"><i data-lucide="x" style="width:16px;height:16px"></i></button>`;
+  toasts.appendChild(t); lucide.createIcons();
+  t.querySelector('.toast-x').onclick = ()=> t.remove();
+  setTimeout(()=>{ if(t.parentNode) t.remove(); }, 3400);
+}
+
+/* ============ SHORTCUTS ============ */
+document.addEventListener('keydown', e=>{
+  if(e.key==='F8'){ e.preventDefault(); toast('Đã lưu đơn vào danh sách đơn lưu'); }
+  if(e.key==='F9'){ e.preventDefault(); payOpen ? commit() : openPayment(); }
+  if(e.key==='Escape' && payOpen){ if(document.querySelector('.adj-pop')) closeAdjPops(); else closePayment(); }
+});
+document.getElementById('btnSave').onclick = ()=> toast('Đã lưu đơn vào danh sách đơn lưu');
+
+renderCart();
+lucide.createIcons();
+</script>
+</body>
+</html>
